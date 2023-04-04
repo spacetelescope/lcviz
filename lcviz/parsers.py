@@ -1,15 +1,10 @@
-import pathlib
-from collections import defaultdict
-
-import numpy as np
-
 from jdaviz.core.registries import data_parser_registry
 from specutils import Spectrum1D
 
-__all__ = ["lcviz_dummy_parser"]
+__all__ = ["lcviz_dummy_parser", "lcviz_manual_data_parser"]
 
 @data_parser_registry("lcviz_dummy_parser")
-def lcviz_dummy_parser(app, data, data_label=None, show_in_viewer=True):
+def lcviz_dummy_parser(app, data, data_label=None):
     """
     A dummy parser to verify registering an external parser.
 
@@ -32,4 +27,13 @@ def lcviz_dummy_parser(app, data, data_label=None, show_in_viewer=True):
 
     app.add_data(parsed_data, data_label)
     app.add_data_to_viewer(spectrum_viewer_reference_name, data_label)
-    
+
+
+@data_parser_registry("lcviz_manual_data_parser")
+def lcviz_manual_data_parser(app, data, data_label=None, show_in_viewer=True):
+    time_viewer_reference_name = app._jdaviz_helper._default_time_viewer_reference_name
+
+    data._preferred_translation = True  # Triggers custom viewer.set_plot_axes()
+
+    app.add_data(data, data_label)
+    app.add_data_to_viewer(time_viewer_reference_name, data_label)
