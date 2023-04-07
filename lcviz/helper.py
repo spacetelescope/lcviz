@@ -1,7 +1,7 @@
 from jdaviz.core.helpers import ConfigHelper
 from glue.core import Data
 
-class lcviz(ConfigHelper):
+class LCviz(ConfigHelper):
     
     _default_configuration = {
         'settings': {'configuration': 'customviz',
