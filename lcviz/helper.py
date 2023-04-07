@@ -26,7 +26,7 @@ class lcviz(ConfigHelper):
     
     def load_data(self, flux, time, data_label):
         '''
-        Passes a Spectrum1D to the dummy lcviz parser
+        Loads two quantity arrays by constructing a glue data object
 
         Parameters
         ----------
