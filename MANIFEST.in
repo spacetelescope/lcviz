@@ -1,0 +1,16 @@
+include README.rst
+include CHANGES.rst
+include LICENSE.rst
+include CITATION
+
+include setup.cfg
+include pyproject.toml
+
+recursive-include lcviz *.pyx *.c *.pxd
+recursive-include docs *
+
+prune build
+prune docs/_build
+prune docs/api
+
+global-exclude *.pyc *.o
