@@ -1,0 +1,26 @@
+settings:
+  configuration: LCviz
+  context:
+    notebook:
+      max_height: 600px
+  dense_toolbar: false
+  visible:
+    menu_bar: false
+    tab_headers: false
+    toolbar: true
+    tray: true
+toolbar:
+- g-data-tools
+- g-subset-tools
+tray:
+- g-metadata-viewer
+- g-plot-options
+- HelloWorldPlugin
+viewer_area:
+- children:
+  - container: row
+    viewers:
+    - name: Time-viewer
+      plot: LCviz-time-viewer
+      reference: time-viewer
+  container: col
