@@ -7,6 +7,7 @@ from glue_jupyter.bqplot.profile import BqplotProfileView
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 
+
 @viewer_registry("lcviz-time-viewer", label="Profile 1D (LCviz)")
 class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
@@ -22,19 +23,17 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         super().__init__(*args, **kwargs)
         self.initialize_toolbar()
 
-
     def data(self, cls=None):
         return [layer_state.layer
                 for layer_state in self.state.layers
                 if hasattr(layer_state, 'layer') and
                 isinstance(layer_state.layer, BaseData)]
 
-
     def set_plot_axes(self):
         # Get data to be used for axes labels
         data = self.data()[0]
 
-        #TBF: Temp comps until actual glue-astronomy translators are developed
+        # TBF: Temp comps until actual glue-astronomy translators are developed
         x_component = 'x'
         y_component = 'flux'
 
@@ -43,7 +42,7 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
 
         y_unit = u.Unit(data.get_component(y_component).units)
         self.figure.axes[1].label = f'{str(y_unit.physical_type).title()} ({y_unit})'
-        
+
         # Make it so y axis label is not covering tick numbers.
         self.figure.axes[1].label_offset = "-50"
 

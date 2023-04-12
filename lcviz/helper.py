@@ -1,29 +1,28 @@
 from jdaviz.core.helpers import ConfigHelper
 from glue.core import Data
 
+
 class LCviz(ConfigHelper):
-    
     _default_configuration = {
         'settings': {'configuration': 'customviz',
-            'visible': {'menu_bar': False,
-                'toolbar': True,
-                'tray': True,
-                'tab_headers': False},
-            'dense_toolbar': False,
-            'context': {'notebook': {'max_height': '600px'}}},
+                     'visible': {'menu_bar': False,
+                                 'toolbar': True,
+                                 'tray': True,
+                                 'tab_headers': False},
+                     'dense_toolbar': False,
+                     'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
         'tray': ['g-metadata-viewer', 'g-plot-options', 'HelloWorldPlugin'],
         'viewer_area': [{'container': 'col',
-                'children': [{'container': 'row',
-                        'viewers': [{'name': 'Time-viewer',
-                                'plot': 'lcviz-time-viewer',
-                                'reference': 'time-viewer'}]}]}]}
-    
+                         'children': [{'container': 'row',
+                                       'viewers': [{'name': 'Time-viewer',
+                                                    'plot': 'lcviz-time-viewer',
+                                                    'reference': 'time-viewer'}]}]}]}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._default_time_viewer_reference_name = 'time-viewer'
-        
-    
+
     def load_data(self, flux, time, data_label):
         '''
         Loads two quantity arrays by constructing a glue data object
@@ -35,7 +34,7 @@ class LCviz(ConfigHelper):
         time : astropy.units.Quantity
             An astropy quantity array designating the time axis
         data_label : str
-            The Glue data label found in the ``DataCollection``.        
+            The Glue data label found in the ``DataCollection``.
         '''
         data_to_load = Data(x=time.value, flux=flux.value)
         data_to_load.get_component('x').units = str(time.unit)
