@@ -14,8 +14,8 @@ except ImportError:
 # from the list of packages for which version numbers are displayed
 # when running the tests.
 PYTEST_HEADER_MODULES['astropy'] = 'astropy'
-PYTEST_HEADER_MODULES.pop('Matplotlib')
-PYTEST_HEADER_MODULES.pop('Pandas')
-PYTEST_HEADER_MODULES.pop('h5py')
+PYTEST_HEADER_MODULES.pop('Matplotlib', None)
+PYTEST_HEADER_MODULES.pop('Pandas', None)
+PYTEST_HEADER_MODULES.pop('h5py', None)
 
 TESTED_VERSIONS['lcviz'] = version
