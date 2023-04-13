@@ -13,9 +13,9 @@ def test_load_data_viewer_axes():
 
     assert (
         str(time.unit.physical_type).title()
-        in lcviz.app._viewer_store["customviz-0"].axis_x.label
+        in lcviz.app._viewer_store["lcviz-0"].axis_x.label
     )
     assert (
         str(flux.unit.physical_type).title()
-        in lcviz.app._viewer_store["customviz-0"].axis_y.label
+        in lcviz.app._viewer_store["lcviz-0"].axis_y.label
     )
