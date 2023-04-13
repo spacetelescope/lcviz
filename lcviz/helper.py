@@ -4,7 +4,7 @@ from glue.core import Data
 
 class LCviz(ConfigHelper):
     _default_configuration = {
-        'settings': {'configuration': 'customviz',
+        'settings': {'configuration': 'lcviz',
                      'visible': {'menu_bar': False,
                                  'toolbar': True,
                                  'tray': True,
@@ -15,7 +15,7 @@ class LCviz(ConfigHelper):
         'tray': ['g-metadata-viewer', 'g-plot-options', 'HelloWorldPlugin'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
-                                       'viewers': [{'name': 'Time-viewer',
+                                       'viewers': [{'name': 'time-viewer',
                                                     'plot': 'lcviz-time-viewer',
                                                     'reference': 'time-viewer'}]}]}]}
 

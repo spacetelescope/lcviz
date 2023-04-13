@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2020, Association of Universities for Research in Astronomy.
+Copyright (c) 2023, Association of Universities for Research in Astronomy.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
