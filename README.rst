@@ -1,5 +1,5 @@
 LCviz
-======================
+=====
 
 .. image:: https://readthedocs.org/projects/stsci-package-template/badge/?version=latest
     :target: https://stsci-package-template.readthedocs.io/en/latest/?badge=latest
