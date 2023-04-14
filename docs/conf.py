@@ -17,12 +17,6 @@ import os
 from configparser import ConfigParser
 from pkg_resources import get_distribution
 
-import stsci_rtd_theme
-
-
-def setup(app):
-    app.add_css_file("stsci.css")
-
 
 # -- General configuration ------------------------------------------------
 conf = ConfigParser()
@@ -149,8 +143,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'stsci_rtd_theme'
-html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
+html_theme = 'sphinx_rtd_theme'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
