@@ -1,9 +1,5 @@
-from traitlets import Bool, List, observe
-
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import PluginTemplateMixin, DatasetSelectMixin
-from jdaviz.core.user_api import PluginUserApi
-from jdaviz.utils import PRIHDR_KEY, COMMENTCARD_KEY
 
 __all__ = ['HelloWorldPlugin']
 

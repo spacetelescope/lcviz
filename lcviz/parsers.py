@@ -1,5 +1,4 @@
 from jdaviz.core.registries import data_parser_registry
-from specutils import Spectrum1D
 
 __all__ = ["lcviz_manual_data_parser"]
 
