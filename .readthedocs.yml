@@ -1,15 +1,23 @@
-# Read the Docs configuration file
-# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 version: 2
+
+build:
+  os: ubuntu-20.04
+  apt_packages:
+    - graphviz
+  tools:
+    python: "3.9"
+  jobs:
+    post_checkout:
+      # Use `git log` to check if the latest commit contains "skip rtd" or "rtd skip",
+      # in that case exit the command with 183 to skip the build
+      - MSG=`git --no-pager log --pretty="tformat:%s -- %b" -1`; case $MSG in *"skip rtd"*|*"rtd skip"*) exit 183;; *);; esac
 
 sphinx:
   builder: html
   configuration: docs/conf.py
   fail_on_warning: true
 
-# Set the version of Python and requirements required to build your docs
 python:
-  version: 3.8
   system_packages: false
   install:
     - method: pip
@@ -17,5 +25,6 @@ python:
       extra_requirements:
         - docs
 
-# Don't build any extra formats
-formats: []
+# Build zipped HTML
+formats:
+    - htmlzip
