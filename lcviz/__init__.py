@@ -5,6 +5,8 @@ try:
 except ImportError:
     __version__ = ''
 
+from . import utils  # noqa
+
 # Expose subpackage API at package level.
 from .plugins import *  # noqa
 from .parsers import *  # noqa
