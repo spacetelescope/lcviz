@@ -1,6 +1,8 @@
 import os
+from astropy.io import fits
 from jdaviz.core.registries import data_parser_registry
-from lightkurve import LightCurve
+from lightkurve import LightCurve, KeplerLightCurve, TessLightCurve
+from lightkurve.io.detect import detect_filetype
 
 __all__ = ["light_curve_parser"]
 
@@ -12,7 +14,18 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     if isinstance(file_obj, str) and os.path.exists(file_obj):
         if data_label is None:
             data_label = os.path.splitext(os.path.basename(file_obj))[0]
-        light_curve = LightCurve.read(file_obj, **kwargs)
+
+        # detect the type light curve in a FITS file:
+        filetype = detect_filetype(fits.open(file_obj))
+        # get the constructor for this type of light curve:
+        filetype_to_cls = {
+            'KeplerLightCurve': KeplerLightCurve,
+            'TessLightCurve': TessLightCurve
+        }
+        cls = filetype_to_cls[filetype]
+        # read the light curve:
+        light_curve = cls.read(file_obj)
+
     elif isinstance(file_obj, LightCurve):
         light_curve = file_obj
 

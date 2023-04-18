@@ -48,10 +48,10 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         y_unit = u.Unit(data.get_component('flux').units)
         y_unit_physical_type = str(y_unit.physical_type).title()
 
-        common_flux_units = (u.electron / u.s, u.dn / u.s, u.ct / u.s, u.Jy)
+        common_count_rate_units = (u.electron / u.s, u.dn / u.s, u.ct / u.s)
 
         if y_unit_physical_type == 'Unknown':
-            if y_unit.is_equivalent(common_flux_units):
+            if y_unit.is_equivalent(common_count_rate_units):
                 y_unit_physical_type = 'Flux'
         if y_unit_physical_type == 'Dimensionless':
             y_unit_physical_type = 'Relative Flux'
@@ -63,8 +63,9 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
 
         self.figure.axes[1].label = ylabel
 
-        # Make it so y axis label is not covering tick numbers.
+        # Make it so y axis label is not covering tick numbers (sometimes)
         self.figure.axes[1].label_offset = "-50"
 
-        # Set Y-axis to scientific notation
-        self.figure.axes[1].tick_format = '0.1e'
+        # Set (X,Y)-axis to scientific notation if necessary:
+        self.figure.axes[0].tick_format = 'g'
+        self.figure.axes[1].tick_format = 'g'
