@@ -12,7 +12,7 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
-        'tray': ['g-metadata-viewer', 'g-plot-options', 'HelloWorldPlugin'],
+        'tray': ['g-metadata-viewer', 'g-plot-options', 'HelloWorldPlugin', 'g-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'time-viewer',
