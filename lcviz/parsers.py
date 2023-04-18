@@ -11,12 +11,15 @@ __all__ = ["light_curve_parser"]
 def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
     time_viewer_reference_name = app._jdaviz_helper._default_time_viewer_reference_name
 
+    # load local FITS file from disk by its path:
     if isinstance(file_obj, str) and os.path.exists(file_obj):
         if data_label is None:
             data_label = os.path.splitext(os.path.basename(file_obj))[0]
 
         # detect the type light curve in a FITS file:
-        filetype = detect_filetype(fits.open(file_obj))
+        with fits.open(file_obj) as hdulist:
+            filetype = detect_filetype(hdulist)
+
         # get the constructor for this type of light curve:
         filetype_to_cls = {
             'KeplerLightCurve': KeplerLightCurve,
@@ -26,6 +29,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         # read the light curve:
         light_curve = cls.read(file_obj)
 
+    # load a LightCurve object:
     elif isinstance(file_obj, LightCurve):
         light_curve = file_obj
 

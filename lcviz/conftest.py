@@ -4,7 +4,12 @@ from astropy import units as u
 from astropy.utils.masked import Masked
 from lightkurve import LightCurve
 
-from lcviz import __version__
+from lcviz import __version__, LCviz
+
+
+@pytest.fixture
+def helper():
+    return LCviz()
 
 
 @pytest.fixture
