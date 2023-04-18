@@ -33,15 +33,35 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         # Get data to be used for axes labels
         data = self.data()[0]
 
-        # TBF: Temp comps until actual glue-astronomy translators are developed
-        x_component = 'x'
-        y_component = 'flux'
+        # Get the lookup table from the time axis in the gwcs obj:
+        lookup_table = data.coords._pipeline[0].transform.lookup_table
+        x_unit = lookup_table.unit
+        reference_time = data.meta.get('reference_time', None)
 
-        x_unit = u.Unit(data.get_component(x_component).units)
-        self.figure.axes[0].label = f'{str(x_unit.physical_type).title()} ({x_unit})'
+        if reference_time is not None:
+            xlabel = f'{str(x_unit.physical_type).title()} from {reference_time.iso} ({x_unit})'
+        else:
+            xlabel = f'{str(x_unit.physical_type).title()} ({x_unit})'
 
-        y_unit = u.Unit(data.get_component(y_component).units)
-        self.figure.axes[1].label = f'{str(y_unit.physical_type).title()} ({y_unit})'
+        self.figure.axes[0].label = xlabel
+
+        y_unit = u.Unit(data.get_component('flux').units)
+        y_unit_physical_type = str(y_unit.physical_type).title()
+
+        common_flux_units = (u.electron / u.s, u.dn / u.s, u.ct / u.s, u.Jy)
+
+        if y_unit_physical_type == 'Unknown':
+            if y_unit.is_equivalent(common_flux_units):
+                y_unit_physical_type = 'Flux'
+        if y_unit_physical_type == 'Dimensionless':
+            y_unit_physical_type = 'Relative Flux'
+
+        ylabel = f'{y_unit_physical_type}'
+
+        if not y_unit.is_equivalent(u.dimensionless_unscaled):
+            ylabel += f' ({y_unit})'
+
+        self.figure.axes[1].label = ylabel
 
         # Make it so y axis label is not covering tick numbers.
         self.figure.axes[1].label_offset = "-50"

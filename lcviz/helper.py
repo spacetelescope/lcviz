@@ -1,5 +1,4 @@
 from jdaviz.core.helpers import ConfigHelper
-from glue.core import Data
 
 
 class LCviz(ConfigHelper):
@@ -23,21 +22,26 @@ class LCviz(ConfigHelper):
         super().__init__(*args, **kwargs)
         self._default_time_viewer_reference_name = 'time-viewer'
 
-    def load_data(self, flux, time, data_label):
-        '''
-        Loads two quantity arrays by constructing a glue data object
+    def load_data(self, data, data_label=None):
+        """
+        Load data into LCviz.
 
         Parameters
         ----------
-        flux : astropy.units.Quantity
-            An astropy quantity array designating the flux or profile axis
-        time : astropy.units.Quantity
-            An astropy quantity array designating the time axis
-        data_label : str
-            The Glue data label found in the ``DataCollection``.
-        '''
-        data_to_load = Data(x=time.value, flux=flux.value)
-        data_to_load.get_component('x').units = str(time.unit)
-        data_to_load.get_component('flux').units = str(flux.unit)
-        super().load_data(data=data_to_load, parser_reference='lcviz_manual_data_parser',
-                          data_label=data_label)
+        data : obj or str
+            File name or object to be loaded. Supported formats include:
+
+            * ``'filename.fits'`` (or any extension that ``astropy.io.fits``
+              supports)
+            * `~lightkurve.LightCurve` (extracts the default flux column)
+        data_label : str or `None`
+            Data label to go with the given data. If not given, this is
+            automatically determined from filename or randomly generated.
+            The final label shown in LCviz may have additional information
+            appended for clarity.
+        """
+        super().load_data(
+            data=data,
+            parser_reference='light_curve_parser',
+            data_label=data_label
+        )
