@@ -1,6 +1,8 @@
 from jdaviz.core.helpers import ConfigHelper
 from glue.core import Data
 
+__all__ = ['LCviz']
+
 
 class LCviz(ConfigHelper):
     _default_configuration = {

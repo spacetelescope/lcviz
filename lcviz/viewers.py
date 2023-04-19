@@ -7,6 +7,8 @@ from glue_jupyter.bqplot.profile import BqplotProfileView
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 
+__all__ = ['TimeProfileView']
+
 
 @viewer_registry("lcviz-time-viewer", label="Profile 1D (LCviz)")
 class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
