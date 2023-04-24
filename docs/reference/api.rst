@@ -6,8 +6,8 @@ API
 
 .. _lcviz-api-configs:
 
-Configurations
-==============
+LCviz Helper
+============
 
 .. automodapi:: lcviz.helper
    :no-inheritance-diagram:
