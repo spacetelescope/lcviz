@@ -8,4 +8,7 @@ a package which contains stuff that do things.
 Reference/API
 =============
 
-.. automodapi:: lcviz
+.. toctree::
+   :maxdepth: 2
+
+   reference/api.rst
