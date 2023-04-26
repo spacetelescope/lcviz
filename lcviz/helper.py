@@ -1,4 +1,5 @@
 from jdaviz.core.helpers import ConfigHelper
+from lightkurve import LightCurve
 
 __all__ = ['LCviz']
 
@@ -13,7 +14,7 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
-        'tray': ['g-metadata-viewer', 'g-plot-options', 'HelloWorldPlugin', 'g-export-plot'],
+        'tray': ['g-metadata-viewer', 'g-plot-options', 'g-subset-plugin', 'HelloWorldPlugin', 'g-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'time-viewer',
@@ -47,3 +48,25 @@ class LCviz(ConfigHelper):
             parser_reference='light_curve_parser',
             data_label=data_label
         )
+
+    def get_data(self, data_label=None, cls=LightCurve, subset_to_apply=None):
+        """
+        Returns data with name equal to data_label of type cls with subsets applied from
+        subset_to_apply.
+
+        Parameters
+        ----------
+        data_label : str, optional
+            Provide a label to retrieve a specific data set from data_collection.
+        cls : `~specutils.Spectrum1D`, `~astropy.nddata.CCDData`, optional
+            The type that data will be returned as.
+        subset_to_apply : str, optional
+            Subset that is to be applied to data before it is returned.
+
+        Returns
+        -------
+        data : cls
+            Data is returned as type cls with subsets applied.
+
+        """
+        return super()._get_data(data_label=data_label, cls=cls, subset_to_apply=subset_to_apply)
