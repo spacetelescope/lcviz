@@ -6,6 +6,8 @@ from glue_jupyter.bqplot.profile import BqplotProfileView
 
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
+from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
+from jdaviz.core.freezable_state import FreezableProfileViewerState
 
 __all__ = ['TimeProfileView']
 
@@ -20,10 +22,18 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
                     ['bqplot:xrange'],
                     ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
+    _state_cls = FreezableProfileViewerState
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.initialize_toolbar()
+        self._subscribe_to_layers_update()
+        # hack to inherit a small subset of methods from SpecvizProfileView
+        # TODO: refactor jdaviz so these can be included in some mixin
+        self._show_uncertainty_changed = lambda value: SpecvizProfileView._show_uncertainty_changed(self, value)  # noqa
+        self._plot_uncertainties = lambda: SpecvizProfileView._plot_uncertainties(self)
+        # TODO: _plot_uncertainties in specviz is hardcoded to look at spectral_axis and so crashes
+        self._clean_error = lambda: SpecvizProfileView._clean_error(self)
 
     def data(self, cls=None):
         return [layer_state.layer
