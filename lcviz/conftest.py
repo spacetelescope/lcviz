@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from astropy import units as u
-from astropy.utils.masked import Masked
 from lightkurve import LightCurve
 
 from lcviz import __version__, LCviz
@@ -22,7 +21,6 @@ def light_curve_like_kepler_quarter(seed=42):
     """
     np.random.seed(seed)
     exp_per_day = (30 * u.min).to_value(u.day)
-    masked_fraction = 0.01
 
     # approx start and stop JD for Kepler Quarter 10:
     time = np.arange(2455739, 2455833, exp_per_day)
@@ -32,19 +30,10 @@ def light_curve_like_kepler_quarter(seed=42):
     ) * u.dimensionless_unscaled
     flux_err = scale * np.ones_like(flux)
 
-    # randomly apply mask to fraction of the data:
-    mask_indices = np.random.randint(
-        low=0,
-        high=len(flux),
-        size=int(masked_fraction * len(flux))
-    )
-    mask = np.zeros(len(flux), dtype=bool)
-    mask[mask_indices] = True
+    quality = np.zeros(len(time), dtype=np.int32)
 
-    flux = Masked(flux, mask)
-    flux_err = Masked(flux_err, mask)
     return LightCurve(
-        time=time, flux=flux, flux_err=flux_err
+        time=time, flux=flux, flux_err=flux_err, quality=quality
     )
 
 

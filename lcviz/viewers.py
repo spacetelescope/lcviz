@@ -1,10 +1,13 @@
-from astropy import units as u
 from glue.core.subset import Subset
 from glue.config import data_translator
 from glue.core import BaseData
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core.subset_group import GroupedSubset
 
 from glue_jupyter.bqplot.profile import BqplotProfileView
+
+from astropy import units as u
+from astropy.time import Time
 
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
@@ -33,7 +36,9 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # self._subscribe_to_layers_update()
+        self.display_mask = False
+        self.time_unit = kwargs.get('time_unit', u.d)
+        self._subscribe_to_layers_update()
         self.initialize_toolbar()
         self._subscribe_to_layers_update()
         # hack to inherit a small subset of methods from SpecvizProfileView
@@ -49,7 +54,6 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         for layer_state in self.state.layers:
             if hasattr(layer_state, 'layer'):
                 lyr = layer_state.layer
-
                 # For raw data, just include the data itself
                 if isinstance(lyr, BaseData):
                     _class = cls or self.default_class
@@ -65,7 +69,7 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
                         data.append(layer_data)
 
                 # For subsets, make sure to apply the subset mask to the layer data first
-                elif isinstance(lyr, Subset):
+                elif isinstance(lyr, (Subset, GroupedSubset)):
                     layer_data = lyr
 
                     if _class is not None:
@@ -82,9 +86,7 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         # Get data to be used for axes labels
         light_curve = self.data()[0]
 
-        # Get the lookup table from the time axis in the gwcs obj:
-        # lookup_table = data.coords._pipeline[0].transform.lookup_table
-        x_unit = u.day ##data.coords._values.unit
+        x_unit = self.time_unit
         reference_time = light_curve.meta.get('reference_time', None)
 
         if reference_time is not None:
@@ -156,3 +158,17 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
                 layer.linewidth = 3
 
         return result
+
+    def _show_uncertainty_changed(*args, **kwargs):
+        # method required by jdaviz
+        pass
+
+    def apply_roi(self, roi, use_current=False):
+        # allow ROIs describing times to be applied with min and max defined as:
+        #  1. floats, representing bounds in units of ``self.time_unit``
+        #  2. Time objects, which get converted to work like (1) via the reference time
+        if isinstance(roi.min, Time) or isinstance(roi.max, Time):
+            reference_time = self.state.reference_data.meta['reference_time']
+            roi = roi.transformed(xfunc=lambda x: (x - reference_time).to_value(self.time_unit))
+
+        super().apply_roi(roi, use_current=use_current)

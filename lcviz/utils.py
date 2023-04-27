@@ -1,4 +1,3 @@
-import datetime
 from glue.config import data_translator
 from glue.core import Data, Subset
 from ipyvue import watch
@@ -9,13 +8,14 @@ from ndcube.extra_coords import TimeTableCoordinate
 from glue.core.coordinates import Coordinates
 import numpy as np
 from gwcs.wcs import WCS
-
 from astropy import units as u
 from astropy.time import Time
-from astropy.utils.masked import Masked
-from lightkurve import LightCurve
 
-__all__ = ['TimeCoordinates']
+from lightkurve import (
+    LightCurve, KeplerLightCurve, TessLightCurve
+)
+
+__all__ = ['TimeCoordinates', 'LightCurveHandler']
 
 
 class TimeCoordinates(Coordinates):
@@ -35,11 +35,7 @@ class TimeCoordinates(Coordinates):
             self.reference_time = times[0]
 
         delta_t = (times - self.reference_time).to(unit)
-        self._values = delta_t # times.datetime64
-
-        # self._values = (
-        #     times.datetime64.astype(datetime.datetime).astype(int) / 1e9 * u.day
-        # )
+        self._values = delta_t
 
         super().__init__(n_dim=1)
 
@@ -53,7 +49,7 @@ class TimeCoordinates(Coordinates):
 
     @property
     def world_axis_units(self):
-        return (self._values.unit.to_string('vounit'),)
+        return tuple(self._values.unit.to_string('vounit'))
 
     def world_to_pixel_values(self, *world):
         """
@@ -91,11 +87,8 @@ __all__ = ['LightCurveHandler', 'enable_hot_reloading']
 class LightCurveHandler:
 
     def to_data(self, obj):
-        time = obj.time
-        # ttc = TimeTableCoordinate(time)
-        # gwcs = ttc.wcs
         time_coord = TimeCoordinates(obj.time)
-        # delta_t = (obj.time - obj.time[0]).to(u.d)
+        delta_t = (obj.time - obj.time[0]).to(u.d)
         data = Data(coords=time_coord)
 
         data.meta.update(obj.meta)
@@ -104,16 +97,18 @@ class LightCurveHandler:
         flux = obj.flux
         flux_err = obj.flux_err
 
-        if hasattr(flux, 'unmasked'):
-            flux = flux.unmasked
-            flux_err = obj.flux_err.unmasked
-
         data['flux'] = flux
         data.get_component('flux').units = str(flux.unit)
 
         data['uncertainty'] = flux_err
         data.get_component('uncertainty').units = str(flux_err.unit)
         data.meta.update({'uncertainty_type': 'std'})
+
+        data['dt'] = delta_t
+        data.get_component('dt').units = str(delta_t.unit)
+
+        if hasattr(obj, 'quality'):
+            data['quality'] = obj.quality
 
         return data
 
@@ -139,19 +134,17 @@ class LightCurveHandler:
         # Copy over metadata
         kwargs = {'meta': data.meta.copy()}
 
-        # convert gwcs coordinates to Time object.
+        # extract a Time object out of the TimeCoordinates object:
+        kwargs['time'] = data.coords.time_axis
 
-        # ``gwcs`` will store the transformation from pixel coordinates, which are
-        # integer indices in the input time object, to astropy.time.Time objects.
-        # Here we extract the time coordinates directly from the lookup table:
-        reference_time = data.meta['reference_time']
-
-        if isinstance(data.coords, WCS):
-            gwcs = data.coords
-            input_times = gwcs._pipeline[0].transform.lookup_table
-            kwargs['time'] = input_times + reference_time
+        if subset_state is None:
+            # pass through mask of all True's if no glue subset is chosen
+            glue_mask = np.ones(len(kwargs['time'])).astype(bool)
         else:
-            kwargs['time'] = data.coords.time_axis
+            # get the subset mask from glue:
+            glue_mask = data.get_mask(subset_state=subset_state)
+            # apply the subset mask to the time array:
+            kwargs['time'] = kwargs['time'][glue_mask]
 
         if isinstance(attribute, str):
             attribute = data.id[attribute]
@@ -162,46 +155,45 @@ class LightCurveHandler:
                 attribute = data.main_components[0]
             # If no specific attribute is defined, attempt to retrieve
             # the flux and uncertainty, if available
-            elif any([x.label in ('flux', 'uncertainty') for x in data.components]):
+            elif any([x.label in ('flux', 'uncertainty', 'quality') for x in data.components]):
                 attribute = [data.find_component_id(x)
-                             for x in ('flux', 'uncertainty')
+                             for x in ('flux', 'uncertainty', 'quality')
                              if data.find_component_id(x) is not None]
             else:
                 raise ValueError("Data object has more than one attribute, so "
                                  "you will need to specify which one to use as "
                                  "the flux for the spectrum using the "
                                  "attribute= keyword argument.")
-        print('attributes', attribute)
+
         def parse_attributes(attributes):
             data_kwargs = {}
-            lc_init_keys = {'flux': 'flux', 'uncertainty': 'flux_err'}
+            lc_init_keys = {'flux': 'flux', 'uncertainty': 'flux_err', 'quality': 'quality'}
             for attribute in attributes:
                 component = data.get_component(attribute)
 
-                # Get mask if there is one defined, or if this is a subset
-                if subset_state is None:
-                    mask = None
-                else:
-                    mask = data.get_mask(subset_state=subset_state)
-                    # mask = ~mask
-                print('mask', mask, np.any(mask))
                 # Collapse values and mask to profile
                 values = data.get_data(attribute)
                 attribute_label = attribute.label
 
-                if attribute in ('flux', 'uncertainty'):
+                if attribute_label in ('flux', 'uncertainty'):
                     values = u.Quantity(values, unit=component.units)
+                elif attribute_label in ('quality', ):
+                    values = np.array(values, dtype=np.int32)
 
                 init_kwarg = lc_init_keys[attribute_label]
-                data_kwargs.update({init_kwarg: values})
+
+                # apply the glue subset mask to the Data components:
+                data_kwargs.update({init_kwarg: values[glue_mask]})
 
             return data_kwargs
 
         data_kwargs = parse_attributes(
             [attribute] if not hasattr(attribute, '__len__') else attribute)
+
         return LightCurve(**data_kwargs, **kwargs)
 
 
+<<<<<<< HEAD
 def enable_hot_reloading(watch_jdaviz=True):
     """
     Use ``watchdog`` to perform hot reloading.
@@ -220,3 +212,15 @@ def enable_hot_reloading(watch_jdaviz=True):
         print((
             'Watchdog module, needed for hot reloading, not found.'
             ' Please install with `pip install watchdog`'))
+=======
+@data_translator(KeplerLightCurve)
+class KeplerLightCurveHandler(LightCurveHandler):
+    # Works the same as LightCurve
+    pass
+
+
+@data_translator(TessLightCurve)
+class TessLightCurveHandler(LightCurveHandler):
+    # Works the same as LightCurve
+    pass
+>>>>>>> ff59ea9 (First working subset fixes)
