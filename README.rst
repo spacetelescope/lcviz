@@ -5,6 +5,10 @@ LCviz
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
 
+.. image:: http://img.shields.io/badge/powered%20by-jdaviz-355973.svg?style=flat
+    :target: https://github.com/spacetelescope/jdaviz/
+    :alt: Powered by jdaviz Badge
+
 
 Early Development Software Warning
 ----------------------------------
