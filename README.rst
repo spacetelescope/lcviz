@@ -5,7 +5,7 @@ LCviz
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
 
-.. image:: http://img.shields.io/badge/powered%20by-jdaviz-355973.svg?style=flat
+.. image:: http://img.shields.io/badge/powered%20by-jdaviz-336699.svg?style=flat
     :target: https://github.com/spacetelescope/jdaviz/
     :alt: Powered by jdaviz Badge
 
