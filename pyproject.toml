@@ -128,4 +128,4 @@ exclude_lines = [
 
 [tool.build_sphinx]
 edit_on_github = true
-github-project = "spacetelescope/lcviz"
+github_project = "spacetelescope/lcviz"
