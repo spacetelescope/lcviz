@@ -51,6 +51,10 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
     def data(self, cls=None):
         data = []
 
+        # TODO: generalize upstream in jdaviz.
+        # This method is generalized from
+        # jdaviz/configs/specviz/plugins/viewers.py
+        # to support non-spectral viewers.
         for layer_state in self.state.layers:
             if hasattr(layer_state, 'layer'):
                 lyr = layer_state.layer

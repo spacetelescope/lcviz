@@ -3,11 +3,8 @@ from glue.core import Data, Subset
 from ipyvue import watch
 
 import os
-from lightkurve import LightCurve
-from ndcube.extra_coords import TimeTableCoordinate
 from glue.core.coordinates import Coordinates
 import numpy as np
-from gwcs.wcs import WCS
 from astropy import units as u
 from astropy.time import Time
 
@@ -193,7 +190,6 @@ class LightCurveHandler:
         return LightCurve(**data_kwargs, **kwargs)
 
 
-<<<<<<< HEAD
 def enable_hot_reloading(watch_jdaviz=True):
     """
     Use ``watchdog`` to perform hot reloading.
@@ -212,7 +208,8 @@ def enable_hot_reloading(watch_jdaviz=True):
         print((
             'Watchdog module, needed for hot reloading, not found.'
             ' Please install with `pip install watchdog`'))
-=======
+
+
 @data_translator(KeplerLightCurve)
 class KeplerLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
@@ -223,4 +220,3 @@ class KeplerLightCurveHandler(LightCurveHandler):
 class TessLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
     pass
->>>>>>> ff59ea9 (First working subset fixes)
