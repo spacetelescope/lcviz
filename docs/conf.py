@@ -14,14 +14,17 @@
 
 import datetime
 import os
-from configparser import ConfigParser
 from pkg_resources import get_distribution
 
+if sys.version_info < (3, 11):
+    import tomli as tomllib
+else:
+    import tomllib
 
 # -- General configuration ------------------------------------------------
-conf = ConfigParser()
-conf.read([os.path.join(os.path.dirname(__file__), '..', 'setup.cfg')])
-setup_cfg = dict(conf.items('metadata'))
+with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as configuration_file:
+    conf = tomllib.load(configuration_file)
+setup_cfg = conf["project"]
 
 # Configuration for intersphinx: refer to the Python standard library.
 # Uncomment if you cross-ref to API doc from other packages.
@@ -63,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project
 project = setup_cfg['name']
-author = setup_cfg['author']
+author = setup_cfg['authors'][0]['name']
 year = datetime.datetime.now().year
 copyright = f'{year}, {author}'
 
