@@ -6,6 +6,7 @@ except ImportError:
     __version__ = ''
 
 from . import utils  # noqa
+from .utils import enable_hot_reloading  # noqa: F401
 
 # Expose subpackage API at package level.
 from .plugins import *  # noqa

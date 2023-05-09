@@ -1,10 +1,15 @@
 from glue.config import data_translator
 from glue.core import Data, Subset
+from ipyvue import watch
 
+import os
 from lightkurve import LightCurve
 from ndcube.extra_coords import TimeTableCoordinate
 from astropy import units as u
 from astropy.utils.masked import Masked
+
+
+__all__ = ['LightCurveHandler', 'enable_hot_reloading']
 
 
 @data_translator(LightCurve)
@@ -110,3 +115,23 @@ class LightCurveHandler:
         data_kwargs = parse_attributes(
             [attribute] if not hasattr(attribute, '__len__') else attribute)
         return LightCurve(**data_kwargs, **kwargs)
+
+
+def enable_hot_reloading(watch_jdaviz=True):
+    """
+    Use ``watchdog`` to perform hot reloading.
+
+    Parameters
+    ----------
+    watch_jdaviz : bool
+        Whether to also watch changes to jdaviz upstream.
+    """
+    try:
+        watch(os.path.dirname(__file__))
+        if watch_jdaviz:
+            import jdaviz
+            watch(os.path.dirname(jdaviz.__file__))
+    except ModuleNotFoundError:
+        print((
+            'Watchdog module, needed for hot reloading, not found.'
+            ' Please install with `pip install watchdog`'))
