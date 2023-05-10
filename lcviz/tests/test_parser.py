@@ -1,12 +1,13 @@
 # import pytest
 import numpy as np
+from glue.core.roi import XRangeROI
 from astropy.time import Time
 # from astropy.utils.data import download_file
 from lightkurve import LightCurve
 # from lightkurve.io import kepler
-from gwcs.wcs import WCS
 import astropy.units as u
 
+from lcviz.utils import TimeCoordinates
 
 # @pytest.mark.remote_data
 # def test_kepler_via_mast_local_file(helper):
@@ -23,7 +24,7 @@ import astropy.units as u
 #     flux_unit = u.Unit(data.get_component('flux').units)
 #     flux = flux_arr * flux_unit
 #
-#     assert isinstance(data.coords, WCS)
+#     assert isinstance(data.coords, TimeCoordinates)
 #     assert isinstance(flux, u.Quantity)
 #     assert flux.unit.is_equivalent(u.electron / u.s)
 #
@@ -43,7 +44,7 @@ import astropy.units as u
 #     flux_unit = u.Unit(data.get_component('flux').units)
 #     flux = flux_arr * flux_unit
 #
-#     assert isinstance(data.coords, WCS)
+#     assert isinstance(data.coords, TimeCoordinates)
 #     assert isinstance(flux, u.Quantity)
 #     assert flux.unit.is_equivalent(u.electron / u.s)
 
@@ -60,6 +61,31 @@ def test_synthetic_lc(helper):
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
 
-    assert isinstance(data.coords, WCS)
+    assert isinstance(data.coords, TimeCoordinates)
     assert isinstance(flux, u.Quantity)
     assert flux.unit.is_equivalent(u.electron / u.s)
+
+
+def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
+    lc = light_curve_like_kepler_quarter
+    helper.load_data(lc)
+    viewer = helper.app.get_viewer("time-viewer")
+    subset_plugin = helper.plugins['Subset Tools']
+
+    # the min/max of temporal regions can be defined in two ways:
+    time_ranges = [
+        [6, 8],  # in same units as the x axis, OR
+        Time(['2011-07-19', '2011-07-23'])  # directly with a Time object
+    ]
+
+    for time_range in time_ranges:
+        subset_plugin._obj.subset_selected = "Create New"
+        viewer.apply_roi(XRangeROI(*time_range))
+
+    subsets = helper.app.get_subsets_from_viewer('time-viewer')
+
+    subset_1_bounds_jd = subsets['Subset 1'][0]['region'].jd
+    subset_2_bounds_jd = subsets['Subset 2'][0]['region'].jd
+
+    np.testing.assert_allclose(subset_1_bounds_jd, [2455745., 2455747.])
+    np.testing.assert_allclose(subset_2_bounds_jd, [2455761.50076602, 2455765.50076602])

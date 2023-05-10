@@ -1,6 +1,30 @@
+import astropy.units as u
+
+from lightkurve import LightCurve
+
 from jdaviz.core.helpers import ConfigHelper
 
 __all__ = ['LCviz']
+
+
+def _get_range_subset_bounds(self, subset_state, *args, **kwargs):
+    # Instead of overriding the jdaviz version of this method on jdaviz.Application,
+    # we could put in jdaviz by (1) checking if helper has a
+    # _default_time_viewer_reference_name, (2) using the LCviz version if so, and (3)
+    # using the jdaviz version otherwise.
+    viewer = self.get_viewer(self._jdaviz_helper._default_time_viewer_reference_name)
+    reference_time = viewer.state.reference_data.meta['reference_time']
+    if viewer:
+        units = u.Unit(viewer.state.x_display_unit)
+    else:
+        raise ValueError("Unable to find time axis units")
+
+    region = reference_time + u.Quantity([subset_state.lo * units, subset_state.hi * units])
+
+    return [{"name": subset_state.__class__.__name__,
+             "glue_state": subset_state.__class__.__name__,
+             "region": region,
+             "subset_state": subset_state}]
 
 
 class LCviz(ConfigHelper):
@@ -13,7 +37,10 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
-        'tray': ['g-metadata-viewer', 'g-plot-options', 'HelloWorldPlugin', 'g-export-plot'],
+        'tray': [
+            'g-metadata-viewer', 'g-plot-options', 'g-subset-plugin',
+            'HelloWorldPlugin', 'g-export-plot'
+        ],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'time-viewer',
@@ -23,6 +50,11 @@ class LCviz(ConfigHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._default_time_viewer_reference_name = 'time-viewer'
+
+        # override jdaviz behavior to support temporal subsets
+        self.app._get_range_subset_bounds = (
+            lambda *args, **kwargs: _get_range_subset_bounds(self.app, *args, **kwargs)
+        )
 
     def load_data(self, data, data_label=None):
         """
@@ -47,3 +79,24 @@ class LCviz(ConfigHelper):
             parser_reference='light_curve_parser',
             data_label=data_label
         )
+
+    def get_data(self, data_label=None, cls=LightCurve, subset_to_apply=None):
+        """
+        Returns data with name equal to data_label of type cls with subsets applied from
+        subset_to_apply.
+
+        Parameters
+        ----------
+        data_label : str, optional
+            Provide a label to retrieve a specific data set from data_collection.
+        cls : light curve class, optional
+            The type that data will be returned as.
+        subset_to_apply : str, optional
+            Subset that is to be applied to data before it is returned.
+
+        Returns
+        -------
+        data : cls
+            Data is returned as type cls with subsets applied.
+        """
+        return super()._get_data(data_label=data_label, cls=cls, subset_to_apply=subset_to_apply)

@@ -1,13 +1,21 @@
-from astropy import units as u
-
+from glue.core.subset import Subset
+from glue.config import data_translator
 from glue.core import BaseData
+from glue.core.exceptions import IncompatibleAttribute
+from glue.core.subset_group import GroupedSubset
 
 from glue_jupyter.bqplot.profile import BqplotProfileView
+
+from astropy import units as u
+from astropy.time import Time
 
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 from jdaviz.core.freezable_state import FreezableProfileViewerState
+
+from lightkurve import LightCurve
+
 
 __all__ = ['TimeProfileView']
 
@@ -22,10 +30,15 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
                     ['bqplot:xrange'],
                     ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
+    default_class = LightCurve
     _state_cls = FreezableProfileViewerState
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.display_mask = False
+        self.time_unit = kwargs.get('time_unit', u.d)
+        self._subscribe_to_layers_update()
         self.initialize_toolbar()
         self._subscribe_to_layers_update()
         # hack to inherit a small subset of methods from SpecvizProfileView
@@ -36,19 +49,49 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         self._clean_error = lambda: SpecvizProfileView._clean_error(self)
 
     def data(self, cls=None):
-        return [layer_state.layer
-                for layer_state in self.state.layers
-                if hasattr(layer_state, 'layer') and
-                isinstance(layer_state.layer, BaseData)]
+        data = []
+
+        # TODO: generalize upstream in jdaviz.
+        # This method is generalized from
+        # jdaviz/configs/specviz/plugins/viewers.py
+        # to support non-spectral viewers.
+        for layer_state in self.state.layers:
+            if hasattr(layer_state, 'layer'):
+                lyr = layer_state.layer
+                # For raw data, just include the data itself
+                if isinstance(lyr, BaseData):
+                    _class = cls or self.default_class
+
+                    if _class is not None:
+                        cache_key = lyr.label
+                        if cache_key in self.jdaviz_app._get_object_cache:
+                            layer_data = self.jdaviz_app._get_object_cache[cache_key]
+                        else:
+                            layer_data = lyr.get_object(cls=_class)
+                            self.jdaviz_app._get_object_cache[cache_key] = layer_data
+
+                        data.append(layer_data)
+
+                # For subsets, make sure to apply the subset mask to the layer data first
+                elif isinstance(lyr, (Subset, GroupedSubset)):
+                    layer_data = lyr
+
+                    if _class is not None:
+                        handler, _ = data_translator.get_handler_for(_class)
+                        try:
+                            layer_data = handler.to_object(layer_data)
+                        except IncompatibleAttribute:
+                            continue
+                    data.append(layer_data)
+
+        return data
 
     def set_plot_axes(self):
         # Get data to be used for axes labels
-        data = self.data()[0]
+        light_curve = self.data()[0]
 
-        # Get the lookup table from the time axis in the gwcs obj:
-        lookup_table = data.coords._pipeline[0].transform.lookup_table
-        x_unit = lookup_table.unit
-        reference_time = data.meta.get('reference_time', None)
+        x_unit = self.time_unit
+        reference_time = light_curve.meta.get('reference_time', None)
 
         if reference_time is not None:
             xlabel = f'{str(x_unit.physical_type).title()} from {reference_time.iso} ({x_unit})'
@@ -57,7 +100,7 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
 
         self.figure.axes[0].label = xlabel
 
-        y_unit = u.Unit(data.get_component('flux').units)
+        y_unit = light_curve.flux.unit
         y_unit_physical_type = str(y_unit.physical_type).title()
 
         common_count_rate_units = (u.electron / u.s, u.dn / u.s, u.ct / u.s)
@@ -81,3 +124,55 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
         # Set (X,Y)-axis to scientific notation if necessary:
         self.figure.axes[0].tick_format = 'g'
         self.figure.axes[1].tick_format = 'g'
+
+    def _expected_subset_layer_default(self, layer_state):
+        super()._expected_subset_layer_default(layer_state)
+
+        layer_state.linewidth = 3
+
+    def add_data(self, data, color=None, alpha=None, **layer_state):
+        """
+        Overrides the base class to add markers for plotting
+        uncertainties and data quality flags.
+
+        Parameters
+        ----------
+        data : :class:`glue.core.data.Data`
+            Data object with the spectrum.
+        color : obj
+            Color value for plotting.
+        alpha : float
+            Alpha value for plotting.
+
+        Returns
+        -------
+        result : bool
+            `True` if successful, `False` otherwise.
+        """
+        # The base class handles the plotting of the main
+        # trace representing the spectrum itself.
+        result = super().add_data(data, color, alpha, **layer_state)
+
+        # Set default linewidth on any created spectral subset layers
+        # NOTE: this logic will need updating if we add support for multiple cubes as this assumes
+        # that new data entries (from model fitting or gaussian smooth, etc) will only be spectra
+        # and all subsets affected will be spectral
+        for layer in self.state.layers:
+            if "Subset" in layer.layer.label and layer.layer.data.label == data.label:
+                layer.linewidth = 3
+
+        return result
+
+    def _show_uncertainty_changed(*args, **kwargs):
+        # method required by jdaviz
+        pass
+
+    def apply_roi(self, roi, use_current=False):
+        # allow ROIs describing times to be applied with min and max defined as:
+        #  1. floats, representing bounds in units of ``self.time_unit``
+        #  2. Time objects, which get converted to work like (1) via the reference time
+        if isinstance(roi.min, Time) or isinstance(roi.max, Time):
+            reference_time = self.state.reference_data.meta['reference_time']
+            roi = roi.transformed(xfunc=lambda x: (x - reference_time).to_value(self.time_unit))
+
+        super().apply_roi(roi, use_current=use_current)

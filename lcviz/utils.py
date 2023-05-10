@@ -3,10 +3,78 @@ from glue.core import Data, Subset
 from ipyvue import watch
 
 import os
-from lightkurve import LightCurve
-from ndcube.extra_coords import TimeTableCoordinate
+from glue.core.coordinates import Coordinates
+import numpy as np
 from astropy import units as u
-from astropy.utils.masked import Masked
+from astropy.time import Time
+
+from lightkurve import (
+    LightCurve, KeplerLightCurve, TessLightCurve
+)
+
+__all__ = ['TimeCoordinates', 'LightCurveHandler']
+
+
+class TimeCoordinates(Coordinates):
+    """
+    This is a sub-class of Coordinates that is intended for a time axis
+    given by a :class:`~astropy.time.Time` array.
+    """
+
+    def __init__(self, times, reference_time=None, unit=u.d):
+        if not isinstance(times, Time):
+            raise TypeError('values should be a Time instance')
+        self._index = np.arange(len(times))
+        self._times = times
+
+        # convert to relative time units
+        if reference_time is None:
+            self.reference_time = times[0]
+
+        delta_t = (times - self.reference_time).to(unit)
+        self._values = delta_t
+
+        super().__init__(n_dim=1)
+
+    @property
+    def time_axis(self):
+        """
+        Returns
+        -------
+        """
+        return self._times
+
+    @property
+    def world_axis_units(self):
+        return tuple(self._values.unit.to_string('vounit'))
+
+    def world_to_pixel_values(self, *world):
+        """
+        Parameters
+        ----------
+        world
+        Returns
+        -------
+        """
+        if len(world) > 1:
+            raise ValueError('TimeCoordinates is a 1-d coordinate class '
+                             'and only accepts a single scalar or array to convert')
+        return np.interp(world[0], self._values.value, self._index,
+                         left=np.nan, right=np.nan)
+
+    def pixel_to_world_values(self, *pixel):
+        """
+        Parameters
+        ----------
+        pixel
+        Returns
+        -------
+        """
+        if len(pixel) > 1:
+            raise ValueError('SpectralCoordinates is a 1-d coordinate class '
+                             'and only accepts a single scalar or array to convert')
+        return np.interp(pixel[0], self._index, self._values.value,
+                         left=np.nan, right=np.nan)
 
 
 __all__ = ['LightCurveHandler', 'enable_hot_reloading']
@@ -16,24 +84,29 @@ __all__ = ['LightCurveHandler', 'enable_hot_reloading']
 class LightCurveHandler:
 
     def to_data(self, obj):
-        time = obj.time
-        ttc = TimeTableCoordinate(time)
-        gwcs = ttc.wcs
-
-        data = Data(coords=gwcs)
+        time_coord = TimeCoordinates(obj.time)
+        delta_t = (obj.time - obj.time[0]).to(u.d)
+        data = Data(coords=time_coord)
 
         data.meta.update(obj.meta)
-        data.meta.update({"reference_time": ttc.reference_time})
+        data.meta.update({"reference_time": obj.time[0]})
 
-        data['flux'] = obj.flux
-        data.get_component('flux').units = str(obj.flux.unit)
+        flux = obj.flux
+        flux_err = obj.flux_err
 
-        data['uncertainty'] = obj.flux_err
-        data.get_component('uncertainty').units = str(obj.flux_err.unit)
+        data['flux'] = flux
+        data.get_component('flux').units = str(flux.unit)
+
+        data['uncertainty'] = flux_err
+        data.get_component('uncertainty').units = str(flux_err.unit)
         data.meta.update({'uncertainty_type': 'std'})
 
-        if hasattr(obj.flux, 'mask'):
-            data['mask'] = obj.flux.mask
+        data['dt'] = delta_t
+        data.get_component('dt').units = str(delta_t.unit)
+
+        if hasattr(obj, 'quality'):
+            data['quality'] = obj.quality
+
         return data
 
     def to_object(self, data_or_subset, attribute=None):
@@ -43,9 +116,9 @@ class LightCurveHandler:
         Parameters
         ----------
         data_or_subset : `glue.core.data.Data` or `glue.core.subset.Subset`
-            The data to convert to a Spectrum1D object
+            The data to convert to a LightCurve object
         attribute : `glue.core.component_id.ComponentID`
-            The attribute to use for the Spectrum1D data
+            The attribute to use for the LightCurve data
         """
 
         if isinstance(data_or_subset, Subset):
@@ -58,15 +131,17 @@ class LightCurveHandler:
         # Copy over metadata
         kwargs = {'meta': data.meta.copy()}
 
-        # convert gwcs coordinates to Time object.
+        # extract a Time object out of the TimeCoordinates object:
+        kwargs['time'] = data.coords.time_axis
 
-        # ``gwcs`` will store the transformation from pixel coordinates, which are
-        # integer indices in the input time object, to astropy.time.Time objects.
-        # Here we extract the time coordinates directly from the lookup table:
-        gwcs = data.coords
-        reference_time = data.meta['reference_time']
-        input_times = gwcs._pipeline[0].transform.lookup_table
-        kwargs['time'] = input_times + reference_time
+        if subset_state is None:
+            # pass through mask of all True's if no glue subset is chosen
+            glue_mask = np.ones(len(kwargs['time'])).astype(bool)
+        else:
+            # get the subset mask from glue:
+            glue_mask = data.get_mask(subset_state=subset_state)
+            # apply the subset mask to the time array:
+            kwargs['time'] = kwargs['time'][glue_mask]
 
         if isinstance(attribute, str):
             attribute = data.id[attribute]
@@ -77,9 +152,9 @@ class LightCurveHandler:
                 attribute = data.main_components[0]
             # If no specific attribute is defined, attempt to retrieve
             # the flux and uncertainty, if available
-            elif any([x.label in ('time', 'flux', 'uncertainty') for x in data.components]):
+            elif any([x.label in ('flux', 'uncertainty', 'quality') for x in data.components]):
                 attribute = [data.find_component_id(x)
-                             for x in ('time', 'flux', 'uncertainty')
+                             for x in ('flux', 'uncertainty', 'quality')
                              if data.find_component_id(x) is not None]
             else:
                 raise ValueError("Data object has more than one attribute, so "
@@ -89,7 +164,7 @@ class LightCurveHandler:
 
         def parse_attributes(attributes):
             data_kwargs = {}
-            lc_init_keys = {'time': 'time', 'flux': 'flux', 'uncertainty': 'flux_err'}
+            lc_init_keys = {'flux': 'flux', 'uncertainty': 'flux_err', 'quality': 'quality'}
             for attribute in attributes:
                 component = data.get_component(attribute)
 
@@ -97,23 +172,21 @@ class LightCurveHandler:
                 values = data.get_data(attribute)
                 attribute_label = attribute.label
 
-                if attribute in ('flux', 'uncertainty'):
+                if attribute_label in ('flux', 'uncertainty'):
                     values = u.Quantity(values, unit=component.units)
-                    if 'mask' in data.main_components:
-                        mask = data['mask'].astype(bool)
-                        values = Masked(values, mask)
-
-                if subset_state is not None and attribute != 'mask':
-                    glue_mask = data.get_mask(subset_state=subset_state)
-                    values = Masked(values, ~glue_mask)
+                elif attribute_label in ('quality', ):
+                    values = np.array(values, dtype=np.int32)
 
                 init_kwarg = lc_init_keys[attribute_label]
-                data_kwargs[init_kwarg] = values
+
+                # apply the glue subset mask to the Data components:
+                data_kwargs.update({init_kwarg: values[glue_mask]})
 
             return data_kwargs
 
         data_kwargs = parse_attributes(
             [attribute] if not hasattr(attribute, '__len__') else attribute)
+
         return LightCurve(**data_kwargs, **kwargs)
 
 
@@ -135,3 +208,15 @@ def enable_hot_reloading(watch_jdaviz=True):
         print((
             'Watchdog module, needed for hot reloading, not found.'
             ' Please install with `pip install watchdog`'))
+
+
+@data_translator(KeplerLightCurve)
+class KeplerLightCurveHandler(LightCurveHandler):
+    # Works the same as LightCurve
+    pass
+
+
+@data_translator(TessLightCurve)
+class TessLightCurveHandler(LightCurveHandler):
+    # Works the same as LightCurve
+    pass
