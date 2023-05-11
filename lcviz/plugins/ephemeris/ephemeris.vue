@@ -20,13 +20,27 @@
 
     <v-row>
       <v-text-field
+        ref="t0"
+        type="number"
+        label="Zeropoint (t0)"
+        v-model.number="t0"
+        :step="t0_step"
+        type="number"
+        hint="The zero-point of the ephemeris."
+        persistent-hint
+        :rules="[() => t0!=='' || 'This field is required']"
+      ></v-text-field>
+    </v-row>
+
+    <v-row>
+      <v-text-field
         ref="period"
         type="number"
         label="Period"
         v-model.number="period"
-        step="0.01"
+        :step="period_step"
         type="number"
-        hint="The period of the ephemeris."
+        hint="The period of the ephemeris, defined at t0."
         persistent-hint
         :rules="[() => period!=='' || 'This field is required',
                  () => period > 0 || 'Period must be greater than zero']"
@@ -39,25 +53,11 @@
         type="number"
         label="Period derivative (dpdt)"
         v-model.number="dpdt"
-        step="0.0001"
+        :step="dpdt_step"
         type="number"
         hint="The first time derivative of the period of the ephemeris."
         persistent-hint
         :rules="[() => dpdt!=='' || 'This field is required']"
-      ></v-text-field>
-    </v-row>
-
-    <v-row>
-      <v-text-field
-        ref="t0"
-        type="number"
-        label="Zeropoint (t0)"
-        v-model.number="t0"
-        step="0.01"
-        type="number"
-        hint="The zero-point of the ephemeris."
-        persistent-hint
-        :rules="[() => t0!=='' || 'This field is required']"
       ></v-text-field>
     </v-row>
 

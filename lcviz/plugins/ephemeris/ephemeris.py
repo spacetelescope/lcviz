@@ -1,5 +1,5 @@
 import numpy as np
-from traitlets import List, Unicode, observe
+from traitlets import Float, List, Unicode, observe
 
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import NewViewerMessage
@@ -23,12 +23,12 @@ class Ephemeris(PluginTemplateMixin):
 
     * ``component`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
-    * :attr:`period`:
-      Period of the ephemeris.
-    * :attr:`dpdt`:
-      First derivative of the period of the ephemeris.
     * :attr:`t0`:
       Zeropoint of the ephemeris.
+    * :attr:`period`:
+      Period of the ephemeris, defined at ``t0``.
+    * :attr:`dpdt`:
+      First derivative of the period of the ephemeris.
     * :meth:`create_phase_viewer`
 
     """
@@ -37,9 +37,12 @@ class Ephemeris(PluginTemplateMixin):
     component_items = List().tag(sync=True)
     component_selected = Unicode().tag(sync=True)
 
-    period = FloatHandleEmpty().tag(sync=True)
-    dpdt = FloatHandleEmpty().tag(sync=True)
     t0 = FloatHandleEmpty().tag(sync=True)
+    t0_step = Float(0.1).tag(sync=True)
+    period = FloatHandleEmpty().tag(sync=True)
+    period_step = Float(0.1).tag(sync=True)
+    dpdt = FloatHandleEmpty().tag(sync=True)
+    dpdt_step = Float(0.1).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,6 +88,9 @@ class Ephemeris(PluginTemplateMixin):
         if self.period <= 0:
             return
 
+        def round_to_1(x):
+            return round(x, -int(np.floor(np.log10(abs(x)))))
+
         # TODO: loop over all input data
         dc = self.app.data_collection
         times = dc[0].get_component('World 0').data
@@ -97,6 +103,11 @@ class Ephemeris(PluginTemplateMixin):
             dc[0].update_components({dc[0].get_component('phase'): phases})
         else:
             dc[0].add_component(phases, 'phase')
+
+        # update step-sizes
+        self.period_step = round_to_1(self.period/5000)
+        self.dpdt_step = max(round_to_1(abs(self.dpdt)/10000) if self.dpdt != 0 else 0, 0.00001)
+        self.t0_step = round_to_1(self.period/1000)
 
         # if phase-viewer doesn't yet exist in the app, create it now
         pv = self.create_phase_viewer('flux-vs-phase:default')
