@@ -41,7 +41,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
         'tray': [
-            'g-metadata-viewer', 'g-plot-options', 'g-subset-plugin',
+            'g-metadata-viewer', 'lcviz-plot-options', 'g-subset-plugin',
             'HelloWorldPlugin', 'g-export-plot'
         ],
         'viewer_area': [{'container': 'col',
