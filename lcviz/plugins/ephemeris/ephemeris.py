@@ -1,9 +1,9 @@
-from traitlets import observe
+from traitlets import List, Unicode, observe
 
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import tray_registry
-from jdaviz.core.template_mixin import PluginTemplateMixin, DatasetSelectMixin
+from jdaviz.core.template_mixin import PluginTemplateMixin, SelectPluginComponent
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.viewers import PhaseScatterView
@@ -13,13 +13,15 @@ __all__ = ['Ephemeris']
 
 
 @tray_registry('ephemeris', label="Ephemeris")
-class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
+class Ephemeris(PluginTemplateMixin):
     """
     See the :ref:`Ephemeris Plugin Documentation <ephemeris>` for more details.
 
     Only the following attributes and methods are available through the
     public plugin API.
 
+    * ``component`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
+      Label of the component corresponding to the active ephemeris.
     * :attr:`period`:
       Period of the ephemeris.
     * :attr:`t0`:
@@ -27,20 +29,38 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`create_phase_viewer`
 
     """
+    template_file = __file__, "ephemeris.vue"
+
+    component_items = List().tag(sync=True)
+    component_selected = Unicode().tag(sync=True)
+
     period = FloatHandleEmpty().tag(sync=True)
     t0 = FloatHandleEmpty().tag(sync=True)
-
-    template_file = __file__, "ephemeris.vue"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # TODO: support renaming components (including renaming the applicable viewer)
+        # TODO: support for creating new components
+        self.component = SelectPluginComponent(self,
+                                               items='component_items',
+                                               selected='component_selected',
+                                               manual_options=['default'])
+
     @property
     def user_api(self):
-        expose = ['period', 'create_phase_viewer']
+        expose = ['component', 'period', 't0', 'create_phase_viewer']
         return PluginUserApi(self, expose=expose)
 
-    def create_phase_viewer(self, phase_viewer_id='phase-viewer'):
+    def create_phase_viewer(self, phase_viewer_id=None):
+        """
+        """
+        if phase_viewer_id is None:
+            component = self.component.selected
+            if component == 'Create New...':
+                return ValueError("must create component before viewer")
+            phase_viewer_id = f'flux-vs-phase:{self.component.selected}'
+
         if phase_viewer_id not in self.app.get_viewer_ids():
             # TODO: stack horizontally by default?
             self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
@@ -61,4 +81,4 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             return
 
         # if phase-viewer doesn't yet exist in the app, create it now
-        self.create_phase_viewer('phase-viewer')
+        self.create_phase_viewer('flux-vs-phase:default')

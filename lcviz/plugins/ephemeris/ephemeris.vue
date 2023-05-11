@@ -4,6 +4,18 @@
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
     :popout_button="popout_button">
 
+    <v-row>
+      <v-select
+        attach
+        :menu-props="{ left: true }"
+        :items="component_items.map(i => i.label)"
+        v-model="component_selected"
+        label="Component"
+        hint="Select an ephemeris component."
+        persistent-hint
+      ></v-select>
+    </v-row>
+
     <j-plugin-section-header>Ephemeris</j-plugin-section-header>
 
     <v-row>
