@@ -40,10 +40,8 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
-        'tray': [
-            'g-metadata-viewer', 'lcviz-plot-options', 'g-subset-plugin',
-            'HelloWorldPlugin', 'g-export-plot'
-        ],
+        'tray': ['g-metadata-viewer', 'g-subset-plugin', 
+                 'lcviz-plot-options', 'ephemeris', 'g-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',
