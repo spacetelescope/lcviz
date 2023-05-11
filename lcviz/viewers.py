@@ -4,7 +4,7 @@ from glue.core import BaseData
 from glue.core.exceptions import IncompatibleAttribute
 from glue.core.subset_group import GroupedSubset
 
-from glue_jupyter.bqplot.profile import BqplotProfileView
+from glue_jupyter.bqplot.scatter import BqplotScatterView
 
 from astropy import units as u
 from astropy.time import Time
@@ -12,16 +12,15 @@ from astropy.time import Time
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
-from jdaviz.core.freezable_state import FreezableProfileViewerState
 
 from lightkurve import LightCurve
 
 
-__all__ = ['TimeProfileView']
+__all__ = ['TimeScatterView']
 
 
-@viewer_registry("lcviz-time-viewer", label="Profile 1D (LCviz)")
-class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
+@viewer_registry("lcviz-time-viewer", label="flux-vs-time")
+class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -31,7 +30,6 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
                     ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     default_class = LightCurve
-    _state_cls = FreezableProfileViewerState
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,6 +87,12 @@ class TimeProfileView(JdavizViewerMixin, BqplotProfileView):
     def set_plot_axes(self):
         # Get data to be used for axes labels
         light_curve = self.data()[0]
+
+        # set which components should be plotted
+        dc = self.jdaviz_app.data_collection
+        component_labels = [comp.label for comp in dc[0].components]
+        self.state.y_att = dc[0].components[component_labels.index('flux')]
+        self.state.x_att = dc[0].components[component_labels.index('World 0')]
 
         x_unit = self.time_unit
         reference_time = light_curve.meta.get('reference_time', None)

@@ -43,13 +43,13 @@ class LCviz(ConfigHelper):
         ],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
-                                       'viewers': [{'name': 'time-viewer',
+                                       'viewers': [{'name': 'flux-vs-time',
                                                     'plot': 'lcviz-time-viewer',
-                                                    'reference': 'time-viewer'}]}]}]}
+                                                    'reference': 'flux-vs-time'}]}]}]}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._default_time_viewer_reference_name = 'time-viewer'
+        self._default_time_viewer_reference_name = 'flux-vs-time'
 
         # override jdaviz behavior to support temporal subsets
         self.app._get_range_subset_bounds = (
