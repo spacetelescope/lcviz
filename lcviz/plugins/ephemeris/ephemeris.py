@@ -127,6 +127,12 @@ class Ephemeris(PluginTemplateMixin):
     def vue_create_phase_viewer(self, *args):
         self.create_phase_viewer()
 
+    def vue_period_halve(self, *args):
+        self.period /= 2
+
+    def vue_period_double(self, *args):
+        self.period *= 2
+
     @observe('component_selected')
     def _check_if_phase_viewer_exists(self, *args):
         self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()

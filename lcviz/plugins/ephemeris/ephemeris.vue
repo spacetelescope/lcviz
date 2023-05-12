@@ -45,12 +45,20 @@
         label="Period"
         v-model.number="period"
         :step="period_step"
-        type="number"
         hint="The period of the ephemeris, defined at t0."
         persistent-hint
         :rules="[() => period!=='' || 'This field is required',
                  () => period > 0 || 'Period must be greater than zero']"
-      ></v-text-field>
+      >
+        <template v-slot:append>
+          <j-tooltip tooltipcontent="halve period">
+            <v-icon style="cursor: pointer" @click="period_halve">mdi-division</v-icon>
+          </j-tooltip>
+          <j-tooltip tooltipcontent="double period">
+            <v-icon style="cursor: pointer" @click="period_double">mdi-multiplication</v-icon>
+          </j-tooltip>
+        </template>
+      </v-text-field>
     </v-row>
 
     <v-row>
