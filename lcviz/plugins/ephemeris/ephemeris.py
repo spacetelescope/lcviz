@@ -1,8 +1,8 @@
 import numpy as np
-from traitlets import Float, List, Unicode, observe
+from traitlets import Bool, Float, List, Unicode, observe
 
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
-from jdaviz.core.events import NewViewerMessage
+from jdaviz.core.events import NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import PluginTemplateMixin, SelectPluginComponent
 from jdaviz.core.user_api import PluginUserApi
@@ -37,6 +37,8 @@ class Ephemeris(PluginTemplateMixin):
     component_items = List().tag(sync=True)
     component_selected = Unicode().tag(sync=True)
 
+    phase_viewer_exists = Bool(False).tag(sync=True)
+
     t0 = FloatHandleEmpty(0).tag(sync=True)
     t0_step = Float(0.1).tag(sync=True)
     period = FloatHandleEmpty(1).tag(sync=True)
@@ -54,6 +56,9 @@ class Ephemeris(PluginTemplateMixin):
                                                selected='component_selected',
                                                manual_options=['default'])
 
+        self.hub.subscribe(self, ViewerAddedMessage, handler=self._check_if_phase_viewer_exists)
+        self.hub.subscribe(self, ViewerRemovedMessage, handler=self._check_if_phase_viewer_exists)
+
     @property
     def user_api(self):
         expose = ['component', 'period', 'dpdt', 't0', 'create_phase_viewer']
@@ -61,7 +66,11 @@ class Ephemeris(PluginTemplateMixin):
 
     @property
     def phase_comp_lbl(self):
-        return f'phase:{self.component.selected}'
+        return f'phase:{self.component_selected}'
+
+    @property
+    def phase_viewer_id(self):
+        return f'flux-vs-phase:{self.component_selected}'
 
     def _update_all_phase_arrays(self):
         dc = self.app.data_collection
@@ -89,7 +98,7 @@ class Ephemeris(PluginTemplateMixin):
         # TODO: depending on how adding a new component is implemented, we might need a check
         # and return here
 
-        phase_viewer_id = f'flux-vs-phase:{self.component.selected}'
+        phase_viewer_id = self.phase_viewer_id
         dc = self.app.data_collection
 
         # check to see if this component already has a phase array.  We'll just check the first
@@ -99,7 +108,7 @@ class Ephemeris(PluginTemplateMixin):
         if self.phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self._update_all_phase_arrays()
 
-        if phase_viewer_id not in self.app.get_viewer_ids():
+        if not self.phase_viewer_exists:
             # TODO: stack horizontally by default?
             self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
                                     vid=phase_viewer_id, name=phase_viewer_id)
@@ -114,6 +123,13 @@ class Ephemeris(PluginTemplateMixin):
         # TODO: there must be a better way to do this...
         pv.state.x_att = [comp for comp in dc[0].components if comp.label == self.phase_comp_lbl][0]
         return pv
+
+    def vue_create_phase_viewer(self, *args):
+        self.create_phase_viewer()
+
+    @observe('component_selected')
+    def _check_if_phase_viewer_exists(self, *args):
+        self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()
 
     @observe('period', 'dpdt', 't0')
     def _period_changed(self, *args):
@@ -133,5 +149,5 @@ class Ephemeris(PluginTemplateMixin):
 
         # update step-sizes
         self.period_step = round_to_1(self.period/5000)
-        self.dpdt_step = max(round_to_1(abs(self.dpdt)/10000) if self.dpdt != 0 else 0, 0.00001)
+        self.dpdt_step = max(round_to_1(abs(self.period * self.dpdt)/1000) if self.dpdt != 0 else 0, 1./1000000)
         self.t0_step = round_to_1(self.period/1000)

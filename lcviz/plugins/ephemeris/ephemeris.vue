@@ -16,6 +16,12 @@
       ></v-select>
     </v-row>
 
+    <v-row justify="end">
+      <v-btn color="primary" text @click="create_phase_viewer" :disabled="phase_viewer_exists">
+        Show Phase Viewer
+      </v-btn>
+    </v-row>
+
     <j-plugin-section-header>Ephemeris</j-plugin-section-header>
 
     <v-row>
