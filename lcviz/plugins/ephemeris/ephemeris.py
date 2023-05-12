@@ -1,8 +1,10 @@
 import numpy as np
 from traitlets import Bool, Float, List, Unicode, observe
 
+from glue.core.link_helpers import LinkSame
+from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
-from jdaviz.core.events import NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage
+from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import PluginTemplateMixin, SelectPluginComponent
 from jdaviz.core.user_api import PluginUserApi
@@ -64,6 +66,9 @@ class Ephemeris(PluginTemplateMixin):
         # force the original entry in ephemerides with defaults
         self._change_component()
 
+        # TODO: could optimize by only updating for the new data entry only
+        # (would require some refactoring and probably wouldn't have significant gains)
+        self.hub.subscribe(self, DataCollectionAddMessage, handler=self._update_all_phase_arrays)
         self.hub.subscribe(self, ViewerAddedMessage, handler=self._check_if_phase_viewer_exists)
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._check_if_phase_viewer_exists)
 
@@ -78,9 +83,18 @@ class Ephemeris(PluginTemplateMixin):
     def phase_comp_lbl(self):
         return f'phase:{self.component_selected}'
 
+    def _phase_viewer_id(self, component):
+        return f'flux-vs-phase:{component}'
+
+    @property
+    def phase_viewer_ids(self):
+        viewer_ids = self.app.get_viewer_ids()
+        return [self._phase_viewer_id(component) for component in self.component.choices
+                if self._phase_viewer_id(component) in viewer_ids]
+
     @property
     def phase_viewer_id(self):
-        return f'flux-vs-phase:{self.component_selected}'
+        return self._phase_viewer_id(self.component_selected)
 
     @property
     def ephemerides(self):
@@ -90,11 +104,12 @@ class Ephemeris(PluginTemplateMixin):
     def ephemeris(self):
         return self.ephemerides.get(self.component_selected, {})
 
-    def _update_all_phase_arrays(self):
+    def _update_all_phase_arrays(self, *args):
         dc = self.app.data_collection
         phase_comp_lbl = self.phase_comp_lbl
 
-        for data in dc:
+        new_links = []
+        for i, data in enumerate(dc):
             times = data.get_component('World 0').data
             if self.dpdt != 0:
                 phases = np.mod(1./self.dpdt * np.log(1 + self.dpdt/self.period*(times-self.t0)), 1.0)  # noqa
@@ -105,6 +120,16 @@ class Ephemeris(PluginTemplateMixin):
                 data.update_components({data.get_component(phase_comp_lbl): phases})
             else:
                 data.add_component(phases, phase_comp_lbl)
+                if i != 0:
+                    # then we need to link this column back to dc[0]
+                    # TODO: there must be a better way (again)...
+                    dc0_comps = {str(comp): comp for comp in dc[0].components}
+                    data_comps = {str(comp): comp for comp in data.components}
+                    new_links += [LinkSame(dc0_comps.get(phase_comp_lbl),
+                                           data_comps.get(phase_comp_lbl))]
+
+        if len(new_links):
+            dc.set_links(new_links)
 
         return phase_comp_lbl
 
