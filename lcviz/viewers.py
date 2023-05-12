@@ -13,6 +13,8 @@ from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
+from lcviz.state import ScatterViewerState
+
 from lightkurve import LightCurve
 
 
@@ -30,6 +32,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
                     ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     default_class = LightCurve
+    _state_cls = ScatterViewerState
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -48,7 +48,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     if len(dc) > 1:
         # then we need to link this light curve back to the first
         dc0_comps = {str(comp): comp for comp in dc[0].components}
-        new_links = [LinkSame(dc0_comps.get(str(new_comp)), new_comp) for new_comp in dc[-1].components]
+        new_links = [LinkSame(dc0_comps.get(str(new_comp)), new_comp) for new_comp in dc[-1].components]  # noqa
         dc.set_links(new_links)
 
     if show_in_viewer:

@@ -7,6 +7,7 @@ except ImportError:
 
 from . import utils  # noqa
 from .utils import enable_hot_reloading  # noqa: F401
+from . import state  # noqa
 
 # Expose subpackage API at package level.
 from .plugins import *  # noqa
