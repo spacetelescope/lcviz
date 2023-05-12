@@ -1,5 +1,6 @@
 import os
 from astropy.io import fits
+from glue.core.link_helpers import LinkSame
 from jdaviz.core.registries import data_parser_registry
 from lightkurve import LightCurve, KeplerLightCurve, TessLightCurve
 from lightkurve.io.detect import detect_filetype
@@ -43,6 +44,12 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         new_data_label += f'[{flux_origin}]'
 
     app.add_data(light_curve, new_data_label)
+    dc = app.data_collection
+    if len(dc) > 1:
+        # then we need to link this light curve back to the first
+        dc0_comps = {str(comp): comp for comp in dc[0].components}
+        new_links = [LinkSame(dc0_comps.get(str(new_comp)), new_comp) for new_comp in dc[-1].components]
+        dc.set_links(new_links)
 
     if show_in_viewer:
         app.add_data_to_viewer(time_viewer_reference_name, new_data_label)
