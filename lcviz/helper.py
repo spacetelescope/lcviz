@@ -3,6 +3,7 @@ import astropy.units as u
 from lightkurve import LightCurve
 
 from jdaviz.core.helpers import ConfigHelper
+from lcviz.plugins import StyleWidget
 
 __all__ = ['LCviz']
 
@@ -58,6 +59,10 @@ class LCviz(ConfigHelper):
         self.app._get_range_subset_bounds = (
             lambda *args, **kwargs: _get_range_subset_bounds(self.app, *args, **kwargs)
         )
+
+        # inject the style widget to override app-css from lcviz_style.vue
+        style_widget = StyleWidget()
+        self.app.state.style_widget = "IPY_MODEL_" + style_widget.model_id
 
     def load_data(self, data, data_label=None):
         """
