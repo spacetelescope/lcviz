@@ -69,7 +69,7 @@ def test_synthetic_lc(helper):
 def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
     helper.load_data(lc)
-    viewer = helper.app.get_viewer("time-viewer")
+    viewer = helper.app.get_viewer(helper._default_time_viewer_reference_name)
     subset_plugin = helper.plugins['Subset Tools']
 
     # the min/max of temporal regions can be defined in two ways:
@@ -82,7 +82,7 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
         subset_plugin._obj.subset_selected = "Create New"
         viewer.apply_roi(XRangeROI(*time_range))
 
-    subsets = helper.app.get_subsets_from_viewer('time-viewer')
+    subsets = helper.app.get_subsets_from_viewer(helper._default_time_viewer_reference_name)
 
     subset_1_bounds_jd = subsets['Subset 1'][0]['region'].jd
     subset_2_bounds_jd = subsets['Subset 2'][0]['region'].jd

@@ -179,7 +179,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         #  1. floats, representing bounds in units of ``self.time_unit``
         #  2. Time objects, which get converted to work like (1) via the reference time
         if isinstance(roi.min, Time) or isinstance(roi.max, Time):
-            reference_time = self.state.reference_data.meta['reference_time']
+            reference_time = self.data()[0].meta.get('reference_time', 0)
             roi = roi.transformed(xfunc=lambda x: (x - reference_time).to_value(self.time_unit))
 
         super().apply_roi(roi, use_current=use_current)
