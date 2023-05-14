@@ -2,6 +2,7 @@ from glue.core.subset import Subset
 from glue.config import data_translator
 from glue.core import BaseData
 from glue.core.exceptions import IncompatibleAttribute
+from glue.core.roi import RangeROI
 from glue.core.subset_group import GroupedSubset
 
 from glue_jupyter.bqplot.scatter import BqplotScatterView
@@ -28,7 +29,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
                     ['jdaviz:boxzoom', 'jdaviz:xrangezoom'],
                     ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
-                    ['bqplot:xrange'],
+                    ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
                     ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     default_class = LightCurve
@@ -175,11 +176,12 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         pass
 
     def apply_roi(self, roi, use_current=False):
-        # allow ROIs describing times to be applied with min and max defined as:
-        #  1. floats, representing bounds in units of ``self.time_unit``
-        #  2. Time objects, which get converted to work like (1) via the reference time
-        if isinstance(roi.min, Time) or isinstance(roi.max, Time):
-            reference_time = self.data()[0].meta.get('reference_time', 0)
-            roi = roi.transformed(xfunc=lambda x: (x - reference_time).to_value(self.time_unit))
+        if isinstance(roi, RangeROI):
+            # allow ROIs describing times to be applied with min and max defined as:
+            #  1. floats, representing bounds in units of ``self.time_unit``
+            #  2. Time objects, which get converted to work like (1) via the reference time
+            if isinstance(roi.min, Time) or isinstance(roi.max, Time):
+                reference_time = self.data()[0].meta.get('reference_time', 0)
+                roi = roi.transformed(xfunc=lambda x: (x - reference_time).to_value(self.time_unit))
 
         super().apply_roi(roi, use_current=use_current)
