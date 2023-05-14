@@ -73,6 +73,64 @@
           :rules="[() => dpdt!=='' || 'This field is required']"
         ></v-text-field>
       </v-row>
+
+      <j-plugin-section-header>Period Finding/Refining</j-plugin-section-header>
+
+      <plugin-dataset-select
+        :items="dataset_items"
+        :selected.sync="dataset_selected"
+        :show_if_single_entry="false"
+        label="Data"
+        hint="Select the light curve as input."
+      />
+
+      <v-row>
+        <v-select
+          :menu-props="{ left: true }"
+          attach
+          :items="method_items.map(i => i.label)"
+          v-model="method_selected"
+          label="Algorithm/Method"
+          hint="Method to determine period."
+          persistent-hint
+        ></v-select>
+      </v-row>
+
+
+
+      <div style="display: grid"> <!-- overlay container -->
+        <div style="grid-area: 1/1">
+
+          <v-row v-if="method_err.length > 0">
+            <v-alert color="warning">{{ method_err }}</v-alert>
+          </v-row>
+          <v-row v-else>
+            <j-tooltip :tooltipcontent="'adopt period into '+component_selected+' ephemeris.'">
+              <v-btn text color='primary '@click='adopt_period_at_max_power' style="padding: 0px">
+                period: {{period_at_max_power}}
+              </v-btn>
+            </j-tooltip>
+          </v-row>
+
+        </div>
+        <div v-if="method_spinner"
+             class="text-center"
+             style="grid-area: 1/1; 
+                    z-index:2;
+                    margin-left: -24px;
+                    margin-right: -24px;
+                    padding-top: 6px;
+                    background-color: rgb(0 0 0 / 20%)">
+          <v-progress-circular
+            indeterminate
+            color="spinner"
+            size="50"
+            width="6"
+          ></v-progress-circular>
+        </div>
+      </div>
+
+
     </div>
 
   </j-tray-plugin>

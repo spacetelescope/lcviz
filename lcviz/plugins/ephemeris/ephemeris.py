@@ -6,8 +6,11 @@ from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
-from jdaviz.core.template_mixin import PluginTemplateMixin
+from jdaviz.core.template_mixin import (PluginTemplateMixin, SelectPluginComponent,
+                                        DatasetSelectMixin)
 from jdaviz.core.user_api import PluginUserApi
+
+from lightkurve import periodogram
 
 from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
@@ -17,7 +20,7 @@ __all__ = ['Ephemeris']
 
 
 @tray_registry('ephemeris', label="Ephemeris")
-class Ephemeris(PluginTemplateMixin):
+class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     """
     See the :ref:`Ephemeris Plugin Documentation <ephemeris>` for more details.
 
@@ -38,9 +41,14 @@ class Ephemeris(PluginTemplateMixin):
     * :meth:`create_phase_viewer`
     * :meth:`add_component`
     * :meth:`rename_component`
+    * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
+      Dataset to use for determining the period.
+    * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+      Method/algorithm to determine the period.
     """
     template_file = __file__, "ephemeris.vue"
 
+    # EPHEMERIS
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
     component_items = List().tag(sync=True)
@@ -54,6 +62,15 @@ class Ephemeris(PluginTemplateMixin):
     period_step = Float(0.1).tag(sync=True)
     dpdt = FloatHandleEmpty(0).tag(sync=True)
     dpdt_step = Float(0.1).tag(sync=True)
+
+    # PERIOD FINDING
+    method_items = List().tag(sync=True)
+    method_selected = Unicode().tag(sync=True)
+
+    method_spinner = Bool().tag(sync=True)
+    method_err = Unicode().tag(sync=True)
+
+    period_at_max_power = Float().tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -72,6 +89,11 @@ class Ephemeris(PluginTemplateMixin):
         # force the original entry in ephemerides with defaults
         self._change_component()
 
+        self.method = SelectPluginComponent(self,
+                                            items='method_items',
+                                            selected='method_selected',
+                                            manual_options=['Lomb-Scargle', 'Box Least Squares'])
+
         # TODO: could optimize by only updating for the new data entry only
         # (would require some refactoring and probably wouldn't have significant gains)
         self.hub.subscribe(self, DataCollectionAddMessage, handler=self._update_all_phase_arrays)
@@ -83,7 +105,8 @@ class Ephemeris(PluginTemplateMixin):
         expose = ['component', 'period', 'dpdt', 't0',
                   'ephemeris', 'ephemerides',
                   'update_ephemeris', 'create_phase_viewer',
-                  'add_component', 'remove_component', 'rename_component']
+                  'add_component', 'remove_component', 'rename_component',
+                  'dataset', 'method']
         return PluginUserApi(self, expose=expose)
 
     @property
@@ -299,3 +322,35 @@ class Ephemeris(PluginTemplateMixin):
         self.period_step = round_to_1(self.period/5000)
         self.dpdt_step = max(round_to_1(abs(self.period * self.dpdt)/1000) if self.dpdt != 0 else 0, 1./1000000)
         self.t0_step = round_to_1(self.period/1000)
+
+    @observe('dataset_selected', 'method_selected')
+    def _update_periodogram(self, *args):
+        if not (hasattr(self, 'method') and hasattr(self, 'dataset')):
+            return
+        # TODO: support multiselect on self.dataset and combine light curves?
+        self.method_spinner = True
+        self.method_err = ''
+        if self.method == 'Box Least Squares':
+            try:
+                per = periodogram.BoxLeastSquaresPeriodogram.from_lightcurve(self.dataset.selected_obj)
+            except Exception as err:
+                self.method_spinner = False
+                self.method_err = str(err)
+                return
+        elif self.method == 'Lomb-Scargle':
+            try:
+                per = periodogram.LombScarglePeriodogram.from_lightcurve(self.dataset.selected_obj)
+            except Exception as err:
+                self.method_spinner = False
+                self.method_err = str(err)
+                return
+        else:
+            self.method_spinner = False
+            raise NotImplementedError(f"periodogram not implemented for {self.method}")
+
+        # TODO: will need to return in display units once supported
+        self.period_at_max_power = per.period_at_max_power.value
+        self.method_spinner = False
+
+    def vue_adopt_period_at_max_power(self, *args):
+        self.period = self.period_at_max_power
