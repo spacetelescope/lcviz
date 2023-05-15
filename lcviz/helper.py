@@ -1,4 +1,6 @@
 import astropy.units as u
+import ipyvue
+import os
 
 from lightkurve import LightCurve
 
@@ -6,6 +8,14 @@ from jdaviz.core.helpers import ConfigHelper
 from lcviz.events import ViewerRenamedMessage
 
 __all__ = ['LCviz']
+
+custom_components = {'lcviz-editable-select': 'components/plugin_editable_select.vue'}
+
+# Register pure vue component. This allows us to do recursive component instantiation only in the
+# vue component file
+for name, path in custom_components.items():
+    ipyvue.register_component_from_file(None, name,
+                                        os.path.join(os.path.dirname(__file__), path))
 
 
 def _get_range_subset_bounds(self, subset_state, *args, **kwargs):

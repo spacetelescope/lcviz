@@ -6,9 +6,10 @@ from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
-from jdaviz.core.template_mixin import PluginTemplateMixin, SelectPluginComponent
+from jdaviz.core.template_mixin import PluginTemplateMixin
 from jdaviz.core.user_api import PluginUserApi
 
+from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
 
 
@@ -23,7 +24,7 @@ class Ephemeris(PluginTemplateMixin):
     Only the following attributes and methods are available through the
     public plugin API.
 
-    * ``component`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
+    * ``component`` (:class:`~lcviz.template_mixin.EditableSelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
     * :attr:`t0`:
       Zeropoint of the ephemeris.
@@ -35,10 +36,13 @@ class Ephemeris(PluginTemplateMixin):
     * :meth:`ephemerides`
     * :meth:`update_ephemeris`
     * :meth:`create_phase_viewer`
-
+    * :meth:`add_component`
+    * :meth:`rename_component`
     """
     template_file = __file__, "ephemeris.vue"
 
+    component_mode = Unicode().tag(sync=True)
+    component_edit_value = Unicode().tag(sync=True)
     component_items = List().tag(sync=True)
     component_selected = Unicode().tag(sync=True)
 
@@ -57,12 +61,14 @@ class Ephemeris(PluginTemplateMixin):
         self._ignore_ephem_change = False
         self._ephemerides = {}
 
-        # TODO: support renaming components (including renaming the applicable viewer)
-        # TODO: support for creating new components
-        self.component = SelectPluginComponent(self,
-                                               items='component_items',
-                                               selected='component_selected',
-                                               manual_options=['default'])
+        self.component = EditableSelectPluginComponent(self,
+                                                       mode='component_mode',
+                                                       edit_value='component_edit_value',
+                                                       items='component_items',
+                                                       selected='component_selected',
+                                                       manual_options=['default'],
+                                                       on_rename=self._on_component_rename,
+                                                       on_remove=self._on_component_remove)
         # force the original entry in ephemerides with defaults
         self._change_component()
 
@@ -76,7 +82,8 @@ class Ephemeris(PluginTemplateMixin):
     def user_api(self):
         expose = ['component', 'period', 'dpdt', 't0',
                   'ephemeris', 'ephemerides',
-                  'update_ephemeris', 'create_phase_viewer']
+                  'update_ephemeris', 'create_phase_viewer',
+                  'add_component', 'remove_component', 'rename_component']
         return PluginUserApi(self, expose=expose)
 
     @property
@@ -179,10 +186,38 @@ class Ephemeris(PluginTemplateMixin):
     def _check_if_phase_viewer_exists(self, *args):
         self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()
 
+    def _on_component_rename(self, old_lbl, new_lbl):
+        # this is triggered when the plugin component detects a change to the component name
+        self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
+        if self._phase_viewer_id(old_lbl) in self.app.get_viewer_ids():
+            self.app._rename_viewer(self._phase_viewer_id(old_lbl), self._phase_viewer_id(new_lbl))
+        self._check_if_phase_viewer_exists()
+
+    def _on_component_remove(self, lbl):
+        _ = self._ephemerides.pop(lbl, {})
+        # remove the corresponding viewer, if it exists
+        cid = self.app._viewer_item_by_id(self._phase_viewer_id(lbl)).get('id', None)
+        if cid is not None:
+            self.app.vue_destroy_viewer_item(cid)
+
+    def rename_component(self, old_lbl, new_lbl):
+        # NOTE: the component will call _on_component_rename after updating
+        self.component.rename_choice(old_lbl, new_lbl)
+
+    def add_component(self, lbl, set_as_selected=True):
+        self.component.add_choice(lbl, set_as_selected=set_as_selected)
+
+    def remove_component(self, lbl):
+        # NOTE: the component will call _on_component_remove after updating
+        self.component.remove_choice(lbl)
+
     @observe('component_selected')
     def _change_component(self, *args):
         if not hasattr(self, 'component'):
             # plugin/traitlet startup
+            return
+        if self.component_selected == '':
+            # no component selected (this can happen when removing all components)
             return
         self._check_if_phase_viewer_exists()
         ephem = self._ephemerides.get(self.component_selected, {})
