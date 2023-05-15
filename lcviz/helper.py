@@ -3,7 +3,6 @@ import astropy.units as u
 from lightkurve import LightCurve
 
 from jdaviz.core.helpers import ConfigHelper
-from lcviz.plugins import StyleWidget
 
 __all__ = ['LCviz']
 
@@ -37,7 +36,7 @@ class LCviz(ConfigHelper):
                      'visible': {'menu_bar': False,
                                  'toolbar': True,
                                  'tray': True,
-                                 'tab_headers': False},
+                                 'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
@@ -61,8 +60,7 @@ class LCviz(ConfigHelper):
         )
 
         # inject the style widget to override app-css from lcviz_style.vue
-        style_widget = StyleWidget()
-        self.app.state.style_widget = "IPY_MODEL_" + style_widget.model_id
+        self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
 
     def load_data(self, data, data_label=None):
         """

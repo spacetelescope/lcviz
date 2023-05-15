@@ -3,4 +3,5 @@
   /* hide the close button on the tab for the default time-viewer */
   display: none;
 }
+
 </style>
