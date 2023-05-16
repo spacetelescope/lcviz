@@ -219,7 +219,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _on_component_remove(self, lbl):
         _ = self._ephemerides.pop(lbl, {})
         # remove the corresponding viewer, if it exists
-        cid = self.app._viewer_item_by_id(self._phase_viewer_id(lbl)).get('id', None)
+        viewer_item = self.app._viewer_item_by_id(self._phase_viewer_id(lbl))
+        if viewer_item is None:
+            return
+        cid = viewer_item.get('id', None)
         if cid is not None:
             self.app.vue_destroy_viewer_item(cid)
 
