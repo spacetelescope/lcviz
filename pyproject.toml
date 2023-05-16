@@ -96,6 +96,7 @@ filterwarnings = [
     "error",
     "ignore:numpy\\.ndarray size changed:RuntimeWarning",
     "ignore:zmq\\.eventloop\\.ioloop is deprecated in pyzmq:DeprecationWarning",
+    "ignore::DeprecationWarning:asdf",
     "ignore::DeprecationWarning:glue",
     "ignore::DeprecationWarning:bqplot",
     "ignore::DeprecationWarning:bqplot_image_gl",
