@@ -18,6 +18,10 @@ from lcviz.viewers import PhaseScatterView
 
 __all__ = ['Ephemeris']
 
+_default_t0 = 0
+_default_period = 1
+_default_dpdt = 0
+
 
 @tray_registry('ephemeris', label="Ephemeris")
 class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
@@ -56,11 +60,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     phase_viewer_exists = Bool(False).tag(sync=True)
 
-    t0 = FloatHandleEmpty(0).tag(sync=True)
+    t0 = FloatHandleEmpty(_default_t0).tag(sync=True)
     t0_step = Float(0.1).tag(sync=True)
-    period = FloatHandleEmpty(1).tag(sync=True)
+    period = FloatHandleEmpty(_default_period).tag(sync=True)
     period_step = Float(0.1).tag(sync=True)
-    dpdt = FloatHandleEmpty(0).tag(sync=True)
+    dpdt = FloatHandleEmpty(_default_dpdt).tag(sync=True)
     dpdt_step = Float(0.1).tag(sync=True)
 
     # PERIOD FINDING
@@ -109,9 +113,12 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'dataset', 'method']
         return PluginUserApi(self, expose=expose)
 
+    def _phase_comp_lbl(self, component):
+        return f'phase:{component}'
+
     @property
     def phase_comp_lbl(self):
-        return f'phase:{self.component_selected}'
+        return self._phase_comp_lbl(self.component_selected)
 
     def _phase_viewer_id(self, component):
         return f'flux-vs-phase:{component}'
@@ -134,17 +141,34 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def ephemeris(self):
         return self.ephemerides.get(self.component_selected, {})
 
-    def _update_all_phase_arrays(self, *args):
+    def _update_all_phase_arrays(self, *args, component=None):
+        if component is None:
+            for component in self.component.choices:
+                self._update_all_phase_arrays(component=component)
+            return
+
         dc = self.app.data_collection
-        phase_comp_lbl = self.phase_comp_lbl
+
+        if component == self.component_selected:
+            # retrieving from traitlets is cheaper than dictionaries
+            t0 = self.t0
+            period = self.period
+            dpdt = self.dpdt
+        else:
+            ephem = self.ephemerides.get(component, {})
+            t0 = ephem.get('t0', _default_t0)
+            period = ephem.get('period', _default_period)
+            dpdt = ephem.get('dpdt', _default_dpdt)
+
+        phase_comp_lbl = self._phase_comp_lbl(component)
 
         new_links = []
         for i, data in enumerate(dc):
             times = data.get_component('World 0').data
-            if self.dpdt != 0:
-                phases = np.mod(1./self.dpdt * np.log(1 + self.dpdt/self.period*(times-self.t0)), 1.0)  # noqa
+            if dpdt != 0:
+                phases = np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)), 1.0)  # noqa
             else:
-                phases = np.mod((times-self.t0)/self.period, 1.0)
+                phases = np.mod((times-t0)/period, 1.0)
 
             if phase_comp_lbl in [comp.label for comp in data.components]:
                 data.update_components({data.get_component(phase_comp_lbl): phases})
@@ -179,7 +203,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         # the arrays across all entries.
         # TODO: this requires having a listener on adding data to the app to create phase arrays!
         if self.phase_comp_lbl not in [comp.label for comp in dc[0].components]:
-            self._update_all_phase_arrays()
+            self.update_ephemeris()  # calls _update_all_phase_arrays
 
         if not self.phase_viewer_exists:
             # TODO: stack horizontally by default?
@@ -297,6 +321,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                     setattr(self, name, value)
 
         self._ephemerides[component] = existing_ephem
+        self._update_all_phase_arrays(component=component)
         return existing_ephem
 
     @observe('period', 'dpdt', 't0')
@@ -315,8 +340,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         # update value in the dictionary (to support multi-ephems)
         if event:
             self.update_ephemeris(**{event.get('name'): event.get('new')})
-
-        self._update_all_phase_arrays()
+            # will call _update_all_phase_arrays
+        else:
+            self._update_all_phase_arrays(component=self.component_selected)
 
         # if phase-viewer doesn't yet exist in the app, create it now
         self.create_phase_viewer()
