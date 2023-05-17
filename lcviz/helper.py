@@ -36,7 +36,7 @@ class LCviz(ConfigHelper):
                      'visible': {'menu_bar': False,
                                  'toolbar': True,
                                  'tray': True,
-                                 'tab_headers': False},
+                                 'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
@@ -58,6 +58,9 @@ class LCviz(ConfigHelper):
         self.app._get_range_subset_bounds = (
             lambda *args, **kwargs: _get_range_subset_bounds(self.app, *args, **kwargs)
         )
+
+        # inject the style widget to override app-css from lcviz_style.vue
+        self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
 
     def load_data(self, data, data_label=None):
         """
