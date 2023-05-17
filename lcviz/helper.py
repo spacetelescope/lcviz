@@ -13,9 +13,12 @@ def _get_range_subset_bounds(self, subset_state, *args, **kwargs):
     # _default_time_viewer_reference_name, (2) using the LCviz version if so, and (3)
     # using the jdaviz version otherwise.
     viewer = self.get_viewer(self._jdaviz_helper._default_time_viewer_reference_name)
-    reference_time = viewer.state.reference_data.meta['reference_time']
+    light_curve = viewer.data()[0]
+    reference_time = light_curve.meta['reference_time']
     if viewer:
-        units = u.Unit(viewer.state.x_display_unit)
+        # TODO: use display units once implemented in Glue for ScatterViewer
+        # units = u.Unit(viewer.state.x_display_unit)
+        units = u.Unit(viewer.time_unit)
     else:
         raise ValueError("Unable to find time axis units")
 
@@ -38,18 +41,18 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools'],
         'tray': [
-            'g-metadata-viewer', 'g-plot-options', 'g-subset-plugin',
+            'g-metadata-viewer', 'lcviz-plot-options', 'g-subset-plugin',
             'HelloWorldPlugin', 'g-export-plot'
         ],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
-                                       'viewers': [{'name': 'time-viewer',
+                                       'viewers': [{'name': 'flux-vs-time',
                                                     'plot': 'lcviz-time-viewer',
-                                                    'reference': 'time-viewer'}]}]}]}
+                                                    'reference': 'flux-vs-time'}]}]}]}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._default_time_viewer_reference_name = 'time-viewer'
+        self._default_time_viewer_reference_name = 'flux-vs-time'
 
         # override jdaviz behavior to support temporal subsets
         self.app._get_range_subset_bounds = (
