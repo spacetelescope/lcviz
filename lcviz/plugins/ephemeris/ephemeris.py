@@ -210,11 +210,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
                                     vid=phase_viewer_id, name=phase_viewer_id)
 
-            time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper._default_time_viewer_reference_name)
+            time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper._default_time_viewer_reference_name)  # noqa
             for data in dc:
                 data_id = self.app._data_id_from_label(data.label)
                 visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')
-                self.app.set_data_visibility(phase_viewer_id, data.label, visible=='visible')
+                self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
 
         pv = self.app.get_viewer(phase_viewer_id)
         # TODO: there must be a better way to do this...
@@ -349,7 +349,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         # update step-sizes
         self.period_step = round_to_1(self.period/5000)
-        self.dpdt_step = max(round_to_1(abs(self.period * self.dpdt)/1000) if self.dpdt != 0 else 0, 1./1000000)
+        self.dpdt_step = max(round_to_1(abs(self.period * self.dpdt)/1000) if self.dpdt != 0 else 0,
+                             1./1000000)
         self.t0_step = round_to_1(self.period/1000)
 
     @observe('dataset_selected', 'method_selected')
@@ -361,7 +362,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.method_err = ''
         if self.method == 'Box Least Squares':
             try:
-                per = periodogram.BoxLeastSquaresPeriodogram.from_lightcurve(self.dataset.selected_obj)
+                per = periodogram.BoxLeastSquaresPeriodogram.from_lightcurve(self.dataset.selected_obj)  # noqa
             except Exception as err:
                 self.method_spinner = False
                 self.method_err = str(err)
