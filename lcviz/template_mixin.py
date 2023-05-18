@@ -1,16 +1,21 @@
+import jdaviz
 from jdaviz.core.events import SnackbarMessage
 from jdaviz.core.template_mixin import SelectPluginComponent
-from jdaviz.core.template_mixin import ViewerSelect as ViewerSelectWithoutRenameSupport
+from jdaviz.core.template_mixin import ViewerSelect
 from lcviz.events import ViewerRenamedMessage
 
 __all__ = ['EditableSelectPluginComponent']
 
 
-class ViewerSelect(ViewerSelectWithoutRenameSupport):
-    # TODO: remove this if/when jdaviz supports renaming viewers natively
+# TODO: remove this if/when jdaviz supports renaming viewers natively
+class ViewerSelect(ViewerSelect):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hub.subscribe(self, ViewerRenamedMessage, handler=self._on_viewers_changed)
+
+
+# monkey-patch upstream version so all plugins use the viewer-renamed logic
+jdaviz.core.template_mixin.ViewerSelect = ViewerSelect
 
 
 class EditableSelectPluginComponent(SelectPluginComponent):
