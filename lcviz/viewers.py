@@ -19,7 +19,7 @@ from lcviz.state import ScatterViewerState
 from lightkurve import LightCurve
 
 
-__all__ = ['TimeScatterView']
+__all__ = ['TimeScatterView', 'PhaseScatterView']
 
 
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
