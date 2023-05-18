@@ -192,16 +192,12 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         Create a new phase viewer corresponding to ``component`` and populate the phase arrays
         with the current ephemeris, if necessary.
         """
-        # TODO: depending on how adding a new component is implemented, we might need a check
-        # and return here
-
         phase_viewer_id = self.phase_viewer_id
         dc = self.app.data_collection
 
         # check to see if this component already has a phase array.  We'll just check the first
         # item in the data-collection since the rest of the logic in this plugin /should/ populate
         # the arrays across all entries.
-        # TODO: this requires having a listener on adding data to the app to create phase arrays!
         if self.phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self.update_ephemeris()  # calls _update_all_phase_arrays
 
@@ -357,7 +353,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _update_periodogram(self, *args):
         if not (hasattr(self, 'method') and hasattr(self, 'dataset')):
             return
-        # TODO: support multiselect on self.dataset and combine light curves?
+        # TODO: support multiselect on self.dataset and combine light curves (or would that be a
+        # dedicated plugin of its own)?
         self.method_spinner = True
         self.method_err = ''
         if self.method == 'Box Least Squares':
