@@ -333,15 +333,15 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         def round_to_1(x):
             return round(x, -int(np.floor(np.log10(abs(x)))))
 
+        # if phase-viewer doesn't yet exist in the app, create it now
+        self.create_phase_viewer()
+
         # update value in the dictionary (to support multi-ephems)
         if event:
             self.update_ephemeris(**{event.get('name'): event.get('new')})
             # will call _update_all_phase_arrays
         else:
             self._update_all_phase_arrays(component=self.component_selected)
-
-        # if phase-viewer doesn't yet exist in the app, create it now
-        self.create_phase_viewer()
 
         # update step-sizes
         self.period_step = round_to_1(self.period/5000)
