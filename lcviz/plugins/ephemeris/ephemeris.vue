@@ -31,7 +31,7 @@
           v-model.number="t0"
           :step="t0_step"
           type="number"
-          hint="The zero-point of the ephemeris."
+          hint="Time at zero-phase of the ephemeris."
           persistent-hint
           :rules="[() => t0!=='' || 'This field is required']"
         ></v-text-field>
@@ -62,13 +62,13 @@
 
       <v-row>
         <v-text-field
-          ref="t0"
+          ref="dpdt"
           type="number"
-          label="Period derivative (dpdt)"
+          label="Period derivative"
           v-model.number="dpdt"
           :step="dpdt_step"
           type="number"
-          hint="The first time derivative of the period of the ephemeris."
+          hint="The first time-derivative of the period of the ephemeris."
           persistent-hint
           :rules="[() => dpdt!=='' || 'This field is required']"
         ></v-text-field>
