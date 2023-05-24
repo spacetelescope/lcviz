@@ -140,7 +140,7 @@ class LCviz(ConfigHelper):
             data_label=data_label
         )
 
-    def get_data(self, data_label=None, cls=LightCurve, subset_to_apply=None):
+    def get_data(self, data_label=None, cls=LightCurve, subset=None):
         """
         Returns data with name equal to data_label of type cls with subsets applied from
         subset_to_apply.
@@ -151,12 +151,12 @@ class LCviz(ConfigHelper):
             Provide a label to retrieve a specific data set from data_collection.
         cls : light curve class, optional
             The type that data will be returned as.
-        subset_to_apply : str, optional
-            Subset that is to be applied to data before it is returned.
+        subset : str, optional
+            Subset that is to be applied (as a mask) to the data before it is returned.
 
         Returns
         -------
         data : cls
             Data is returned as type cls with subsets applied.
         """
-        return super()._get_data(data_label=data_label, cls=cls, subset_to_apply=subset_to_apply)
+        return super()._get_data(data_label=data_label, mask_subset=subset, cls=cls)
