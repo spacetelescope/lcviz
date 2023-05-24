@@ -53,3 +53,9 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
 
     if show_in_viewer:
         app.add_data_to_viewer(time_viewer_reference_name, new_data_label)
+
+        # add to any known phase viewers
+        ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
+        if ephem_plugin is not None:
+            for viewer_id in ephem_plugin._obj.phase_viewer_ids:
+                app.add_data_to_viewer(viewer_id, new_data_label)

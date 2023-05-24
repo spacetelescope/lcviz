@@ -89,13 +89,16 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         return data
 
     def set_plot_axes(self):
-        # Get data to be used for axes labels
-        light_curve = self.data()[0]
-
         # set which components should be plotted
         dc = self.jdaviz_app.data_collection
         component_labels = [comp.label for comp in dc[0].components]
-        self.state.y_att = dc[0].components[component_labels.index('flux')]
+
+        # Get data to be used for axes labels
+        light_curve = self.data()[0]
+        self._set_plot_x_axes(dc, component_labels, light_curve)
+        self._set_plot_y_axes(dc, component_labels, light_curve)
+
+    def _set_plot_x_axes(self, dc, component_labels, light_curve):
         self.state.x_att = dc[0].components[component_labels.index('World 0')]
 
         x_unit = self.time_unit
@@ -107,6 +110,9 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
             xlabel = f'{str(x_unit.physical_type).title()} ({x_unit})'
 
         self.figure.axes[0].label = xlabel
+
+    def _set_plot_y_axes(self, dc, component_labels, light_curve):
+        self.state.y_att = dc[0].components[component_labels.index('flux')]
 
         y_unit = light_curve.flux.unit
         y_unit_physical_type = str(y_unit.physical_type).title()
@@ -185,3 +191,11 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
                 roi = roi.transformed(xfunc=lambda x: (x - reference_time).to_value(self.time_unit))
 
         super().apply_roi(roi, use_current=use_current)
+
+
+@viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
+class PhaseScatterView(TimeScatterView):
+    def _set_plot_x_axes(self, dc, component_labels, light_curve):
+        # setting of y_att will be handled by ephemeris plugin
+
+        self.figure.axes[0].label = 'phase'
