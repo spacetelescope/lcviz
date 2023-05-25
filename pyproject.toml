@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=5.2",
-    "jdaviz",
+    "jdaviz>=3.5.0",
     "lightkurve>=2",
 ]
 dynamic = [
