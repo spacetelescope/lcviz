@@ -1,14 +1,49 @@
+import numpy as np
+
 from jdaviz.core.marks import PluginLine, PluginScatter
+from lcviz.viewers import PhaseScatterView
 
 __all__ = ['LivePreviewTrend', 'LivePreviewFlattened']
 
 
-class LivePreviewTrend(PluginLine):
-    def __init__(self, *args, **kwargs):
+class WithoutPhaseSupport:
+    def __init__(self, viewer, *args, **kwargs):
+        times = kwargs.pop('times', None)
+        kwargs.setdefault('x', times)
         super().__init__(*args, **kwargs)
+        self.times = times
+
+    def update_ty(self, times, y):
+        self.times = np.asarray(times)
+        self.x = self.times
+        self.y = np.asarray(y)
 
 
-class LivePreviewFlattened(PluginScatter):
-    def __init__(self, *args, **kwargs):
+class WithPhaseSupport(WithoutPhaseSupport):
+    def update_ty(self, times, y):
+        self.times = np.asarray(times)
+        self.update_phase_folding()
+        self.y = np.asarray(y)
+
+    def update_phase_folding(self):
+        if not hasattr(self, 'times'):
+            # update_ty has not been called yet, so there is
+            # nothing to phase-fold
+            return
+        if isinstance(self.viewer, PhaseScatterView):
+            self.x = self.viewer.times_to_phases(self.times)
+        else:
+            self.x = self.times
+
+
+class LivePreviewTrend(PluginLine, WithoutPhaseSupport):
+    def __init__(self, viewer, *args, **kwargs):
+        self.viewer = viewer
+        super().__init__(viewer, *args, **kwargs)
+
+
+class LivePreviewFlattened(PluginScatter, WithPhaseSupport):
+    def __init__(self, viewer, *args, **kwargs):
+        self.viewer = viewer
         kwargs.setdefault('default_size', 16)
-        super().__init__(*args, **kwargs)
+        super().__init__(viewer, *args, **kwargs)

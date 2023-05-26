@@ -3,12 +3,14 @@ import numpy as np
 from traitlets import Bool, Unicode, observe
 
 from jdaviz.core.custom_traitlets import FloatHandleEmpty, IntHandleEmpty
+from jdaviz.core.events import ViewerAddedMessage
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, AddResultsMixin)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
+from lcviz.viewers import TimeScatterView, PhaseScatterView
 
 
 __all__ = ['Flatten']
@@ -49,6 +51,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # marks do not exist for the new viewer, so force another update to compute and draw
+        # those marks
+        self.hub.subscribe(self, ViewerAddedMessage, handler=lambda _: self._live_update())
+
     @property
     def user_api(self):
         expose = ['show_live_preview', 'default_to_overwrite',
@@ -63,21 +69,22 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         flattened_marks = {}
 
         for id, viewer in self.app._viewer_store.items():
-            has_trend, has_flattened = False, False
+            needs_trend = isinstance(viewer, TimeScatterView) and not isinstance(viewer, PhaseScatterView)  # noqa
+            needs_flattened = isinstance(viewer, (TimeScatterView, PhaseScatterView))
             for mark in viewer.figure.marks:
                 if isinstance(mark, LivePreviewTrend):
                     trend_marks[id] = mark
-                    has_trend = True
+                    needs_trend = False
                 elif isinstance(mark, LivePreviewFlattened):
                     flattened_marks[id] = mark
-                    has_flattened = True
-                if has_trend and has_flattened:
+                    needs_flattened = False
+                if not needs_trend and not needs_flattened:
                     break
-            if not has_trend:
+            if needs_trend:
                 mark = LivePreviewTrend(viewer, visible=self.plugin_opened)
                 viewer.figure.marks = viewer.figure.marks + [mark]
                 trend_marks[id] = mark
-            if not has_flattened:
+            if needs_flattened:
                 mark = LivePreviewFlattened(viewer, visible=self.plugin_opened)
                 viewer.figure.marks = viewer.figure.marks + [mark]
                 flattened_marks[id] = mark
@@ -98,6 +105,22 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self.results_label_default = f"{self.dataset_selected} (flattened)"
 
     def flatten(self, add_data=True):
+        """
+        Flatten the input light curve (``dataset``) using lightkurve.flatten.
+
+        Parameters
+        ----------
+        add_data : bool
+            Whether to add the resulting trace to the application, according to the options
+            defined in the plugin.
+
+        Returns
+        -------
+        output_lc : `~lightkurve.LightCurve`
+            The flattened light curve.
+        trend_lc : `~lightkurve.LightCurve`
+            The trend used to flatten the light curve.
+        """
         input_lc = self.dataset.selected_obj
 
         output_lc, trend_lc = input_lc.flatten(return_trend=True,
@@ -143,10 +166,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         trend_marks, flattened_marks = self.marks
         for mark in trend_marks.values():
             # TODO: need to account for phasing
-            mark.update_xy(times.value, trend_lc.flux.value)
+            mark.update_ty(times.value, trend_lc.flux.value)
             mark.visible = True
         for mark in flattened_marks.values():
-            mark.update_xy(times.value, output_lc.flux.value * np.nanmedian(input_lc.flux.value))
+            mark.update_ty(times.value, output_lc.flux.value * np.nanmedian(input_lc.flux.value))
             mark.visible = True
 
     def vue_apply(self, *args, **kwargs):

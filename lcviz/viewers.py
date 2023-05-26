@@ -35,6 +35,8 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
     default_class = LightCurve
     _state_cls = ScatterViewerState
 
+    _native_mark_classnames = ('Image', 'ImageGL', 'Scatter', 'ScatterGL')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -195,7 +197,18 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
 @viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
 class PhaseScatterView(TimeScatterView):
+    @property
+    def ephemeris_component(self):
+        return self.reference.split(':')[-1]
+
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
-
+        self.state.x_att = dc[0].components[component_labels.index(f'phase:{self.ephemeris_component}')]  # noqa
         self.figure.axes[0].label = 'phase'
+
+    def times_to_phases(self, times):
+        ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
+        if ephem is None:
+            raise ValueError("must have ephemeris plugin loaded to convert")
+
+        return ephem.times_to_phases(times, component=self.ephemeris_component)
