@@ -23,7 +23,7 @@ class CoordsInfo(CoordsInfo):
 
         is_phase = isinstance(viewer, PhaseScatterView)
         # TODO: update with display_unit when supported in lcviz
-        x_unit = '' if is_phase else viewer.time_unit
+        x_unit = '' if is_phase else str(viewer.time_unit)
         y_unit = str(viewer.data()[0].flux.unit)
 
         def _cursor_fallback():
@@ -37,6 +37,11 @@ class CoordsInfo(CoordsInfo):
             self._dict['phase'] = x if is_phase else np.nan
             self._dict['flux'] = y
             self._dict['ephemeris'] = ''
+
+            self.row2_title = ''
+            self.row2_text = ''
+            self.row3_title = ''
+            self.row3_text = ''
             self.icon = 'mdi-cursor-default'
             self.marks[viewer._reference_id].visible = False
 
@@ -72,7 +77,7 @@ class CoordsInfo(CoordsInfo):
             # (making it easier to get the snapping point into shallow eclipses, etc)
             distsqs = ((lyr_x - x)/xrange)**2 + ((lyr_y - y)/yrange)**2
             cur_i = np.nanargmin(distsqs)
-            cur_x, cur_y = lyr_x[cur_i], lyr_y[cur_i]
+            cur_x, cur_y = float(lyr_x[cur_i]), float(lyr_y[cur_i])
             cur_distsq = distsqs[cur_i]
 
             if (closest_distsq is None) or (cur_distsq < closest_distsq):
@@ -94,7 +99,7 @@ class CoordsInfo(CoordsInfo):
             component_labels = [comp.label for comp in closest_lyr.layer.components]
             time_comp = closest_lyr.layer.components[component_labels.index('World 0')]
             times = closest_lyr.layer.get_data(time_comp)
-            self._dict['time'] = times[closest_i]
+            self._dict['time'] = float(times[closest_i])
             self._dict['phase'] = closest_x
             self._dict['ephemeris'] = viewer.reference.split(':')[1]
         else:
