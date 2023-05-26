@@ -92,7 +92,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
         'tray': ['g-metadata-viewer', 'lcviz-plot-options', 'g-subset-plugin',
-                 'lcviz-markers', 'detrending', 'ephemeris', 'g-export-plot'],
+                 'lcviz-markers', 'flatten', 'ephemeris', 'g-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',

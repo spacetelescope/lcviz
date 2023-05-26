@@ -1,6 +1,6 @@
 from jdaviz.core.marks import PluginLine, PluginScatter
 
-__all__ = ['LivePreviewTrend', 'LivePreviewDetrended']
+__all__ = ['LivePreviewTrend', 'LivePreviewFlattened']
 
 
 class LivePreviewTrend(PluginLine):
@@ -8,7 +8,7 @@ class LivePreviewTrend(PluginLine):
         super().__init__(*args, **kwargs)
 
 
-class LivePreviewDetrended(PluginScatter):
+class LivePreviewFlattened(PluginScatter):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('default_size', 16)
         super().__init__(*args, **kwargs)
