@@ -6,6 +6,7 @@ import os
 from glue.core.coordinates import Coordinates
 import numpy as np
 from astropy import units as u
+from astropy.table import QTable
 from astropy.time import Time
 
 from lightkurve import (
@@ -88,28 +89,28 @@ class LightCurveHandler:
         delta_t = (obj.time - obj.time[0]).to(u.d)
         data = Data(coords=time_coord)
 
+        if hasattr(obj, 'label'):
+            data.label = obj.label
+
         data.meta.update(obj.meta)
         data.meta.update({"reference_time": obj.time[0]})
-
-        flux = obj.flux
-        flux_err = obj.flux_err
-
-        data['flux'] = flux
-        data.get_component('flux').units = str(flux.unit)
-
-        data['uncertainty'] = flux_err
-        data.get_component('uncertainty').units = str(flux_err.unit)
-        data.meta.update({'uncertainty_type': 'std'})
 
         data['dt'] = delta_t
         data.get_component('dt').units = str(delta_t.unit)
 
-        if hasattr(obj, 'quality'):
-            data['quality'] = obj.quality
+        # LightCurve is a subclass of astropy TimeSeries, so
+        # collect all other columns in the TimeSeries:
+        for component_label in obj.colnames:
+            component_data = getattr(obj, component_label)
+            data[component_label] = component_data
+            if hasattr(component_data, 'unit'):
+                data.get_component(component_label).units = str(component_data.unit)
+
+        data.meta.update({'uncertainty_type': 'std'})
 
         return data
 
-    def to_object(self, data_or_subset, attribute=None):
+    def to_object(self, data_or_subset):
         """
         Convert a glue Data object to a lightkurve.LightCurve object.
 
@@ -132,62 +133,43 @@ class LightCurveHandler:
         kwargs = {'meta': data.meta.copy()}
 
         # extract a Time object out of the TimeCoordinates object:
-        kwargs['time'] = data.coords.time_axis
+        time = data.coords.time_axis
 
         if subset_state is None:
             # pass through mask of all True's if no glue subset is chosen
-            glue_mask = np.ones(len(kwargs['time'])).astype(bool)
+            glue_mask = np.ones(len(time)).astype(bool)
         else:
             # get the subset mask from glue:
             glue_mask = data.get_mask(subset_state=subset_state)
             # apply the subset mask to the time array:
-            kwargs['time'] = kwargs['time'][glue_mask]
+            time = time[glue_mask]
 
-        if isinstance(attribute, str):
-            attribute = data.id[attribute]
-        elif len(data.main_components) == 0:
-            raise ValueError('Data object has no attributes.')
-        elif attribute is None:
-            if len(data.main_components) == 1:
-                attribute = data.main_components[0]
-            # If no specific attribute is defined, attempt to retrieve
-            # the flux and uncertainty, if available
-            elif any([x.label in ('flux', 'uncertainty', 'quality') for x in data.components]):
-                attribute = [data.find_component_id(x)
-                             for x in ('flux', 'uncertainty', 'quality')
-                             if data.find_component_id(x) is not None]
-            else:
-                raise ValueError("Data object has more than one attribute, so "
-                                 "you will need to specify which one to use as "
-                                 "the flux for the spectrum using the "
-                                 "attribute= keyword argument.")
+        columns = [time]
+        names = ['time']
 
-        def parse_attributes(attributes):
-            data_kwargs = {}
-            lc_init_keys = {'flux': 'flux', 'uncertainty': 'flux_err', 'quality': 'quality'}
-            for attribute in attributes:
-                component = data.get_component(attribute)
+        component_ids = data.main_components
 
-                # Collapse values and mask to profile
-                values = data.get_data(attribute)
-                attribute_label = attribute.label
+        # we already handled time separately above, and `dt` is only used internally
+        # in LCviz, so let's skip those IDs below:
+        skip_components = [id for id in component_ids if id.label in ['time', 'dt']]
+        for skip_comp in skip_components:
+            component_ids.remove(skip_comp)
 
-                if attribute_label in ('flux', 'uncertainty'):
-                    values = u.Quantity(values, unit=component.units)
-                elif attribute_label in ('quality', ):
-                    values = np.array(values, dtype=np.int32)
+        for component_id in component_ids:
+            component = data.get_component(component_id)
 
-                init_kwarg = lc_init_keys[attribute_label]
+            values = component.data[glue_mask]
 
-                # apply the glue subset mask to the Data components:
-                data_kwargs.update({init_kwarg: values[glue_mask]})
+            if isinstance(values[0], Time):
+                values = Time(values.base)
+            elif hasattr(component, 'units') and component.units != "None":
+                values = u.Quantity(values, component.units)
 
-            return data_kwargs
+            columns.append(values)
+            names.append(component_id.label)
 
-        data_kwargs = parse_attributes(
-            [attribute] if not hasattr(attribute, '__len__') else attribute)
-
-        return LightCurve(**data_kwargs, **kwargs)
+        table = QTable(columns, names=names, masked=True, copy=False)
+        return LightCurve(table, **kwargs)
 
 
 def enable_hot_reloading(watch_jdaviz=True):
