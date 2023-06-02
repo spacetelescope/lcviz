@@ -7,12 +7,6 @@ __all__ = ['LivePreviewTrend', 'LivePreviewFlattened']
 
 
 class WithoutPhaseSupport:
-    def __init__(self, viewer, *args, **kwargs):
-        times = kwargs.pop('times', None)
-        kwargs.setdefault('x', times)
-        super().__init__(*args, **kwargs)
-        self.times = times
-
     def update_ty(self, times, y):
         self.times = np.asarray(times)
         self.x = self.times
