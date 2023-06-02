@@ -34,6 +34,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     * ``break_tolerance``
     * ``niters``
     * ``sigma``
+    * ``unnormalize``
     * :meth:`flatten`
     """
     template_file = __file__, "flatten.vue"
@@ -47,6 +48,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     break_tolerance = IntHandleEmpty(5).tag(sync=True)
     niters = IntHandleEmpty(3).tag(sync=True)
     sigma = FloatHandleEmpty(3).tag(sync=True)
+    unnormalize = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,7 +62,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         expose = ['show_live_preview', 'default_to_overwrite',
                   'dataset', 'add_results',
                   'window_length', 'polyorder', 'break_tolerance',
-                  'niters', 'sigma', 'flatten']
+                  'niters', 'sigma', 'unnormalize', 'flatten']
         return PluginUserApi(self, expose=expose)
 
     @property
@@ -130,6 +132,12 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
                                                niters=self.niters,
                                                sigma=self.sigma)
 
+        if self.unnormalize:
+            factor = np.nanmedian(trend_lc.flux.value)
+            output_lc.flux *= factor
+            output_lc.flux_err *= factor
+            output_lc.meta['NORMALIZED'] = False
+
         if add_data:
             # add data to the collection/viewer
             self.add_results.add_results_from_plugin(output_lc)
@@ -152,7 +160,6 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self.flatten_err = ''
             return
 
-        input_lc = self.dataset.selected_obj
         try:
             output_lc, trend_lc = self.flatten(add_data=False)
         except Exception as e:
@@ -160,6 +167,11 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self._clear_marks()
             return
         self.flatten_err = ''
+
+        if self.unnormalize:
+            output_flux = output_lc.flux.value
+        else:
+            output_flux = output_lc.flux.value * np.nanmedian(trend_lc.flux.value)
 
         ref_time = trend_lc.meta.get('reference_time', 0)
         times = trend_lc.time - ref_time
@@ -169,7 +181,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             mark.update_ty(times.value, trend_lc.flux.value)
             mark.visible = True
         for mark in flattened_marks.values():
-            mark.update_ty(times.value, output_lc.flux.value * np.nanmedian(input_lc.flux.value))
+            mark.update_ty(times.value, output_flux)
             mark.visible = True
 
     def vue_apply(self, *args, **kwargs):

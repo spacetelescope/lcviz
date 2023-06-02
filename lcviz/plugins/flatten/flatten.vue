@@ -19,6 +19,9 @@
                 persistent-hint
               ></v-switch>
             </v-row>
+            <v-row v-if="show_live_preview && !unnormalize">
+              <v-alert type="warning">Live preview is unnormalized, but flattening will normalize.</v-alert>
+            </v-row>
             <v-row>
               <v-switch
                 v-model="default_to_overwrite"
@@ -109,6 +112,19 @@
         persistent-hint
       >
       </v-text-field>
+    </v-row>
+
+    <v-row>
+      <v-switch
+        v-model="unnormalize"
+        label="Un-normalize"
+        hint="Whether to multiply the flattened light curve by the median of the trend."
+        persistent-hint
+      ></v-switch>
+    </v-row>
+
+    <v-row v-if="show_live_preview && !unnormalize">
+      <v-alert type="warning">Live preview is unnormalized, but flattening will normalize.</v-alert>
     </v-row>
 
     <plugin-add-results
