@@ -124,6 +124,8 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             The trend used to flatten the light curve.
         """
         input_lc = self.dataset.selected_obj
+        if input_lc is None:
+            raise ValueError("no input dataset selected")
 
         output_lc, trend_lc = input_lc.flatten(return_trend=True,
                                                window_length=self.window_length,
