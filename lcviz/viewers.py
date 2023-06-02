@@ -148,13 +148,12 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
     def add_data(self, data, color=None, alpha=None, **layer_state):
         """
-        Overrides the base class to add markers for plotting
-        uncertainties and data quality flags.
+        Overrides the base class to handle subset styling defaults.
 
         Parameters
         ----------
         data : :class:`glue.core.data.Data`
-            Data object with the spectrum.
+            Data object with the light curve.
         color : obj
             Color value for plotting.
         alpha : float
@@ -165,14 +164,9 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         result : bool
             `True` if successful, `False` otherwise.
         """
-        # The base class handles the plotting of the main
-        # trace representing the spectrum itself.
         result = super().add_data(data, color, alpha, **layer_state)
 
-        # Set default linewidth on any created spectral subset layers
-        # NOTE: this logic will need updating if we add support for multiple cubes as this assumes
-        # that new data entries (from model fitting or gaussian smooth, etc) will only be spectra
-        # and all subsets affected will be spectral
+        # Set default linewidth on any created subset layers
         for layer in self.state.layers:
             if "Subset" in layer.layer.label and layer.layer.data.label == data.label:
                 layer.linewidth = 3
