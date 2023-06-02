@@ -152,6 +152,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
                     mark.visible = False
 
     @observe('show_live_preview', 'plugin_opened',
+             'dataset_selected',
              'window_length', 'polyorder', 'break_tolerance',
              'niters', 'sigma')
     def _live_update(self, event={}):
@@ -191,3 +192,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self.flatten_err = str(e)
         else:
             self.flatten_err = ''
+        if self.add_results.label_overwrite:
+            # then this will change the input data without triggering a
+            # change to dataset_selected
+            self._live_update()
