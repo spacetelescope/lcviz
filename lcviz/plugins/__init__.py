@@ -1,3 +1,4 @@
+from .binning.binning import *  # noqa
 from .coords_info.coords_info import *  # noqa
 from .ephemeris.ephemeris import *  # noqa
 from .export_plot.export_plot import *  # noqa

@@ -1,4 +1,5 @@
 import numpy as np
+from astropy.time import Time
 from traitlets import Bool, Float, List, Unicode, observe
 
 from glue.core.component_id import ComponentID
@@ -11,8 +12,9 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin, SelectPluginCompone
                                         DatasetSelectMixin)
 from jdaviz.core.user_api import PluginUserApi
 
-from lightkurve import periodogram
+from lightkurve import periodogram, FoldedLightCurve
 
+from lcviz.events import EphemerisComponentChangedMessage
 from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
 
@@ -49,6 +51,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`add_component`
     * :meth:`rename_component`
     * :meth:`times_to_phases`
+    * :meth:`get_data`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for determining the period.
     * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
@@ -85,6 +88,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._default_initialized = False
         self._ignore_ephem_change = False
         self._ephemerides = {}
         self._prev_wrap_at = _default_wrap_at
@@ -95,6 +99,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                                                        items='component_items',
                                                        selected='component_selected',
                                                        manual_options=['default'],
+                                                       on_add=self._on_component_add,
                                                        on_rename=self._on_component_rename,
                                                        on_remove=self._on_component_remove)
         # force the original entry in ephemerides with defaults
@@ -117,7 +122,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'ephemeris', 'ephemerides',
                   'update_ephemeris', 'create_phase_viewer',
                   'add_component', 'remove_component', 'rename_component',
-                  'times_to_phases',
+                  'times_to_phases', 'get_data',
                   'dataset', 'method']
         return PluginUserApi(self, expose=expose)
 
@@ -285,12 +290,18 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _check_if_phase_viewer_exists(self, *args):
         self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()
 
+    def _on_component_add(self, lbl):
+        self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=None, new_lbl=lbl,
+                                                            sender=self))
+
     def _on_component_rename(self, old_lbl, new_lbl):
         # this is triggered when the plugin component detects a change to the component name
         self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
         if self._phase_viewer_id(old_lbl) in self.app.get_viewer_ids():
             self.app._rename_viewer(self._phase_viewer_id(old_lbl), self._phase_viewer_id(new_lbl))
         self._check_if_phase_viewer_exists()
+        self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=old_lbl, new_lbl=new_lbl,
+                                                            sender=self))
 
     def _on_component_remove(self, lbl):
         _ = self._ephemerides.pop(lbl, {})
@@ -301,6 +312,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         cid = viewer_item.get('id', None)
         if cid is not None:
             self.app.vue_destroy_viewer_item(cid)
+        self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=lbl, new_lbl=None,
+                                                            sender=self))
 
     def rename_component(self, old_lbl, new_lbl):
         # NOTE: the component will call _on_component_rename after updating
@@ -419,6 +432,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                              1./1000000)
         self.t0_step = round_to_1(self.period/1000)
 
+        if not self._default_initialized:
+            # other plugins that use EphemerisSelect don't see the first entry yet
+            self._default_initialized = True
+            self._on_component_add(self.component_selected)
+
     @observe('dataset_selected', 'method_selected')
     def _update_periodogram(self, *args):
         if not (hasattr(self, 'method') and hasattr(self, 'dataset')):
@@ -451,3 +469,35 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     def vue_adopt_period_at_max_power(self, *args):
         self.period = self.period_at_max_power
+
+    def get_data(self, dataset, component=None):
+        # TODO: support subset_to_apply and then include a wrapper at the helper-level?
+        # (would need to catch when cls does not result in a lightkurve object or write
+        # behaviors for other cases as well)
+        if component is None:
+            component = self.component.selected
+
+        lc = self.app._jdaviz_helper.get_data(dataset)
+        data = next((x for x in self.app.data_collection if x.label == dataset))
+
+        comps = {str(comp): comp for comp in data.components}
+        xcomp = f'phase:{component}'
+        phases = data.get_component(comps.get(xcomp)).data
+
+        # the following code is adopted directly from lightkurve
+        # 2. Create the folded object
+        phlc = FoldedLightCurve(data=lc)
+        # 3. Restore the folded time
+        with phlc._delay_required_column_checks():
+            phlc.remove_column("time")
+            # TODO: phased lc shouldn't have the same time format/scale, but this is needed
+            # in order for binning to work (until there's a fix to lightkurve)
+            phlc.add_column(Time(phases, format=lc.time.format, scale=lc.time.scale), name="time", index=0)
+
+        # Add extra column and meta data specific to FoldedLightCurve
+        ephemeris = self.ephemerides.get(component)
+        phlc.meta["PERIOD"] = ephemeris.get('period')
+        phlc.meta["EPOCH_TIME"] = ephemeris.get('t0')
+        phlc.sort("time")
+
+        return phlc

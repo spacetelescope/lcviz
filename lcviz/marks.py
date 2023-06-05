@@ -3,7 +3,7 @@ import numpy as np
 from jdaviz.core.marks import PluginLine, PluginScatter
 from lcviz.viewers import PhaseScatterView
 
-__all__ = ['LivePreviewTrend', 'LivePreviewFlattened']
+__all__ = ['LivePreviewTrend', 'LivePreviewFlattened', 'LivePreviewBinning']
 
 
 class WithoutPhaseSupport:
@@ -41,3 +41,9 @@ class LivePreviewFlattened(PluginScatter, WithPhaseSupport):
         self.viewer = viewer
         kwargs.setdefault('default_size', 16)
         super().__init__(viewer, *args, **kwargs)
+
+
+class LivePreviewBinning(PluginScatter):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('default_size', 16)
+        super().__init__(*args, **kwargs)
