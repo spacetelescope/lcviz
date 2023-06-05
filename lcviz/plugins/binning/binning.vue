@@ -1,0 +1,73 @@
+<template>
+  <j-tray-plugin
+    description='Bin in time or phase-space.'
+    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#binning'"
+    :popout_button="popout_button">
+
+    <v-row>
+      <v-expansion-panels popout>
+        <v-expansion-panel>
+          <v-expansion-panel-header v-slot="{ open }">
+            <span style="padding: 6px">Settings</span>
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-row>
+              <v-switch
+                v-model="show_live_preview"
+                label="Show live preview"
+                hint="Whether to show live preview of binning options."
+                persistent-hint
+              ></v-switch>
+            </v-row>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
+    </v-row>
+
+    <plugin-dataset-select
+      :items="dataset_items"
+      :selected.sync="dataset_selected"
+      :show_if_single_entry="false"
+      label="Data"
+      hint="Select the light curve as input."
+    />
+
+    <plugin-ephemeris-select
+      :items="ephemeris_items"
+      :selected.sync="ephemeris_selected"
+      :show_if_single_entry="false"
+      label="Ephemeris"
+      hint="Select the phase-folding as input."
+    />
+
+    <v-row>
+      <v-text-field
+        label="N Bins"
+        type="number"
+        v-model.number="n_bins"
+        :step="10"
+        :rules="[() => n_bins !== '' || 'This field is required',
+                 () => n_bins > 0 || 'Number of bins must be positive']"
+        hint="Number of bins."
+        persistent-hint
+      >
+      </v-text-field>
+    </v-row>
+
+
+    <plugin-add-results
+      :label.sync="results_label"
+      :label_default="results_label_default"
+      :label_auto.sync="results_label_auto"
+      :label_invalid_msg="results_label_invalid_msg"
+      :label_overwrite="results_label_overwrite"
+      label_hint="Label for the binned data."
+      :add_to_viewer_items="add_to_viewer_items"
+      :add_to_viewer_selected.sync="add_to_viewer_selected"
+      action_label="Bin"
+      action_tooltip="Bin data"
+      @click:action="apply"
+    ></plugin-add-results>
+
+  </j-tray-plugin>
+</template>
