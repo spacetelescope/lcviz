@@ -7,6 +7,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, AddResultsMixin)
 from jdaviz.core.user_api import PluginUserApi
 
+from lcviz.events import EphemerisChangedMessage
 from lcviz.helper import _default_time_viewer_reference_name
 from lcviz.marks import LivePreviewBinning
 from lcviz.template_mixin import EphemerisSelectMixin
@@ -51,6 +52,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         self.hub.subscribe(self, ViewerAddedMessage, handler=self._set_results_viewer)
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._set_results_viewer)
+        self.hub.subscribe(self, EphemerisChangedMessage, handler=self._on_ephemeris_update)
 
     @property
     def user_api(self):
@@ -131,7 +133,6 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 # TODO: change to be visible in all viewers, but re-phasing on ephemeris change using markers logic
                 visible = viewer_id == 'lcviz-0'  # TODO: fix this to be general and not rely on ugly id
             else:
-                # TODO: re-bin on change to selected ephemeris
                 visible = viewer_id.split(':')[-1] == self.ephemeris_selected
 
             if visible:
@@ -139,6 +140,15 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             else:
                 mark.clear()
             mark.visible = visible
+
+    def _on_ephemeris_update(self, msg):
+        if not self.show_live_preview or not self.plugin_opened:
+            return
+
+        if msg.ephemeris_label != self.ephemeris_selected:
+            return
+
+        self._live_update()
 
     def bin(self, add_data=True):
         lc = self.input_lc

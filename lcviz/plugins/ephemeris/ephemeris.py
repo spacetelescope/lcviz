@@ -14,7 +14,7 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lightkurve import periodogram, FoldedLightCurve
 
-from lcviz.events import EphemerisComponentChangedMessage
+from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
 from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
 
@@ -390,6 +390,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         self._ephemerides[component] = existing_ephem
         self._update_all_phase_arrays(component=component)
+        self.hub.broadcast(EphemerisChangedMessage(ephemeris_label=component,
+                                                   sender=self))
         return existing_ephem
 
     @observe('period', 'dpdt', 't0', 'wrap_at')
