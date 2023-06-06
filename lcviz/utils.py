@@ -160,7 +160,7 @@ class LightCurveHandler:
 
             values = component.data[glue_mask]
 
-            if isinstance(values[0], Time):
+            if len(values) and isinstance(values[0], Time):
                 values = Time(values.base)
             elif hasattr(component, 'units') and component.units != "None":
                 values = u.Quantity(values, component.units)
