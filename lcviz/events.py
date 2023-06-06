@@ -1,6 +1,7 @@
 from glue.core.message import Message
 
-__all__ = ['ViewerRenamedMessage', 'EphemerisComponentChangedMessage']
+__all__ = ['ViewerRenamedMessage', 'EphemerisComponentChangedMessage',
+           'EphemerisChangedMessage']
 
 
 class ViewerRenamedMessage(Message):
@@ -28,3 +29,10 @@ class EphemerisComponentChangedMessage(Message):
             self.type = 'remove'
         else:
             raise ValueError("must provide at least one of old_lbl or new_lbl")
+
+
+class EphemerisChangedMessage(Message):
+    """Message emitted when the parameters of an ephemeris are updated/changed
+    in the ephemeris plugin"""
+    def __init__(self, ephemeris_label, *args, **kwargs):
+        self.ephemeris_label = ephemeris_label
