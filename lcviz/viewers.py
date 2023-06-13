@@ -35,6 +35,8 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
     default_class = LightCurve
     _state_cls = ScatterViewerState
 
+    _native_mark_classnames = ('Image', 'ImageGL', 'Scatter', 'ScatterGL')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -146,13 +148,12 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
     def add_data(self, data, color=None, alpha=None, **layer_state):
         """
-        Overrides the base class to add markers for plotting
-        uncertainties and data quality flags.
+        Overrides the base class to handle subset styling defaults.
 
         Parameters
         ----------
         data : :class:`glue.core.data.Data`
-            Data object with the spectrum.
+            Data object with the light curve.
         color : obj
             Color value for plotting.
         alpha : float
@@ -163,14 +164,9 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         result : bool
             `True` if successful, `False` otherwise.
         """
-        # The base class handles the plotting of the main
-        # trace representing the spectrum itself.
         result = super().add_data(data, color, alpha, **layer_state)
 
-        # Set default linewidth on any created spectral subset layers
-        # NOTE: this logic will need updating if we add support for multiple cubes as this assumes
-        # that new data entries (from model fitting or gaussian smooth, etc) will only be spectra
-        # and all subsets affected will be spectral
+        # Set default linewidth on any created subset layers
         for layer in self.state.layers:
             if "Subset" in layer.layer.label and layer.layer.data.label == data.label:
                 layer.linewidth = 3
@@ -195,7 +191,18 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
 @viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
 class PhaseScatterView(TimeScatterView):
+    @property
+    def ephemeris_component(self):
+        return self.reference.split(':')[-1]
+
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
-
+        self.state.x_att = dc[0].components[component_labels.index(f'phase:{self.ephemeris_component}')]  # noqa
         self.figure.axes[0].label = 'phase'
+
+    def times_to_phases(self, times):
+        ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
+        if ephem is None:
+            raise ValueError("must have ephemeris plugin loaded to convert")
+
+        return ephem.times_to_phases(times, component=self.ephemeris_component)

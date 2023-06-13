@@ -45,6 +45,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`create_phase_viewer`
     * :meth:`add_component`
     * :meth:`rename_component`
+    * :meth:`times_to_phases`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for determining the period.
     * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
@@ -110,6 +111,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'ephemeris', 'ephemerides',
                   'update_ephemeris', 'create_phase_viewer',
                   'add_component', 'remove_component', 'rename_component',
+                  'times_to_phases',
                   'dataset', 'method']
         return PluginUserApi(self, expose=expose)
 
@@ -141,14 +143,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def ephemeris(self):
         return self.ephemerides.get(self.component_selected, {})
 
-    def _update_all_phase_arrays(self, *args, component=None):
-        if component is None:
-            for component in self.component.choices:
-                self._update_all_phase_arrays(component=component)
-            return
-
-        dc = self.app.data_collection
-
+    def _times_to_phases_callable(self, component):
         if component == self.component_selected:
             # retrieving from traitlets is cheaper than dictionaries
             t0 = self.t0
@@ -160,15 +155,37 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             period = ephem.get('period', _default_period)
             dpdt = ephem.get('dpdt', _default_dpdt)
 
+        def _callable(times):
+            if dpdt != 0:
+                return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)), 1.0)  # noqa
+            else:
+                return np.mod((times-t0)/period, 1.0)
+
+        return _callable
+
+    def times_to_phases(self, times, component=None):
+        if component is None:
+            component = self.component.selected
+
+        return self._times_to_phases_callable(component)(times)
+
+    def _update_all_phase_arrays(self, *args, component=None):
+        if component is None:
+            for component in self.component.choices:
+                self._update_all_phase_arrays(component=component)
+            return
+
+        dc = self.app.data_collection
+
         phase_comp_lbl = self._phase_comp_lbl(component)
+
+        # we'll create the callable function for this component once so it can be re-used
+        _times_to_phases = self._times_to_phases_callable(component)
 
         new_links = []
         for i, data in enumerate(dc):
             times = data.get_component('World 0').data
-            if dpdt != 0:
-                phases = np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)), 1.0)  # noqa
-            else:
-                phases = np.mod((times-t0)/period, 1.0)
+            phases = _times_to_phases(times)
 
             if phase_comp_lbl in [comp.label for comp in data.components]:
                 data.update_components({data.get_component(phase_comp_lbl): phases})
@@ -184,6 +201,15 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         if len(new_links):
             dc.set_links(new_links)
+
+        # update any plugin markers
+        # TODO: eventually might need to loop over multiple matching viewers
+        phase_viewer_id = self._phase_viewer_id(component)
+        if phase_viewer_id in self.app.get_viewer_ids():
+            phase_viewer = self.app.get_viewer(phase_viewer_id)
+            for mark in phase_viewer.custom_marks:
+                if hasattr(mark, 'update_phase_folding'):
+                    mark.update_phase_folding()
 
         return phase_comp_lbl
 

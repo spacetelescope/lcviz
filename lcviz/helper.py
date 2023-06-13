@@ -4,6 +4,7 @@ import os
 
 from lightkurve import LightCurve
 
+from glue.core.link_helpers import LinkSame
 from jdaviz.core.helpers import ConfigHelper
 from lcviz.events import ViewerRenamedMessage
 
@@ -81,6 +82,21 @@ def _rename_viewer(app, old_reference, new_reference):
     self.hub.broadcast(ViewerRenamedMessage(old_reference, new_reference, sender=self))
 
 
+def _link_new_data(app, reference_data=None, data_to_be_linked=None):
+    dc = app.data_collection
+    ref_data = dc[reference_data] if reference_data else dc[0]
+    linked_data = dc[data_to_be_linked] if data_to_be_linked else dc[-1]
+
+    ref_data_comps = {str(comp): comp for comp in ref_data.components}
+    linked_data_comps = {str(comp): comp for comp in linked_data.components}
+
+    links = [LinkSame(comp, linked_data_comps[comp_name])
+             for comp_name, comp in ref_data_comps.items() if comp_name in linked_data_comps]
+
+    dc.add_link(links)
+    return
+
+
 class LCviz(ConfigHelper):
     _default_configuration = {
         'settings': {'configuration': 'lcviz',
@@ -92,7 +108,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
         'tray': ['g-metadata-viewer', 'lcviz-plot-options', 'g-subset-plugin',
-                 'lcviz-markers', 'ephemeris', 'g-export-plot'],
+                 'lcviz-markers', 'flatten', 'ephemeris', 'g-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',
@@ -111,6 +127,10 @@ class LCviz(ConfigHelper):
         # TODO: remove this if/when jdaviz supports renaming viewers natively
         self.app._rename_viewer = (
             lambda *args, **kwargs: _rename_viewer(self.app, *args, **kwargs)
+        )
+
+        self.app._link_new_data = (
+            lambda *args, **kwargs: _link_new_data(self.app, *args, **kwargs)
         )
 
         # inject the style widget to override app-css from lcviz_style.vue
