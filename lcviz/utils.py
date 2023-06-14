@@ -12,7 +12,7 @@ from astropy.table import QTable
 from astropy.time import Time
 
 from lightkurve import (
-    LightCurve, KeplerLightCurve, TessLightCurve
+    LightCurve, KeplerLightCurve, TessLightCurve, FoldedLightCurve
 )
 
 __all__ = ['TimeCoordinates', 'LightCurveHandler']
@@ -68,8 +68,10 @@ class LightCurveHandler:
     lc_component_ids = {}
 
     def to_data(self, obj, reference_time=None):
+        is_folded = isinstance(obj, FoldedLightCurve)
+        time = obj.time_original if is_folded else obj.time
         time_coord = TimeCoordinates(
-            obj.time, reference_time=reference_time
+            time, reference_time=reference_time
         )
         data = Data(coords=time_coord)
 
@@ -87,11 +89,17 @@ class LightCurveHandler:
         # collect all other columns in the TimeSeries:
         for component_label in obj.colnames:
 
+            component_data = getattr(obj, component_label)
+            if is_folded and component_label == 'time':
+                ephem_comp = obj.meta.get('_LCVIZ_EPHEMERIS', {}).get('ephemeris')
+                if ephem_comp is None:
+                    continue
+                component_label = f'phase:{ephem_comp}'
+
             if component_label not in self.lc_component_ids:
                 self.lc_component_ids[component_label] = ComponentID(component_label)
             cid = self.lc_component_ids[component_label]
 
-            component_data = getattr(obj, component_label)
             data[cid] = component_data
             if hasattr(component_data, 'unit'):
                 data.get_component(cid).units = str(component_data.unit)

@@ -51,6 +51,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`add_component`
     * :meth:`rename_component`
     * :meth:`times_to_phases`
+    * :meth:`phases_to_times`
     * :meth:`get_data`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for determining the period.
@@ -122,7 +123,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'ephemeris', 'ephemerides',
                   'update_ephemeris', 'create_phase_viewer',
                   'add_component', 'remove_component', 'rename_component',
-                  'times_to_phases', 'get_data',
+                  'times_to_phases', 'phases_to_times', 'get_data',
                   'dataset', 'method']
         return PluginUserApi(self, expose=expose)
 
@@ -187,6 +188,22 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             component = self.component.selected
 
         return self._times_to_phases_callable(component)(times)
+
+    def phases_to_times(self, phases, component=None):
+        if component is None:
+            component = self.component.selected
+
+        # this is not used internally, so we don't need the traitlet
+        # and callable optimizations
+        ephem = self.ephemerides.get(component, {})
+        t0 = ephem.get('t0', _default_t0)
+        period = ephem.get('period', _default_period)
+        dpdt = ephem.get('dpdt', _default_dpdt)
+
+        if dpdt != 0:
+            return t0 + period/dpdt*(np.exp(dpdt*(phases))-1.0)
+        else:
+            return t0 + (phases)*period
 
     def _update_all_phase_arrays(self, *args, component=None):
         if component is None:
@@ -495,9 +512,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             # TODO: phased lc shouldn't have the same time format/scale, but this is needed
             # in order for binning to work (until there's a fix to lightkurve)
             phlc.add_column(Time(phases, format=lc.time.format, scale=lc.time.scale), name="time", index=0)
+            phlc.add_column(lc.time.copy(), name="time_original", index=len(lc._required_columns))
 
         # Add extra column and meta data specific to FoldedLightCurve
         ephemeris = self.ephemerides.get(component)
+        phlc.meta["_LCVIZ_EPHEMERIS"] = {'ephemeris': component, **ephemeris}
         phlc.meta["PERIOD"] = ephemeris.get('period')
         phlc.meta["EPOCH_TIME"] = ephemeris.get('t0')
         phlc.sort("time")
