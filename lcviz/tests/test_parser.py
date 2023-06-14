@@ -1,6 +1,6 @@
 # import pytest
 import numpy as np
-from glue.core.roi import XRangeROI
+from glue.core.roi import XRangeROI, YRangeROI
 from astropy.time import Time
 # from astropy.utils.data import download_file
 from lightkurve import LightCurve
@@ -89,3 +89,21 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
 
     np.testing.assert_allclose(subset_1_bounds_jd, [2455745., 2455747.])
     np.testing.assert_allclose(subset_2_bounds_jd, [2455761.50076602, 2455765.50076602])
+
+
+def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
+    lc = light_curve_like_kepler_quarter
+    helper.load_data(lc)
+    viewer = helper.app.get_viewer(helper._default_time_viewer_reference_name)
+    subset_plugin = helper.plugins['Subset Tools']
+
+    subset_plugin._obj.subset_selected = "Create New"
+    viewer.apply_roi(YRangeROI(1, 1.05))
+
+    subsets = helper.app.get_subsets()
+
+    # TODO: subsets['Subset 1'][0]['region'] is still returning a Time object
+
+    subset_state = subsets['Subset 1'][0]['subset_state']
+
+    np.testing.assert_allclose([subset_state.lo, subset_state.hi], [1, 1.05])
