@@ -43,7 +43,7 @@ class LivePreviewFlattened(PluginScatter, WithPhaseSupport):
         super().__init__(viewer, *args, **kwargs)
 
 
-class LivePreviewBinning(PluginScatter):
+class LivePreviewBinning(PluginScatter, WithPhaseSupport):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('default_size', 16)
         super().__init__(*args, **kwargs)
