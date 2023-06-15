@@ -10,7 +10,11 @@ from lcviz.events import ViewerRenamedMessage
 
 __all__ = ['LCviz']
 
-custom_components = {'lcviz-editable-select': 'components/plugin_editable_select.vue'}
+
+_default_time_viewer_reference_name = 'flux-vs-time'
+
+custom_components = {'lcviz-editable-select': 'components/plugin_editable_select.vue',
+                     'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
 
 # Register pure vue component. This allows us to do recursive component instantiation only in the
 # vue component file
@@ -108,7 +112,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
         'tray': ['g-metadata-viewer', 'lcviz-plot-options', 'g-subset-plugin',
-                 'lcviz-markers', 'flatten', 'ephemeris', 'g-export-plot'],
+                 'lcviz-markers', 'flatten', 'ephemeris', 'binning', 'g-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',
@@ -117,7 +121,7 @@ class LCviz(ConfigHelper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._default_time_viewer_reference_name = 'flux-vs-time'
+        self._default_time_viewer_reference_name = _default_time_viewer_reference_name
 
         # override jdaviz behavior to support temporal subsets
         self.app._get_range_subset_bounds = (
