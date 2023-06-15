@@ -11,9 +11,11 @@ def test_plugin_frequency_analysis(helper, light_curve_like_kepler_quarter):
     freq.open_in_tray()
 
     assert freq.method == 'Lomb-Scargle'
+    assert freq._obj.err == ''
     assert isinstance(freq.periodogram, LombScarglePeriodogram)
 
     freq.method = 'Box Least Squares'
+    assert freq._obj.err == ''
     assert isinstance(freq.periodogram, BoxLeastSquaresPeriodogram)
 
     assert freq.xunit == 'frequency'
