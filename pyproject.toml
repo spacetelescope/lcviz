@@ -102,6 +102,7 @@ filterwarnings = [
     "ignore::DeprecationWarning:ipykernel",
     "ignore::DeprecationWarning:traittypes",
     "ignore::DeprecationWarning:voila",
+    "ignore::UserWarning:traittypes",
     "ignore::DeprecationWarning:asteval",
     "ignore::FutureWarning:asteval",
 ]

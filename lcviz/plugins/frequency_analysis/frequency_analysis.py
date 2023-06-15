@@ -34,7 +34,6 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     """
     template_file = __file__, "frequency_analysis.vue"
 
-    # PERIOD FINDING
     method_items = List().tag(sync=True)
     method_selected = Unicode().tag(sync=True)
 
@@ -69,7 +68,8 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.plot.figure.axes[0].label = self.xunit.selected
         self.plot.figure.axes[1].label = 'power'
 
-    # TODO: remove once inherited from jdaviz (https://github.com/spacetelescope/jdaviz/pull/2253)
+    # TODO: remove if/once inherited from jdaviz
+    # (https://github.com/spacetelescope/jdaviz/pull/2253)
     def _clear_cache(self, *attrs):
         """
         provide convenience function to clearing the cache for cached_properties
@@ -84,10 +84,6 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     def user_api(self):
         expose = ['dataset', 'method', 'xunit', 'auto_range', 'minimum', 'maximum', 'periodogram']
         return PluginUserApi(self, expose=expose)
-
-#    @property
-#    def ephemeris_plugin(self):
-#        return self.ephemeris.ephemeris_plugin
 
     @cached_property
     def periodogram(self):
@@ -151,7 +147,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         if self._ignore_auto_update:
             return
 
-        # TODO: avoid clearing cache if change was to min/max but auto_range is True
+        # TODO: avoid clearing cache if change was to min/max but auto_range is True?
         self._clear_cache('periodogram')
 
         per = self.periodogram
