@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "astropy>=5.2",
     "jdaviz@git+https://github.com/spacetelescope/jdaviz",  # > 3.5 (unreleased)
-    "lightkurve>=2",
+    "lightkurve@git+https://github.com/lightkurve/lightkurve",  # until https://github.com/lightkurve/lightkurve/pull/1342 is in a release
 ]
 dynamic = [
     "version",
