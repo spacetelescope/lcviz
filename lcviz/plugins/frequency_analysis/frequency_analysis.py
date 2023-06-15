@@ -27,8 +27,10 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
       Method/algorithm to determine the period.
     * ``xunit`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
       Whether to plot power vs fequency or period.
+    * ``auto_range``
     * ``minimum``
     * ``maximum``
+    * :meth:``periodogram``
     """
     template_file = __file__, "frequency_analysis.vue"
 
@@ -80,7 +82,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
 
     @property
     def user_api(self):
-        expose = ['dataset', 'method', 'xunit', 'minimum', 'maximum', 'periodogram']
+        expose = ['dataset', 'method', 'xunit', 'auto_range', 'minimum', 'maximum', 'periodogram']
         return PluginUserApi(self, expose=expose)
 
 #    @property
