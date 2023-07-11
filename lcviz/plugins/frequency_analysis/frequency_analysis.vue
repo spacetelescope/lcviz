@@ -1,6 +1,6 @@
 <template>
   <j-tray-plugin
-    description='Periodograms and FFTs.'
+    description='Frequency/period analysis.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
     :popout_button="popout_button">
 
@@ -19,7 +19,7 @@
         :items="method_items.map(i => i.label)"
         v-model="method_selected"
         label="Algorithm/Method"
-        hint="Method to determine period."
+        :hint="'Method to determine power at each '+xunit_selected+'.'"
         persistent-hint
       ></v-select>
     </v-row>

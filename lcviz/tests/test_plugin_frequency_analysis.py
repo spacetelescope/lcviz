@@ -19,10 +19,10 @@ def test_plugin_frequency_analysis(helper, light_curve_like_kepler_quarter):
     assert isinstance(freq.periodogram, BoxLeastSquaresPeriodogram)
 
     assert freq.xunit == 'frequency'
-    assert freq._obj.plot.figure.axes[0].label == 'frequency'
+    assert freq._obj.plot.figure.axes[0].label == 'frequency (1 / d)'
 
     freq.xunit = 'period'
-    assert freq._obj.plot.figure.axes[0].label == 'period'
+    assert freq._obj.plot.figure.axes[0].label == 'period (d)'
     line_x = freq._obj.plot.marks['line'].x
     assert_allclose((line_x.min(), line_x.max()), (0.3508333334885538, 31.309906458683404))
 
