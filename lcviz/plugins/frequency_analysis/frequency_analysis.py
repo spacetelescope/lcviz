@@ -41,9 +41,9 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     xunit_selected = Unicode().tag(sync=True)
 
     auto_range = Bool(True).tag(sync=True)
-    minimum = FloatHandleEmpty(1).tag(sync=True)  # period and immediately converted to freq
+    minimum = FloatHandleEmpty(0.1).tag(sync=True)  # frequency
     minimum_step = Float(0.1).tag(sync=True)
-    maximum = FloatHandleEmpty(10).tag(sync=True)  # period and immediately converted to freq
+    maximum = FloatHandleEmpty(1).tag(sync=True)  # frequency
     maximum_step = Float(0.1).tag(sync=True)
 
     spinner = Bool().tag(sync=True)
@@ -65,8 +65,8 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
                                            manual_options=['frequency', 'period'])
 
         self.plot.add_line('line', color='gray', marker_size=12)
-        self.plot.figure.axes[0].label = self.xunit.selected
         self.plot.figure.axes[1].label = 'power'
+        self._update_xunit()
 
     # TODO: remove if/once inherited from jdaviz
     # (https://github.com/spacetelescope/jdaviz/pull/2253)
@@ -121,6 +121,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
             self.spinner = False
             raise NotImplementedError(f"periodogram not implemented for {self.method}")
 
+        self._update_periodogram_labels(per)
         self.spinner = False
         return per
 
@@ -131,7 +132,8 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
             self.plot.marks['line'].x = getattr(per, self.xunit_selected)
         else:
             self.plot.clear_all_marks()
-        self.plot.figure.axes[0].label = self.xunit_selected
+
+        self._update_periodogram_labels(per)
 
         # convert minimum/maximum for next computation
         self._ignore_auto_update = True
@@ -139,6 +141,15 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.minimum = old_max ** -1 if old_max > 0 else 0
         self.maximum = old_min ** -1 if old_min > 0 else 0
         self._ignore_auto_update = False
+
+    def _update_periodogram_labels(self, per=None):
+        per = per if per is not None else self.periodogram
+        if per is not None:
+            self.plot.figure.axes[0].label = f"{self.xunit_selected} ({getattr(per, self.xunit_selected).unit})"  # noqa
+            self.plot.figure.axes[1].label = f"power ({per.power.unit})" if per.power.unit != "" else "power"  # noqa
+        else:
+            self.plot.figure.axes[0].label = self.xunit_selected
+            self.plot.figure.axes[1].label = "power"
 
     @observe('dataset_selected', 'method_selected', 'auto_range', 'minimum', 'maximum')
     def _update_periodogram(self, *args):
@@ -154,5 +165,6 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         if per is not None:
             line = self.plot.marks['line']
             line.x, line.y = getattr(per, self.xunit_selected), per.power
+            self._update_periodogram_labels(per)
         else:
             self.plot.clear_all_marks()
