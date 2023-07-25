@@ -176,6 +176,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             wrap_at = ephem.get('wrap_at', _default_wrap_at)
 
         def _callable(times):
+            if not len(times):
+                return []
             if dpdt != 0:
                 return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)) + (1-wrap_at), 1.0) - (1-wrap_at)  # noqa
             else:
@@ -220,6 +222,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         new_links = []
         for i, data in enumerate(dc):
+            data_is_folded = '_LCVIZ_EPHEMERIS' in data.meta.keys()
+            if data_is_folded:
+                continue
+
             times = data.get_component('World 0').data
             phases = _times_to_phases(times)
             if component not in self.phase_cids:
@@ -511,7 +517,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             phlc.remove_column("time")
             # TODO: phased lc shouldn't have the same time format/scale, but this is needed
             # in order for binning to work (until there's a fix to lightkurve)
-            phlc.add_column(Time(phases, format=lc.time.format, scale=lc.time.scale), name="time", index=0)
+            phlc.add_column(Time(phases, format=lc.time.format, scale=lc.time.scale),
+                            name="time", index=0)
             phlc.add_column(lc.time.copy(), name="time_original", index=len(lc._required_columns))
 
         # Add extra column and meta data specific to FoldedLightCurve

@@ -69,10 +69,8 @@ class LightCurveHandler:
 
     def to_data(self, obj, reference_time=None):
         is_folded = isinstance(obj, FoldedLightCurve)
-        time = obj.time_original if is_folded else obj.time
-        time_coord = TimeCoordinates(
-            time, reference_time=reference_time
-        )
+        time = obj.time_original if is_folded and hasattr(obj, 'time_original') else obj.time
+        time_coord = TimeCoordinates(time)
         data = Data(coords=time_coord)
 
         if hasattr(obj, 'label'):
@@ -154,6 +152,9 @@ class LightCurveHandler:
             component_ids.remove(skip_comp)
 
         for component_id in component_ids:
+            if component_id.label in names:
+                # avoid duplicate column
+                continue
             component = data.get_component(component_id)
 
             values = component.data[glue_mask]

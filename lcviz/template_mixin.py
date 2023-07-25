@@ -2,7 +2,6 @@ from functools import cached_property
 from traitlets import List, Unicode
 from ipyvuetify import VuetifyTemplate
 from glue.core import HubListener
-from glue.core.data import Data
 
 import jdaviz
 from jdaviz.core.events import SnackbarMessage

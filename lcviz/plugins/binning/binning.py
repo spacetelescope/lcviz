@@ -42,7 +42,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     show_live_preview = Bool(True).tag(sync=True)
 
     n_bins = IntHandleEmpty(100).tag(sync=True)
-    map_to_times = Bool(True).tag(sync=True)
+    map_to_times = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -186,6 +186,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         lc = input_lc.bin(time_bin_size=(input_lc.time[-1]-input_lc.time[0]).value/self.n_bins)
         if self.ephemeris_selected != 'No ephemeris':
+            # lc.time.value are actually phases, so convert to times starting at time t0
             times = self.ephemeris_plugin.phases_to_times(lc.time.value, self.ephemeris_selected)
 
             if self.map_to_times:
@@ -193,19 +194,24 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 binned_lc = lc.copy()
                 t0 = self.ephemeris_dict.get('t0', 0.0)
                 period = self.ephemeris_dict.get('period', 1.0)
-                lc.time = times
+                lc.time = Time(times,
+                               format=input_lc.time.format,
+                               scale=input_lc.time.scale)
 
                 # extend forward and backwards in cycles for the full range of input_lc
                 min_time, max_time = input_lc.time_original.min().value, input_lc.time_original.max().value
                 for start_time in np.arange(min_time, max_time, period):
                     this_times = start_time + (times - t0)
                     if start_time == min_time:
-                        lc.time = this_times
+                        lc.time = Time(this_times,
+                                       format=input_lc.time.format,
+                                       scale=input_lc.time.scale)
                     else:
                         binned_lc.time = this_times
                         lc = lc.append(binned_lc)
 
             else:
+                # then just set the time_original column, leaving the time column as phases
                 time_col = Time(times,
                                 format=input_lc.time_original.format,
                                 scale=input_lc.time_original.scale)
@@ -213,6 +219,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         if add_data:
             # add data to the collection/viewer
+            # NOTE: lc will have _LCVIZ_EPHEMERIS set if phase-folded
             self.add_results.add_results_from_plugin(lc)
 
         return lc
