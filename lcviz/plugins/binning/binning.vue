@@ -54,16 +54,6 @@
       </v-text-field>
     </v-row>
 
-    <v-row v-if="ephemeris_selected !== 'No ephemeris'">
-      <v-switch
-        v-model="map_to_times"
-        label="Map to times"
-        hint="Whether to map the phase-binned data onto the full time-range."
-        persistent-hint
-      ></v-switch>
-    </v-row>
-
-
     <plugin-add-results
       :label.sync="results_label"
       :label_default="results_label_default"

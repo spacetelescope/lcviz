@@ -1,5 +1,4 @@
 from astropy.time import Time
-import numpy as np
 from traitlets import Bool, observe
 
 from jdaviz.core.custom_traitlets import IntHandleEmpty
@@ -33,7 +32,6 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     * :meth:`input_lc`
       Data used as input to binning, based on ``dataset`` and ``ephemeris``.
     * ``n_bins``
-    * ``map_to_times``
     * ``add_results`` (:class:`~jdaviz.core.template_mixin.AddResults`)
     * :meth:`bin`
     """
@@ -42,7 +40,6 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     show_live_preview = Bool(True).tag(sync=True)
 
     n_bins = IntHandleEmpty(100).tag(sync=True)
-    map_to_times = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,8 +59,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     @property
     def user_api(self):
         expose = ['dataset', 'ephemeris', 'input_lc',
-                  'n_bins', 'map_to_times',
-                  'add_results', 'bin']
+                  'n_bins', 'add_results', 'bin']
         return PluginUserApi(self, expose=expose)
 
     @property
@@ -127,7 +123,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
     @observe('show_live_preview', 'plugin_opened',
              'dataset_selected', 'ephemeris_selected',
-             'n_bins', 'map_to_times')
+             'n_bins')
     def _live_update(self, event={}):
         if not self.show_live_preview or not self.plugin_opened:
             self._clear_marks()
@@ -135,7 +131,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         lc = self.bin(add_data=False)
 
-        if self.ephemeris_selected == 'No ephemeris' or self.map_to_times:
+        if self.ephemeris_selected == 'No ephemeris':
             ref_time = lc.meta.get('reference_time', 0)
             ref_time = getattr(ref_time, 'value', ref_time)
             times = lc.time - ref_time
@@ -150,17 +146,9 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 # TODO: fix this to be general and not rely on ugly id
                 do_phase = viewer_id != 'lcviz-0'
             else:
-                if self.map_to_times:
-                    # then the flux-vs-time viewer gets the data from binning, and all
-                    # flux-vs-phase viewers are converted based on their current ephemeris
-
-                    visible = True
-                    # TODO: fix this to be general and not rely on ugly id
-                    do_phase = viewer_id != 'lcviz-0'
-                else:
-                    # TODO: try to fix flashing as traitlets update
-                    visible = viewer_id.split(':')[-1] == self.ephemeris_selected
-                    do_phase = False
+                # TODO: try to fix flashing as traitlets update
+                visible = viewer_id.split(':')[-1] == self.ephemeris_selected
+                do_phase = False
 
             if visible:
                 if do_phase:
@@ -189,33 +177,11 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             # lc.time.value are actually phases, so convert to times starting at time t0
             times = self.ephemeris_plugin.phases_to_times(lc.time.value, self.ephemeris_selected)
 
-            if self.map_to_times:
-                # the original starts at time t0
-                binned_lc = lc.copy()
-                t0 = self.ephemeris_dict.get('t0', 0.0)
-                period = self.ephemeris_dict.get('period', 1.0)
-                lc.time = Time(times,
-                               format=input_lc.time.format,
-                               scale=input_lc.time.scale)
-
-                # extend forward and backwards in cycles for the full range of input_lc
-                min_time, max_time = input_lc.time_original.min().value, input_lc.time_original.max().value
-                for start_time in np.arange(min_time, max_time, period):
-                    this_times = start_time + (times - t0)
-                    if start_time == min_time:
-                        lc.time = Time(this_times,
-                                       format=input_lc.time.format,
-                                       scale=input_lc.time.scale)
-                    else:
-                        binned_lc.time = this_times
-                        lc = lc.append(binned_lc)
-
-            else:
-                # then just set the time_original column, leaving the time column as phases
-                time_col = Time(times,
-                                format=input_lc.time_original.format,
-                                scale=input_lc.time_original.scale)
-                lc.add_column(time_col, name="time_original", index=len(lc._required_columns))
+            # set the time_original column, leaving the time column as phases
+            time_col = Time(times,
+                            format=input_lc.time_original.format,
+                            scale=input_lc.time_original.scale)
+            lc.add_column(time_col, name="time_original", index=len(lc._required_columns))
 
         if add_data:
             # add data to the collection/viewer
