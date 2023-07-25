@@ -19,6 +19,8 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     assert len(_get_marks_from_viewer(tv)) == 1
     assert len(_get_marks_from_viewer(pv)) == 0
 
+    b.bin(add_data=True)
+
     b.ephemeris = 'default'
     assert len(_get_marks_from_viewer(tv)) == 0
     assert len(_get_marks_from_viewer(pv)) == 1
