@@ -9,6 +9,8 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, SelectPluginComponent, PlotMixin)
 from jdaviz.core.user_api import PluginUserApi
 
+from lcviz.utils import data_not_folded
+
 
 __all__ = ['FrequencyAnalysis']
 
@@ -53,6 +55,9 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         super().__init__(*args, **kwargs)
 
         self._ignore_auto_update = False
+
+        # do not support data only in phase-space
+        self.dataset.add_filter(data_not_folded)
 
         self.method = SelectPluginComponent(self,
                                             items='method_items',

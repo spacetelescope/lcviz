@@ -15,7 +15,7 @@ from lightkurve import (
     LightCurve, KeplerLightCurve, TessLightCurve, FoldedLightCurve
 )
 
-__all__ = ['TimeCoordinates', 'LightCurveHandler']
+__all__ = ['TimeCoordinates', 'LightCurveHandler', 'data_not_folded']
 
 
 class TimeCoordinates(Coordinates):
@@ -205,3 +205,8 @@ class KeplerLightCurveHandler(LightCurveHandler):
 class TessLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
     pass
+
+
+# plugin component filters
+def data_not_folded(data):
+    return data.meta.get('_LCVIZ_EPHEMERIS', None) is None
