@@ -194,11 +194,17 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
 .. _ephemeris:
 
 Ephemeris
-============
+==========
 
 The ephemeris plugin allows for setting, finding, and refining the ephemeris or ephemerides used
 for phase-folding.
 
+.. _binning:
+
+Binning
+=======
+
+This plugin supports binning a light curve in time or phase-space.
 
 .. admonition:: User API Example
     :class: dropdown
