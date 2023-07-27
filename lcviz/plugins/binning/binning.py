@@ -130,15 +130,15 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             return
 
         lc = self.bin(add_data=False)
+        # TODO: remove the need for this (inconsistent quantity vs value setting in lc object)
+        lc_time = getattr(lc.time, 'value', lc.time)
 
         if self.ephemeris_selected == 'No ephemeris':
             ref_time = lc.meta.get('reference_time', 0)
             ref_time = getattr(ref_time, 'value', ref_time)
-            times = lc.time - ref_time
+            times = lc_time - ref_time
         else:
-            times = lc.time
-        # TODO: remove the need for this (inconsistent quantity vs value setting in lc object)
-        times = getattr(times, 'value', times)
+            times = lc_time
 
         for viewer_id, mark in self.marks.items():
             if self.ephemeris_selected == 'No ephemeris':
