@@ -322,6 +322,16 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
         if self._phase_viewer_id(old_lbl) in self.app.get_viewer_ids():
             self.app._rename_viewer(self._phase_viewer_id(old_lbl), self._phase_viewer_id(new_lbl))
+
+        # update metadata entries so that they can be used for filtering applicable entries in
+        # data menus
+        for dc_item in self.app.data_collection:
+            if dc_item.meta.get('_LCVIZ_EPHEMERIS', {}).get('ephemeris', None) == old_lbl:
+                dc_item.meta['_LCVIZ_EPHEMERIS']['ephemeris'] = new_lbl
+        for data_item in self.app.state.data_items:
+            if data_item.get('meta', {}).get('_LCVIZ_EPHEMERIS', {}).get('ephemeris', None) == old_lbl:  # noqa
+                data_item['meta']['_LCVIZ_EPHEMERIS']['ephemeris'] = new_lbl
+
         self._check_if_phase_viewer_exists()
         self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=old_lbl, new_lbl=new_lbl,
                                                             sender=self))
