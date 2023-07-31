@@ -2,6 +2,9 @@
   <j-tray-plugin
     description='Remove long-term trends.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flatten'"
+    :uses_active_status="uses_active_status"
+    @plugin-ping="plugin_ping($event)"
+    :keep_active.sync="keep_active"
     :popout_button="popout_button">
 
     <v-row>

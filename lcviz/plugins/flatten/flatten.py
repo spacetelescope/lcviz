@@ -38,6 +38,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     * :meth:`flatten`
     """
     template_file = __file__, "flatten.vue"
+    uses_active_status = Bool(True).tag(sync=True)
 
     show_live_preview = Bool(True).tag(sync=True)
     default_to_overwrite = Bool(True).tag(sync=True)
@@ -83,11 +84,11 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
                 if not needs_trend and not needs_flattened:
                     break
             if needs_trend:
-                mark = LivePreviewTrend(viewer, visible=self.plugin_opened)
+                mark = LivePreviewTrend(viewer, visible=self.is_active)
                 viewer.figure.marks = viewer.figure.marks + [mark]
                 trend_marks[id] = mark
             if needs_flattened:
-                mark = LivePreviewFlattened(viewer, visible=self.plugin_opened)
+                mark = LivePreviewFlattened(viewer, visible=self.is_active)
                 viewer.figure.marks = viewer.figure.marks + [mark]
                 flattened_marks[id] = mark
 
@@ -153,12 +154,12 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
                     mark.clear()
                     mark.visible = False
 
-    @observe('show_live_preview', 'plugin_opened',
+    @observe('show_live_preview', 'is_active',
              'dataset_selected',
              'window_length', 'polyorder', 'break_tolerance',
              'niters', 'sigma')
     def _live_update(self, event={}):
-        if not self.show_live_preview or not self.plugin_opened:
+        if not self.show_live_preview or not self.is_active:
             self._clear_marks()
             self.flatten_err = ''
             return
