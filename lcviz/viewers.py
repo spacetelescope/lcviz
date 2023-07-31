@@ -91,6 +91,11 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
         return data
 
+    def _apply_layer_defaults(self, layer_state):
+        if getattr(layer_state.layer, 'meta', {}).get('Plugin', None) == 'Binning':
+            # increased size of binned results, by default
+            layer_state.size = 5
+
     def set_plot_axes(self):
         # set which components should be plotted
         dc = self.jdaviz_app.data_collection
