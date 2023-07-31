@@ -36,6 +36,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     * :meth:`bin`
     """
     template_file = __file__, "binning.vue"
+    uses_active_status = Bool(True).tag(sync=True)
 
     show_live_preview = Bool(True).tag(sync=True)
 
@@ -85,7 +86,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                     marks[id] = mark
                     break
             else:
-                mark = LivePreviewBinning(viewer, visible=self.plugin_opened)
+                mark = LivePreviewBinning(viewer, visible=self.is_active)
                 viewer.figure.marks = viewer.figure.marks + [mark]
                 marks[id] = mark
         return marks
@@ -121,11 +122,11 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         self.add_results.viewer.filters = [viewer_filter]
 
-    @observe('show_live_preview', 'plugin_opened',
+    @observe('show_live_preview', 'is_active',
              'dataset_selected', 'ephemeris_selected',
              'n_bins')
     def _live_update(self, event={}):
-        if not self.show_live_preview or not self.plugin_opened:
+        if not self.show_live_preview or not self.is_active:
             self._clear_marks()
             return
 
@@ -161,7 +162,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             mark.visible = visible
 
     def _on_ephemeris_update(self, msg):
-        if not self.show_live_preview or not self.plugin_opened:
+        if not self.show_live_preview or not self.is_active:
             return
 
         if msg.ephemeris_label != self.ephemeris_selected:

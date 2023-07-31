@@ -10,7 +10,7 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
 
     b = helper.plugins['Binning']
-    b.open_in_tray()
+    b._obj.plugin_opened = True
     ephem = helper.plugins['Ephemeris']
     ephem.period = 1.2345
     pv = ephem.create_phase_viewer()
