@@ -1,6 +1,7 @@
 import numpy as np
 from traitlets import Bool, Float, List, Unicode, observe
 
+from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
@@ -54,6 +55,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     template_file = __file__, "ephemeris.vue"
 
     # EPHEMERIS
+    phase_component_ids = {}
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
     component_items = List().tag(sync=True)
@@ -188,16 +190,23 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             phases = _times_to_phases(times)
 
             if phase_comp_lbl in [comp.label for comp in data.components]:
-                data.update_components({data.get_component(phase_comp_lbl): phases})
+                data.update_components({self.phase_component_ids[phase_comp_lbl]: phases})
             else:
-                data.add_component(phases, phase_comp_lbl)
+                if phase_comp_lbl not in self.phase_component_ids:
+                    self.phase_component_ids[phase_comp_lbl] = ComponentID(phase_comp_lbl)
+                data.add_component(phases, self.phase_component_ids[phase_comp_lbl])
                 if i != 0:
-                    # then we need to link this column back to dc[0]
-                    # TODO: there must be a better way (again)...
-                    dc0_comps = {str(comp): comp for comp in dc[0].components}
-                    data_comps = {str(comp): comp for comp in data.components}
-                    new_links += [LinkSame(dc0_comps.get(phase_comp_lbl),
-                                           data_comps.get(phase_comp_lbl))]
+                    ref_data = dc[0]
+                    new_link = LinkSame(
+                        cid1=ref_data.world_component_ids[0],
+                        cid2=data.world_component_ids[0],
+                        data1=ref_data,
+                        data2=data,
+                        labels1=ref_data.label,
+                        labels2=data.label
+                    )
+
+                    dc.add_link(new_link)
 
         if len(new_links):
             dc.set_links(new_links)

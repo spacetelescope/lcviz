@@ -5,6 +5,7 @@ import os
 from lightkurve import LightCurve
 
 from glue.core.link_helpers import LinkSame
+from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
 from jdaviz.core.helpers import ConfigHelper
 from lcviz.events import ViewerRenamedMessage
 
@@ -87,13 +88,16 @@ def _link_new_data(app, reference_data=None, data_to_be_linked=None):
     ref_data = dc[reference_data] if reference_data else dc[0]
     linked_data = dc[data_to_be_linked] if data_to_be_linked else dc[-1]
 
-    ref_data_comps = {str(comp): comp for comp in ref_data.components}
-    linked_data_comps = {str(comp): comp for comp in linked_data.components}
+    new_link = LinkSame(
+        cid1=ref_data.world_component_ids[0],
+        cid2=linked_data.world_component_ids[0],
+        data1=ref_data,
+        data2=linked_data,
+        labels1=ref_data.label,
+        labels2=linked_data.label
+    )
 
-    links = [LinkSame(comp, linked_data_comps[comp_name])
-             for comp_name, comp in ref_data_comps.items() if comp_name in linked_data_comps]
-
-    dc.add_link(links)
+    dc.add_link(new_link)
     return
 
 
