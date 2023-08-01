@@ -16,7 +16,6 @@ from lightkurve import periodogram
 from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
 
-
 __all__ = ['Ephemeris']
 
 _default_t0 = 0
@@ -55,7 +54,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     template_file = __file__, "ephemeris.vue"
 
     # EPHEMERIS
-    phase_component_ids = {}
+    phase_cids = {}
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
     component_items = List().tag(sync=True)
@@ -188,25 +187,29 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         for i, data in enumerate(dc):
             times = data.get_component('World 0').data
             phases = _times_to_phases(times)
+            if component not in self.phase_cids:
+                self.phase_cids[component] = ComponentID(phase_comp_lbl)
 
-            if phase_comp_lbl in [comp.label for comp in data.components]:
-                data.update_components({self.phase_component_ids[phase_comp_lbl]: phases})
-            else:
-                if phase_comp_lbl not in self.phase_component_ids:
-                    self.phase_component_ids[phase_comp_lbl] = ComponentID(phase_comp_lbl)
-                data.add_component(phases, self.phase_component_ids[phase_comp_lbl])
-                if i != 0:
-                    ref_data = dc[0]
-                    new_link = LinkSame(
-                        cid1=ref_data.world_component_ids[0],
-                        cid2=data.world_component_ids[0],
-                        data1=ref_data,
-                        data2=data,
-                        labels1=ref_data.label,
-                        labels2=data.label
-                    )
+            # this loop catches phase components generated automatically by
+            # when add_results is triggered in other plugins:
+            for comp in data.components:
+                if phase_comp_lbl == comp.label:
+                    data.remove_component(comp)
 
-                    dc.add_link(new_link)
+            data.add_component(phases, self.phase_cids[component])
+            if i != 0:
+                ref_data = dc[0]
+                new_link = LinkSame(
+                    cid1=ref_data.world_component_ids[0],
+                    cid2=data.world_component_ids[0],
+                    data1=ref_data,
+                    data2=data,
+                    labels1=ref_data.label,
+                    labels2=data.label
+                )
+
+                new_links.append(new_link)
+                dc.add_link(new_link)
 
         if len(new_links):
             dc.set_links(new_links)

@@ -5,7 +5,6 @@ import os
 from lightkurve import LightCurve
 
 from glue.core.link_helpers import LinkSame
-from glue.plugins.wcs_autolinking.wcs_autolinking import WCSLink
 from jdaviz.core.helpers import ConfigHelper
 from lcviz.events import ViewerRenamedMessage
 

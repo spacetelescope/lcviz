@@ -155,8 +155,9 @@ class LightCurveHandler:
             elif hasattr(component, 'units') and component.units != "None":
                 values = u.Quantity(values, component.units)
 
-            columns.append(values)
-            names.append(component_id.label)
+            if component_id.label not in names:
+                columns.append(values)
+                names.append(component_id.label)
 
         table = QTable(columns, names=names, masked=True, copy=False)
         return LightCurve(table, **kwargs)
