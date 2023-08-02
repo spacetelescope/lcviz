@@ -7,14 +7,13 @@ from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
-from jdaviz.core.template_mixin import (PluginTemplateMixin, SelectPluginComponent,
-                                        DatasetSelectMixin)
+from jdaviz.core.template_mixin import (PluginTemplateMixin, DatasetSelectMixin,
+                                        SelectPluginComponent, EditableSelectPluginComponent)
 from jdaviz.core.user_api import PluginUserApi
 
 from lightkurve import periodogram, FoldedLightCurve
 
 from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
-from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
 
 __all__ = ['Ephemeris']
@@ -33,7 +32,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     Only the following attributes and methods are available through the
     public plugin API.
 
-    * ``component`` (:class:`~lcviz.template_mixin.EditableSelectPluginComponent`):
+    * ``component`` (:class:`~jdaviz.template_mixin.EditableSelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
     * :attr:`t0`:
       Zeropoint of the ephemeris.
@@ -93,6 +92,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._prev_wrap_at = _default_wrap_at
 
         self.component = EditableSelectPluginComponent(self,
+                                                       name='ephemeris',
                                                        mode='component_mode',
                                                        edit_value='component_edit_value',
                                                        items='component_items',

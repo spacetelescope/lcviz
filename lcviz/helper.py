@@ -11,11 +11,11 @@ from lcviz.events import ViewerRenamedMessage
 
 __all__ = ['LCviz']
 
+custom_components = {}
 
 _default_time_viewer_reference_name = 'flux-vs-time'
 
-custom_components = {'lcviz-editable-select': 'components/plugin_editable_select.vue',
-                     'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
+custom_components = {'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
 
 # Register pure vue component. This allows us to do recursive component instantiation only in the
 # vue component file
