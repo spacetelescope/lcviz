@@ -318,7 +318,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         # this is triggered when the plugin component detects a change to the component name
         self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
         if self._phase_viewer_id(old_lbl) in self.app.get_viewer_ids():
-            self.app._rename_viewer(self._phase_viewer_id(old_lbl), self._phase_viewer_id(new_lbl))
+            self.app.update_viewer_reference_name(
+                self._phase_viewer_id(old_lbl),
+                self._phase_viewer_id(new_lbl),
+                update_id=True
+            )
 
         # update metadata entries so that they can be used for filtering applicable entries in
         # data menus
