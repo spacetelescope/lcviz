@@ -33,3 +33,28 @@ class ScatterViewerState(ScatterViewerState):
 
     def _reset_y_limits(self, *event):
         self._reset_att_limits('y')
+
+    def reset_limits(self, *event):
+        x_min, x_max = np.inf, -np.inf
+        y_min, y_max = np.inf, -np.inf
+
+        for layer in self.layers:
+            if not layer.visible:
+                continue
+
+            x_data = layer.layer.data.get_data(self.x_att)
+            y_data = layer.layer.data.get_data(self.y_att)
+
+            x_min = min(x_min, np.nanmin(x_data))
+            x_max = max(x_max, np.nanmax(x_data))
+            y_min = min(y_min, np.nanmin(y_data))
+            y_max = max(y_max, np.nanmax(y_data))
+
+        with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
+            self.x_min = x_min
+            self.x_max = x_max
+            self.y_min = y_min
+            self.y_max = y_max
+            # We need to adjust the limits in here to avoid triggering all
+            # the update events then changing the limits again.
+            self._adjust_limits_aspect()

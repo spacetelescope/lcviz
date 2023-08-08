@@ -1,6 +1,7 @@
 import numpy as np
 from traitlets import Bool, Float, List, Unicode, observe
 
+from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
@@ -14,7 +15,6 @@ from lightkurve import periodogram
 
 from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
-
 
 __all__ = ['Ephemeris']
 
@@ -54,6 +54,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     template_file = __file__, "ephemeris.vue"
 
     # EPHEMERIS
+    phase_cids = {}
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
     component_items = List().tag(sync=True)
@@ -186,18 +187,29 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         for i, data in enumerate(dc):
             times = data.get_component('World 0').data
             phases = _times_to_phases(times)
+            if component not in self.phase_cids:
+                self.phase_cids[component] = ComponentID(phase_comp_lbl)
 
-            if phase_comp_lbl in [comp.label for comp in data.components]:
-                data.update_components({data.get_component(phase_comp_lbl): phases})
-            else:
-                data.add_component(phases, phase_comp_lbl)
-                if i != 0:
-                    # then we need to link this column back to dc[0]
-                    # TODO: there must be a better way (again)...
-                    dc0_comps = {str(comp): comp for comp in dc[0].components}
-                    data_comps = {str(comp): comp for comp in data.components}
-                    new_links += [LinkSame(dc0_comps.get(phase_comp_lbl),
-                                           data_comps.get(phase_comp_lbl))]
+            # this loop catches phase components generated automatically by
+            # when add_results is triggered in other plugins:
+            for comp in data.components:
+                if phase_comp_lbl == comp.label:
+                    data.remove_component(comp)
+
+            data.add_component(phases, self.phase_cids[component])
+            if i != 0:
+                ref_data = dc[0]
+                new_link = LinkSame(
+                    cid1=ref_data.world_component_ids[0],
+                    cid2=data.world_component_ids[0],
+                    data1=ref_data,
+                    data2=data,
+                    labels1=ref_data.label,
+                    labels2=data.label
+                )
+
+                new_links.append(new_link)
+                dc.add_link(new_link)
 
         if len(new_links):
             dc.set_links(new_links)

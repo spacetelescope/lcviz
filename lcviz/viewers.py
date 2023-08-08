@@ -51,6 +51,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         self._plot_uncertainties = lambda: SpecvizProfileView._plot_uncertainties(self)
         # TODO: _plot_uncertainties in specviz is hardcoded to look at spectral_axis and so crashes
         self._clean_error = lambda: SpecvizProfileView._clean_error(self)
+        self.density_map = kwargs.get('density_map', False)
 
     def data(self, cls=None):
         data = []
@@ -146,6 +147,10 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
         layer_state.linewidth = 3
 
+        # optionally prevent subset from being rendered
+        # as a density map, rather than shaded markers over data:
+        layer_state.density_map = self.density_map
+
     def add_data(self, data, color=None, alpha=None, **layer_state):
         """
         Overrides the base class to handle subset styling defaults.
@@ -166,10 +171,18 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         """
         result = super().add_data(data, color, alpha, **layer_state)
 
+        for layer in self.layers:
+            # optionally render as a density map
+            layer.state.density_map = self.density_map
+
         # Set default linewidth on any created subset layers
         for layer in self.state.layers:
             if "Subset" in layer.layer.label and layer.layer.data.label == data.label:
                 layer.linewidth = 3
+
+        # update viewer limits when data are added
+        self.set_plot_axes()
+        self.state.reset_limits()
 
         return result
 

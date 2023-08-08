@@ -11,7 +11,7 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-
+from lcviz.parsers import _data_with_reftime
 
 __all__ = ['Flatten']
 
@@ -143,7 +143,8 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
         if add_data:
             # add data to the collection/viewer
-            self.add_results.add_results_from_plugin(output_lc)
+            data = _data_with_reftime(self.app, output_lc)
+            self.add_results.add_results_from_plugin(data)
 
         return output_lc, trend_lc
 

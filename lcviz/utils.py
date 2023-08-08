@@ -4,7 +4,9 @@ from ipyvue import watch
 
 import os
 from glue.core.coordinates import Coordinates
+from glue.core.component_id import ComponentID
 import numpy as np
+from scipy.interpolate import interp1d
 from astropy import units as u
 from astropy.table import QTable
 from astropy.time import Time
@@ -27,55 +29,35 @@ class TimeCoordinates(Coordinates):
             raise TypeError('values should be a Time instance')
         self._index = np.arange(len(times))
         self._times = times
+        self.unit = unit
 
         # convert to relative time units
-        if reference_time is None:
+        self.reference_time = reference_time
+        if self.reference_time is None:
             self.reference_time = times[0]
-
-        delta_t = (times - self.reference_time).to(unit)
-        self._values = delta_t
+        self._values = (times - self.reference_time).to(unit)
 
         super().__init__(n_dim=1)
 
     @property
     def time_axis(self):
-        """
-        Returns
-        -------
-        """
         return self._times
 
-    @property
-    def world_axis_units(self):
-        return tuple(self._values.unit.to_string('vounit'))
-
     def world_to_pixel_values(self, *world):
-        """
-        Parameters
-        ----------
-        world
-        Returns
-        -------
-        """
         if len(world) > 1:
             raise ValueError('TimeCoordinates is a 1-d coordinate class '
                              'and only accepts a single scalar or array to convert')
-        return np.interp(world[0], self._values.value, self._index,
-                         left=np.nan, right=np.nan)
+        return interp1d(
+            self._values.value, self._index, fill_value='extrapolate'
+        )(world[0])
 
     def pixel_to_world_values(self, *pixel):
-        """
-        Parameters
-        ----------
-        pixel
-        Returns
-        -------
-        """
         if len(pixel) > 1:
             raise ValueError('SpectralCoordinates is a 1-d coordinate class '
                              'and only accepts a single scalar or array to convert')
-        return np.interp(pixel[0], self._index, self._values.value,
-                         left=np.nan, right=np.nan)
+        return interp1d(
+            self._index, self._values.value, fill_value='extrapolate'
+        )(pixel[0])
 
 
 __all__ = ['LightCurveHandler', 'enable_hot_reloading']
@@ -83,28 +65,36 @@ __all__ = ['LightCurveHandler', 'enable_hot_reloading']
 
 @data_translator(LightCurve)
 class LightCurveHandler:
+    lc_component_ids = {}
 
-    def to_data(self, obj):
-        time_coord = TimeCoordinates(obj.time)
-        delta_t = (obj.time - obj.time[0]).to(u.d)
+    def to_data(self, obj, reference_time=None):
+        time_coord = TimeCoordinates(
+            obj.time, reference_time=reference_time
+        )
         data = Data(coords=time_coord)
 
         if hasattr(obj, 'label'):
             data.label = obj.label
 
         data.meta.update(obj.meta)
-        data.meta.update({"reference_time": obj.time[0]})
-
-        data['dt'] = delta_t
-        data.get_component('dt').units = str(delta_t.unit)
+        data.meta.update(
+            {"reference_time": time_coord.reference_time}
+        )
+        data['dt'] = (obj.time - time_coord.reference_time).to(time_coord.unit)
+        data.get_component('dt').units = str(time_coord.unit)
 
         # LightCurve is a subclass of astropy TimeSeries, so
         # collect all other columns in the TimeSeries:
         for component_label in obj.colnames:
+
+            if component_label not in self.lc_component_ids:
+                self.lc_component_ids[component_label] = ComponentID(component_label)
+            cid = self.lc_component_ids[component_label]
+
             component_data = getattr(obj, component_label)
-            data[component_label] = component_data
+            data[cid] = component_data
             if hasattr(component_data, 'unit'):
-                data.get_component(component_label).units = str(component_data.unit)
+                data.get_component(cid).units = str(component_data.unit)
 
         data.meta.update({'uncertainty_type': 'std'})
 
@@ -165,8 +155,9 @@ class LightCurveHandler:
             elif hasattr(component, 'units') and component.units != "None":
                 values = u.Quantity(values, component.units)
 
-            columns.append(values)
-            names.append(component_id.label)
+            if component_id.label not in names:
+                columns.append(values)
+                names.append(component_id.label)
 
         table = QTable(columns, names=names, masked=True, copy=False)
         return LightCurve(table, **kwargs)

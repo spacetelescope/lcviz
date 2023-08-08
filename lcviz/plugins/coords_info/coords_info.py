@@ -72,6 +72,9 @@ class CoordsInfo(CoordsInfo):
 
             scatter = lyr.scatter
             lyr_x, lyr_y = scatter.x, scatter.y
+            if not len(lyr_x):
+                continue
+
             # NOTE: unlike specviz which determines the closest point in x per-layer,
             # this determines the closest point in x/y per-layer in pixel-space
             # (making it easier to get the snapping point into shallow eclipses, etc)
