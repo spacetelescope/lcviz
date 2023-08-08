@@ -99,8 +99,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                                                        selected='component_selected',
                                                        manual_options=['default'],
                                                        on_add=self._on_component_add,
-                                                       on_rename=self._on_component_rename,
-                                                       on_remove=self._on_component_remove)
+                                                       on_rename_after_selection=self._on_component_rename,  # noqa
+                                                       on_remove_after_selection=self._on_component_remove)  # noqa
+
         # force the original entry in ephemerides with defaults
         self._change_component()
 
