@@ -189,6 +189,12 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             phases = _times_to_phases(times)
             if component not in self.phase_cids:
                 self.phase_cids[component] = ComponentID(phase_comp_lbl)
+
+            if self.phase_cids[component] in data.components:
+                data.update_components({self.phase_cids[component]: phases})
+            else:
+                data.add_component(phases, self.phase_cids[component])
+
             # this loop catches phase components generated automatically by
             # when add_results is triggered in other plugins:
             for comp in data.components:
