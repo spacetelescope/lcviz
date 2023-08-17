@@ -190,11 +190,16 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             if component not in self.phase_cids:
                 self.phase_cids[component] = ComponentID(phase_comp_lbl)
 
+            if self.phase_cids[component] in data.components:
+                data.update_components({self.phase_cids[component]: phases})
+            else:
+                data.add_component(phases, self.phase_cids[component])
+
             # this loop catches phase components generated automatically by
             # when add_results is triggered in other plugins:
             for comp in data.components:
                 if phase_comp_lbl == comp.label:
-                    data.remove_component(comp)
+                    data.remove_component(phase_comp_lbl)
 
             data.add_component(phases, self.phase_cids[component])
             if i != 0:
@@ -209,10 +214,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 )
 
                 new_links.append(new_link)
-                dc.add_link(new_link)
 
-        if len(new_links):
-            dc.set_links(new_links)
+        dc.add_link(new_links)
 
         # update any plugin markers
         # TODO: eventually might need to loop over multiple matching viewers
@@ -251,8 +254,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
 
         pv = self.app.get_viewer(phase_viewer_id)
-        # TODO: there must be a better way to do this...
-        pv.state.x_att = [comp for comp in dc[0].components if comp.label == self.phase_comp_lbl][0]
+        pv.state.x_att = self.phase_cids[self.component_selected]
         return pv
 
     def vue_create_phase_viewer(self, *args):
