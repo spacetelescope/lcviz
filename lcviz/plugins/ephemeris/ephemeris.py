@@ -215,8 +215,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
                 new_links.append(new_link)
 
-        for new_link in new_links:
-            dc.add_link(new_link)
+        dc.add_link(new_links)
 
         # update any plugin markers
         # TODO: eventually might need to loop over multiple matching viewers
