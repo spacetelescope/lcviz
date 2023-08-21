@@ -70,7 +70,7 @@ class LightCurveHandler:
     def to_data(self, obj, reference_time=None):
         is_folded = isinstance(obj, FoldedLightCurve)
         time = obj.time_original if is_folded and hasattr(obj, 'time_original') else obj.time
-        time_coord = TimeCoordinates(time)
+        time_coord = TimeCoordinates(time, reference_time=reference_time)
         data = Data(coords=time_coord)
 
         if hasattr(obj, 'label'):
