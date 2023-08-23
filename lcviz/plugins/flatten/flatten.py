@@ -97,7 +97,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     @observe('default_to_overwrite', 'dataset_selected')
     def _set_default_results_label(self, event={}):
         '''Generate a label and set the results field to that value'''
-        if not hasattr(self, 'dataset'):
+        if not hasattr(self, 'dataset'):  # pragma: no cover
             return
 
         self.add_results.label_whitelist_overwrite = [self.dataset_selected]
@@ -125,7 +125,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             The trend used to flatten the light curve.
         """
         input_lc = self.dataset.selected_obj
-        if input_lc is None:
+        if input_lc is None:  # pragma: no cover
             raise ValueError("no input dataset selected")
 
         output_lc, trend_lc = input_lc.flatten(return_trend=True,

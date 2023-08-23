@@ -1,9 +1,7 @@
 import os
-from astropy.io import fits
 from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
-from lightkurve import LightCurve, KeplerLightCurve, TessLightCurve
-from lightkurve.io.detect import detect_filetype
+import lightkurve
 
 __all__ = ["light_curve_parser"]
 
@@ -17,21 +15,11 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         if data_label is None:
             data_label = os.path.splitext(os.path.basename(file_obj))[0]
 
-        # detect the type light curve in a FITS file:
-        with fits.open(file_obj) as hdulist:
-            filetype = detect_filetype(hdulist)
-
-        # get the constructor for this type of light curve:
-        filetype_to_cls = {
-            'KeplerLightCurve': KeplerLightCurve,
-            'TessLightCurve': TessLightCurve
-        }
-        cls = filetype_to_cls[filetype]
         # read the light curve:
-        light_curve = cls.read(file_obj)
+        light_curve = lightkurve.read(file_obj)
 
     # load a LightCurve object:
-    elif isinstance(file_obj, LightCurve):
+    elif isinstance(file_obj, lightkurve.LightCurve):
         light_curve = file_obj
 
     # make a data label:

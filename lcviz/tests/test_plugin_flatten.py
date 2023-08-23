@@ -4,27 +4,56 @@ from numpy.testing import assert_allclose
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
 
 
-def _get_marks_from_viewer(viewer, cls=(LivePreviewTrend, LivePreviewFlattened)):
-    return [m for m in viewer.figure.marks if isinstance(m, cls)]
+def _get_marks_from_viewer(viewer, cls=(LivePreviewTrend, LivePreviewFlattened),
+                           include_not_visible=False):
+    return [m for m in viewer.figure.marks if isinstance(m, cls)
+            if include_not_visible or m.visible]
 
 
 def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
 
-    f = helper.plugins['Flatten']
-    f.plugin_opened = True
     ephem = helper.plugins['Ephemeris']
     pv = ephem.create_phase_viewer()
+    f = helper.plugins['Flatten']
 
-    assert len(_get_marks_from_viewer(tv)) == 2
-    assert len(_get_marks_from_viewer(pv)) == 1
+    # no marks until plugin opened/active
+    assert len(_get_marks_from_viewer(tv)) == 0
+    assert len(_get_marks_from_viewer(pv)) == 0
 
-    orig_label = f.dataset.selected
-    assert f.dataset.selected_obj is not None
-    assert f._obj.add_results.label_overwrite is True
-    assert f._obj.add_results.label == orig_label
-    f.flatten(add_data=True)
+    with f.as_active():
+        assert len(_get_marks_from_viewer(tv)) == 2
+        assert len(_get_marks_from_viewer(pv)) == 1
+
+        # update period which should update phasing in phase-viewer
+        ephem.period = 1.2
+
+        before_polyorder = f.polyorder
+        before_update = _get_marks_from_viewer(tv)[0].y
+
+        # test error handling in live-preview
+        f.polyorder = -1
+        assert f._obj.flatten_err != ''
+        assert len(_get_marks_from_viewer(tv)) == 0
+        assert len(_get_marks_from_viewer(pv)) == 0
+
+        # update polyorder (live-preview should re-appear and have changed from before)
+        f.polyorder = before_polyorder + 1
+        assert f._obj.flatten_err == ''
+        after_update = _get_marks_from_viewer(tv)[0].y
+        assert not np.allclose(before_update, after_update)
+
+        orig_label = f.dataset.selected
+        assert f.dataset.selected_obj is not None
+        assert f._obj.add_results.label_overwrite is True
+        assert f._obj.add_results.label == orig_label
+        f._obj.vue_apply(add_data=True)
+        assert f._obj.flatten_err == ''
+
+    # marks are hidden
+    assert len(_get_marks_from_viewer(tv)) == 0
+    assert len(_get_marks_from_viewer(pv)) == 0
 
 
 def test_no_overwrite(helper, light_curve_like_kepler_quarter):
