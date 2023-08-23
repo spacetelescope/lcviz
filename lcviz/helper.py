@@ -31,7 +31,7 @@ def _get_range_subset_bounds(self, subset_state, *args, **kwargs):
         # TODO: use display units once implemented in Glue for ScatterViewer
         # units = u.Unit(viewer.state.x_display_unit)
         units = u.Unit(viewer.time_unit)
-    else:
+    else:  # pragma: no cover
         raise ValueError("Unable to find time axis units")
 
     region = reference_time + u.Quantity([subset_state.lo * units, subset_state.hi * units])

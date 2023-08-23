@@ -280,7 +280,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         _ = self._ephemerides.pop(lbl, {})
         # remove the corresponding viewer, if it exists
         viewer_item = self.app._viewer_item_by_id(self._phase_viewer_id(lbl))
-        if viewer_item is None:
+        if viewer_item is None:  # pragma: no cover
             return
         cid = viewer_item.get('id', None)
         if cid is not None:
@@ -346,7 +346,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if component is None:
             component = self.component_selected
 
-        if component not in self.component.choices:
+        if component not in self.component.choices:  # pragma: no cover
             raise ValueError(f"component must be one of {self.component.choices}")
 
         existing_ephem = self._ephemerides.get(component, {})
@@ -411,7 +411,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 self.method_spinner = False
                 self.method_err = str(err)
                 return
-        else:
+        else:  # pragma: no cover
             self.method_spinner = False
             raise NotImplementedError(f"periodogram not implemented for {self.method}")
 
