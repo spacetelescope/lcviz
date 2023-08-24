@@ -140,6 +140,9 @@ class LCviz(ConfigHelper):
         # inject the style widget to override app-css from lcviz_style.vue
         self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
 
+        # set the link to read the docs
+        self.app.docs_link = "https://lcviz.readthedocs.io"
+
     def load_data(self, data, data_label=None):
         """
         Load data into LCviz.
