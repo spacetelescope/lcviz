@@ -31,6 +31,22 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert 'renamed custom component' in ephem.ephemerides
     assert len(helper.app.get_viewer_ids()) == 3
 
+    assert ephem.component == 'renamed custom component'
+    assert ephem.period == 3.14
+    assert ephem.ephemeris['period'] == 3.14
+    # modify the ephemeris of the NON-selected ephemeris component
+    ephem.update_ephemeris(component='default', period=2)
+    assert ephem.period == 3.14
+    assert ephem.ephemerides['default']['period'] == 2
+
     ephem.remove_component('renamed custom component')
     assert len(ephem.ephemerides) == 1
     assert len(helper.app.get_viewer_ids()) == 2
+    assert ephem.component == 'default'
+    assert ephem.period == 2
+
+    assert ephem.method.selected == 'Lomb-Scargle'
+    ephem.method = 'Box Least Squares'
+    assert ephem._obj.method_err == ''
+    ephem._obj.vue_adopt_period_at_max_power()
+    assert ephem.period != 2

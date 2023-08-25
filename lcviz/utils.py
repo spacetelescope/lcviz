@@ -25,7 +25,7 @@ class TimeCoordinates(Coordinates):
     """
 
     def __init__(self, times, reference_time=None, unit=u.d):
-        if not isinstance(times, Time):
+        if not isinstance(times, Time):  # pragma: no cover
             raise TypeError('values should be a Time instance')
         self._index = np.arange(len(times))
         self._times = times
@@ -44,7 +44,7 @@ class TimeCoordinates(Coordinates):
         return self._times
 
     def world_to_pixel_values(self, *world):
-        if len(world) > 1:
+        if len(world) > 1:  # pragma: no cover
             raise ValueError('TimeCoordinates is a 1-d coordinate class '
                              'and only accepts a single scalar or array to convert')
         return interp1d(
@@ -52,7 +52,7 @@ class TimeCoordinates(Coordinates):
         )(world[0])
 
     def pixel_to_world_values(self, *pixel):
-        if len(pixel) > 1:
+        if len(pixel) > 1:  # pragma: no cover
             raise ValueError('SpectralCoordinates is a 1-d coordinate class '
                              'and only accepts a single scalar or array to convert')
         return interp1d(
