@@ -74,3 +74,6 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert ephem._obj.method_err == ''
     ephem._obj.vue_adopt_period_at_max_power()
     assert ephem.period != 2
+
+    # test coverage for non-zero dpdt
+    ephem.dpdt = 0.00001
