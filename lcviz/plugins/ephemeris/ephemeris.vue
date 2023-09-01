@@ -82,7 +82,7 @@
           v-model.number="wrap_at"
           :step="0.1"
           type="number"
-          hint="The phase at which to wrap (maximum phase, may need to reset zoom limits)."
+          :hint="'Phased data will encompass the range (1-'+wrap_at+', '+wrap_at+').'"
           persistent-hint
           :rules="[() => wrap_at!=='' || 'This field is required']"
         ></v-text-field>

@@ -41,7 +41,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :attr:`dpdt`:
       First derivative of the period of the ephemeris.
     * :attr:`wrap_at`:
-      Phase at which to wrap (maximum phase)
+      Phase at which to wrap (phased data will encompass the range 1-wrap_at to wrap_at).
     * :meth:`ephemeris`
     * :meth:`ephemerides`
     * :meth:`update_ephemeris`
