@@ -74,6 +74,20 @@
         ></v-text-field>
       </v-row>
 
+      <v-row>
+        <v-text-field
+          ref="wrap_at"
+          type="number"
+          label="Wrapping phase"
+          v-model.number="wrap_at"
+          :step="0.2"
+          type="number"
+          hint="The phase at which to wrap (maximum phase, may need to reset zoom limits)."
+          persistent-hint
+          :rules="[() => wrap_at!=='' || 'This field is required']"
+        ></v-text-field>
+      </v-row>
+
       <j-plugin-section-header>Period Finding/Refining</j-plugin-section-header>
 
       <plugin-dataset-select

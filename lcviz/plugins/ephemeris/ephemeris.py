@@ -18,9 +18,10 @@ from lcviz.viewers import PhaseScatterView
 
 __all__ = ['Ephemeris']
 
-_default_t0 = 0
-_default_period = 1
-_default_dpdt = 0
+_default_t0 = 0.0
+_default_period = 1.0
+_default_dpdt = 0.0
+_default_wrap_at = 1.0
 
 
 @tray_registry('ephemeris', label="Ephemeris")
@@ -39,6 +40,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
       Period of the ephemeris, defined at ``t0``.
     * :attr:`dpdt`:
       First derivative of the period of the ephemeris.
+    * :attr:`wrap_at`:
+      Phase at which to wrap (maximum phase)
     * :meth:`ephemeris`
     * :meth:`ephemerides`
     * :meth:`update_ephemeris`
@@ -68,6 +71,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     period_step = Float(0.1).tag(sync=True)
     dpdt = FloatHandleEmpty(_default_dpdt).tag(sync=True)
     dpdt_step = Float(0.1).tag(sync=True)
+    wrap_at = Float(_default_wrap_at).tag(sync=True)
 
     # PERIOD FINDING
     method_items = List().tag(sync=True)
@@ -108,7 +112,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @property
     def user_api(self):
-        expose = ['component', 'period', 'dpdt', 't0',
+        expose = ['component', 'period', 'dpdt', 't0', 'wrap_at',
                   'ephemeris', 'ephemerides',
                   'update_ephemeris', 'create_phase_viewer',
                   'add_component', 'remove_component', 'rename_component',
@@ -150,17 +154,19 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             t0 = self.t0
             period = self.period
             dpdt = self.dpdt
+            wrap_at = self.wrap_at
         else:
             ephem = self.ephemerides.get(component, {})
             t0 = ephem.get('t0', _default_t0)
             period = ephem.get('period', _default_period)
             dpdt = ephem.get('dpdt', _default_dpdt)
+            wrap_at = ephem.get('wrap_at', _default_wrap_at)
 
         def _callable(times):
             if dpdt != 0:
-                return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)), 1.0)  # noqa
+                return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)) + (1-wrap_at), 1.0) - (1-wrap_at)  # noqa
             else:
-                return np.mod((times-t0)/period, 1.0)
+                return np.mod((times-t0)/period + (1-wrap_at), 1.0) - (1-wrap_at)
 
         return _callable
 
@@ -314,9 +320,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.t0 = ephem.get('t0', self.t0)
         self.period = ephem.get('period', self.period)
         self.dpdt = ephem.get('dpdt', self.dpdt)
+        self.wrap_at = ephem.get('wrap_at', self.wrap_at)
 
         # if this is a new component, update those default values back to the dictionary
-        self.update_ephemeris(t0=self.t0, period=self.period, dpdt=self.dpdt)
+        self.update_ephemeris(t0=self.t0, period=self.period, dpdt=self.dpdt, wrap_at=self.wrap_at)
         self._ignore_ephem_change = False
         if ephem:
             # if there were any changes applied by accessing the dictionary,
@@ -324,7 +331,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             # otherwise, this is a new component and there is no need.
             self._ephem_traitlet_changed()
 
-    def update_ephemeris(self, component=None, t0=None, period=None, dpdt=None):
+    def update_ephemeris(self, component=None, t0=None, period=None, dpdt=None, wrap_at=None):
         """
         Update the ephemeris for a given component.
 
@@ -337,7 +344,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         period : float, optional
             value of period to replace
         dpdt : float, optional
-            value of period to replace
+            value of dpdt to replace
+        wrap_at : float, optional
+            value of wrap_at to replace
 
         Returns
         -------
@@ -350,7 +359,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             raise ValueError(f"component must be one of {self.component.choices}")
 
         existing_ephem = self._ephemerides.get(component, {})
-        for name, value in {'t0': t0, 'period': period, 'dpdt': dpdt}.items():
+        for name, value in {'t0': t0, 'period': period, 'dpdt': dpdt, 'wrap_at': wrap_at}.items():
             if value is not None:
                 existing_ephem[name] = value
                 if component == self.component_selected:
@@ -360,11 +369,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._update_all_phase_arrays(component=component)
         return existing_ephem
 
-    @observe('period', 'dpdt', 't0')
+    @observe('period', 'dpdt', 't0', 'wrap_at')
     def _ephem_traitlet_changed(self, event={}):
         if self._ignore_ephem_change:
             return
-        for value in (self.period, self.dpdt, self.t0):
+        for value in (self.period, self.dpdt, self.t0, self.wrap_at):
             if not isinstance(value, (int, float)):
                 return
         if self.period <= 0:
