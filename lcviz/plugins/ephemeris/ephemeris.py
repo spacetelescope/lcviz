@@ -271,6 +271,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             pv = self.app.get_viewer(phase_viewer_id)
             pv.state.add_callback("x_min", lambda x_min: self._check_phase_viewer_limits(viewer_id=phase_viewer_id))  # noqa
             pv.state.add_callback("x_max", lambda x_max: self._check_phase_viewer_limits(viewer_id=phase_viewer_id))  # noqa
+            pv.state.x_min, pv.state.x_max = (1-self.wrap_at, self.wrap_at)
 
         else:
             pv = self.app.get_viewer(phase_viewer_id)
