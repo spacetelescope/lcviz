@@ -13,7 +13,8 @@
 # serve to show the default.
 
 import datetime
-import os
+import sys
+from pathlib import Path
 from pkg_resources import get_distribution
 
 if sys.version_info < (3, 11):
