@@ -13,7 +13,7 @@ from jdaviz.core.user_api import PluginUserApi
 __all__ = ['FrequencyAnalysis']
 
 
-@tray_registry('frequency analysis', label="Frequency Analysis")
+@tray_registry('frequency-analysis', label="Frequency Analysis")
 class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     """
     See the :ref:`Frequency Analysis Plugin Documentation <frequency_ananlysis>` for more details.
