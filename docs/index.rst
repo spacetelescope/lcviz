@@ -12,3 +12,4 @@ Reference/API
    :maxdepth: 2
 
    reference/api.rst
+   plugins.rst
