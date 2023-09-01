@@ -8,6 +8,7 @@ __all__ = ['PlotOptions']
 class PlotOptions(PlotOptions):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#plot-options"
 
     @property
     def user_api(self):
