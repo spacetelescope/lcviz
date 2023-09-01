@@ -21,7 +21,7 @@ Plot Options
 This plugin gives access to per-viewer and per-layer plotting options.
 
 
-.. _ephemeris
+.. _ephemeris:
 
 Ephemeris
 ============
