@@ -80,13 +80,24 @@
           type="number"
           label="Wrapping phase"
           v-model.number="wrap_at"
-          :step="0.2"
+          :step="0.1"
           type="number"
           hint="The phase at which to wrap (maximum phase, may need to reset zoom limits)."
           persistent-hint
           :rules="[() => wrap_at!=='' || 'This field is required']"
         ></v-text-field>
       </v-row>
+
+      <div v-if="!xlimits_contain_all_data">
+        <v-alert type="warning" style="margin-left: -12px; margin-right: -12px">
+          Current viewer x-limits do not encompass all phased data.
+          <v-row justify="center">
+            <v-btn @click="reset_viewer_limits">
+              reset x-limits
+            </v-btn>
+          </v-row>
+        </v-alert>
+      </div>
 
       <j-plugin-section-header>Period Finding/Refining</j-plugin-section-header>
 
