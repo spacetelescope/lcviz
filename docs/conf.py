@@ -27,9 +27,9 @@ with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as configuratio
     conf = tomllib.load(configuration_file)
 setup_cfg = conf["project"]
 
-# Configuration for intersphinx: refer to the Python standard library.
-# Uncomment if you cross-ref to API doc from other packages.
-# intersphinx_mapping = {
+# Configuration for intersphinx
+intersphinx_mapping = {
+    'lightkurve': ('https://docs.lightkurve.org', None)
 #     'python': ('https://docs.python.org/3/',
 #                (None, 'http://data.astropy.org/intersphinx/python3.inv')),
 #     'numpy': ('https://numpy.org/doc/stable/',
@@ -38,7 +38,8 @@ setup_cfg = conf["project"]
 #               (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
 #     'matplotlib': ('https://matplotlib.org/',
 #                    (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),  # noqa
-#     'astropy': ('https://docs.astropy.org/en/stable/', None)}
+#     'astropy': ('https://docs.astropy.org/en/stable/', None)
+    }
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
