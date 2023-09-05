@@ -13,6 +13,11 @@ If the data is loaded from multi-extension FITS that contains a primary header,
 you will also see a :guilabel:`Show primary header` toggle, when enabled, would
 display just the primary header metadata.
 
+.. seealso::
+
+    :ref:`Jdaviz Metadata Viewer <jdaviz:imviz-display-settings>`
+        Jdaviz documentation on the Metadata Viewer plugin.
+
 .. _plot-options:
 
 Plot Options
@@ -20,6 +25,10 @@ Plot Options
 
 This plugin gives access to per-viewer and per-layer plotting options.
 
+.. seealso::
+
+    :ref:`Jdaviz Plot Options <jdaviz:imviz-plot-options>`
+        Jdaviz documentation on the Plot Options plugin.
 
 .. _subset-tools:
 
@@ -28,6 +37,10 @@ Subset Tools
 
 This plugin allows viewing and modifying defined subsets.
 
+.. seealso::
+
+    :ref:`Jdaviz Subset Tools <jdaviz:imviz-subset-plugin>`
+        Jdaviz documentation on the Subset Tools plugin.
 
 .. _markers:
 
@@ -42,6 +55,10 @@ displayed in the app toolbar into the table.  The markers remain at that fixed p
 the viewer they were created (regardless of changes to the underlying data or linking) and are only
 visible when the plugin is opened.
 
+.. seealso::
+
+    :ref:`Jdaviz Markers <jdaviz:markers-plugin>`
+        Jdaviz documentation on the Markers plugin.
 
 .. _flatten:
 
@@ -52,9 +69,11 @@ This plugin allows for flattening the light curve by removing trends.  By defaul
 "unnormalized" by multiplying the flattened light curve by the median of the trend, but this
 can be disabled through the plugin settings.
 
-This plugin uses the following lightkurve implementations:
+.. seealso::
 
-* :meth:`lightkurve.LightCurve.flatten`
+    This plugin uses the following lightkurve implementations:
+
+    * :meth:`lightkurve.LightCurve.flatten`
 
 
 .. _frequency_analysis:
@@ -64,10 +83,12 @@ Frequency Analysis
 
 This plugin exposes the periodogram (in period or frequency space) for an input light curve.
 
-This plugin uses the following lightkurve implementations:
+.. seealso::
 
-* :meth:`lightkurve.periodogram.LombScarglePeriodogram.from_lightcurve`
-* :meth:`lightkurve.periodogram.BoxLeastSquaresPeriodogram.from_lightcurve`
+    This plugin uses the following lightkurve implementations:
+
+    * :meth:`lightkurve.periodogram.LombScarglePeriodogram.from_lightcurve`
+    * :meth:`lightkurve.periodogram.BoxLeastSquaresPeriodogram.from_lightcurve`
 
 
 .. _ephemeris:
@@ -85,3 +106,8 @@ Export Plot
 ===========
 
 This plugin allows exporting the plot in a given viewer to various image formats.
+
+.. seealso::
+
+    :ref:`Jdaviz Export Plot <jdaviz:imviz-export-plot>`
+        Jdaviz documentation on the Export Plot plugin.
