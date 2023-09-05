@@ -15,7 +15,7 @@ display just the primary header metadata.
 
 .. seealso::
 
-    :ref:`Jdaviz Metadata Viewer <jdaviz:imviz-display-settings>`
+    :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
         Jdaviz documentation on the Metadata Viewer plugin.
 
 .. _plot-options:
