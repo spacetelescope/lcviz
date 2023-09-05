@@ -16,7 +16,7 @@ __all__ = ['FrequencyAnalysis']
 @tray_registry('frequency-analysis', label="Frequency Analysis")
 class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     """
-    See the :ref:`Frequency Analysis Plugin Documentation <frequency_ananlysis>` for more details.
+    See the :ref:`Frequency Analysis Plugin Documentation <frequency_analysis>` for more details.
 
     Only the following attributes and methods are available through the
     public plugin API.
