@@ -1,6 +1,6 @@
 [project]
 name = "lcviz"
-description = "A Jdaviz-based lightcurve analysis and visualization tool"
+description = "A Jdaviz-based light curve analysis and visualization tool"
 requires-python = ">=3.8"
 authors = [
     { name = "JDADF Developers", email = "kconroy@stsci.edu" },
@@ -45,8 +45,8 @@ test = [
     "pytest-tornasync",
 ]
 docs = [
-    "sphinx-rtd-theme",
-    "sphinx-astropy",
+    "sphinx-astropy[confv2]>=1.9.1",
+    "sphinx_design"
 ]
 
 [build-system]

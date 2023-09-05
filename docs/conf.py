@@ -14,18 +14,16 @@
 
 import datetime
 import sys
-from pathlib import Path
-from pkg_resources import get_distribution
+from lcviz import __version__
 
-if sys.version_info < (3, 11):
-    import tomli as tomllib
-else:
-    import tomllib
+try:
+    from sphinx_astropy.conf.v1 import *  # noqa
+    from sphinx_astropy.conf.v2 import *  # noqa
+except ImportError:
+    print('ERROR: the documentation requires the sphinx-astropy package to be installed')
+    sys.exit(1)
 
 # -- General configuration ------------------------------------------------
-with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as configuration_file:
-    conf = tomllib.load(configuration_file)
-setup_cfg = conf["project"]
 
 # Configuration for intersphinx
 intersphinx_mapping = {
@@ -52,7 +50,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx_automodapi.automodapi',
-    'sphinx.ext.mathjax']
+    'sphinx.ext.mathjax',
+    'sphinx_design']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
@@ -67,8 +66,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project
-project = setup_cfg['name']
-author = setup_cfg['authors'][0]['name']
+project = "lcviz"
+author = "JDADF Developers"
 year = datetime.datetime.now().year
 copyright = f'{year}, {author}'
 
@@ -77,7 +76,8 @@ copyright = f'{year}, {author}'
 # build documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = get_distribution(project).version
+release = __version__
+dev = "dev" in release
 # The short X.Y version.
 version = '.'.join(release.split('.')[:2])
 
@@ -146,9 +146,36 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
+# A NOTE ON HTML THEMES
+# The global astropy configuration uses a custom theme, 'bootstrap-astropy',
+# which is installed along with astropy. A different theme can be used or
+# the options for this theme can be modified by overriding some of the
+# variables set in the global configuration. The variables set in the
+# global configuration are listed below, commented out.
+
+# html_css_files = ["lcviz.css"]
+html_copy_source = False
+
+html_theme_options.update(  # noqa: F405
+    {
+        "github_url": "https://github.com/spacetelescope/lcviz",
+        "use_edit_page_button": True,
+    }
+)
+
+html_context = {
+    "default_mode": "light",
+    "to_be_indexed": ["stable", "latest"],
+    "is_development": dev,
+    "github_user": "spacetelescope",
+    "github_repo": "lcviz",
+    "github_version": "main",
+    "doc_path": "docs",
+}
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinx_rtd_theme'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
