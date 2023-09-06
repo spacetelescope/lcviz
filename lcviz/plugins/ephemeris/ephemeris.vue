@@ -82,7 +82,7 @@
           v-model.number="wrap_at"
           :step="0.1"
           type="number"
-          :hint="'Phased data will encompass the range (1-'+wrap_at+', '+wrap_at+').'"
+          :hint="'Phased data will encompass the range '+wrap_at_range+'.'"
           persistent-hint
           :rules="[() => wrap_at!=='' || 'This field is required']"
         ></v-text-field>
@@ -160,3 +160,14 @@
 
   </j-tray-plugin>
 </template>
+
+<script>
+module.exports = {
+  computed: {
+    wrap_at_range() {
+      const lower = 1-this.wrap_at
+      return '('+lower.toFixed(2)+', '+this.wrap_at.toFixed(2)+')'
+    },
+  }
+};
+</script>
