@@ -73,8 +73,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     dpdt_step = Float(0.1).tag(sync=True)
     wrap_at = Float(_default_wrap_at).tag(sync=True)
 
-    xlimits_contain_all_data = Bool(True).tag(sync=True)
-
     # PERIOD FINDING
     method_items = List().tag(sync=True)
     method_selected = Unicode().tag(sync=True)
@@ -256,7 +254,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if self.phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self.update_ephemeris()  # calls _update_all_phase_arrays
 
-        if not self.phase_viewer_exists:
+        create_phase_viewer = not self.phase_viewer_exists
+        if create_phase_viewer:
             # TODO: stack horizontally by default?
             self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
                                     vid=phase_viewer_id, name=phase_viewer_id)
@@ -267,15 +266,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')
                 self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
 
-            # hook-up zoom limits calls
-            pv = self.app.get_viewer(phase_viewer_id)
-            pv.state.add_callback("x_min", lambda x_min: self._check_phase_viewer_limits(viewer_id=phase_viewer_id))  # noqa
-            pv.state.add_callback("x_max", lambda x_max: self._check_phase_viewer_limits(viewer_id=phase_viewer_id))  # noqa
+        pv = self.app.get_viewer(phase_viewer_id)
+        if create_phase_viewer:
             pv.state.x_min, pv.state.x_max = (1-self.wrap_at, self.wrap_at)
-
-        else:
-            pv = self.app.get_viewer(phase_viewer_id)
-
         pv.state.x_att = self.phase_cids[self.component_selected]
         return pv
 
@@ -288,27 +281,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def vue_period_double(self, *args):
         self.period *= 2
 
-    def vue_reset_viewer_limits(self, *args):
-        pv = self.phase_viewer
-        if pv is None:
-            return
-        pv.state._reset_x_limits()
-        self.xlimits_contain_all_data = True
-
     def _check_if_phase_viewer_exists(self, *args):
         self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()
-
-    def _check_phase_viewer_limits(self, viewer_id=None):
-        if viewer_id is not None and viewer_id != self.phase_viewer_id:
-            # coming from the state callback, so might not be this same viewer
-            return
-
-        pv = self.phase_viewer
-        if pv is None:
-            self.xlimits_contain_all_data = True
-            return
-
-        self.xlimits_contain_all_data = pv.state.xlimits_contain_all_data
 
     def _on_component_rename(self, old_lbl, new_lbl):
         # this is triggered when the plugin component detects a change to the component name
@@ -365,7 +339,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             # then we need to update phasing, etc (since we set _ignore_ephem_change)
             # otherwise, this is a new component and there is no need.
             self._ephem_traitlet_changed()
-        self._check_phase_viewer_limits()
 
     def update_ephemeris(self, component=None, t0=None, period=None, dpdt=None, wrap_at=None):
         """
@@ -428,13 +401,17 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         else:
             self._update_all_phase_arrays(component=self.component_selected)
 
+        # update zoom-limits if wrap_at was changed
+        if event.get('name') == 'wrap_at':
+            pvs = self.phase_viewer.state
+            delta_phase = event.get('new') - event.get('old')
+            pvs.x_min, pvs.x_max = pvs.x_min + delta_phase, pvs.x_max + delta_phase
+
         # update step-sizes
         self.period_step = round_to_1(self.period/5000)
         self.dpdt_step = max(round_to_1(abs(self.period * self.dpdt)/1000) if self.dpdt != 0 else 0,
                              1./1000000)
         self.t0_step = round_to_1(self.period/1000)
-
-        self._check_phase_viewer_limits()
 
     @observe('dataset_selected', 'method_selected')
     def _update_periodogram(self, *args):

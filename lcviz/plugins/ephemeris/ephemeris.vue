@@ -88,17 +88,6 @@
         ></v-text-field>
       </v-row>
 
-      <div v-if="!xlimits_contain_all_data">
-        <v-alert type="warning" style="margin-left: -12px; margin-right: -12px">
-          Current viewer x-limits do not encompass all phased data.
-          <v-row justify="center">
-            <v-btn @click="reset_viewer_limits">
-              reset x-limits
-            </v-btn>
-          </v-row>
-        </v-alert>
-      </div>
-
       <j-plugin-section-header>Period Finding/Refining</j-plugin-section-header>
 
       <plugin-dataset-select

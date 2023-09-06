@@ -7,10 +7,12 @@ __all__ = ['ScatterViewerState']
 
 
 class ScatterViewerState(ScatterViewerState):
-    def _get_att_limits(self, ax):
+    def _reset_att_limits(self, ax):
+        # override glue's _reset_x/y_limits to account for all layers,
+        # not just reference data
         att = f'{ax}_att'
         if getattr(self, att) is None:  # pragma: no cover
-            return np.inf, -np.inf
+            return
 
         ax_min, ax_max = np.inf, -np.inf
         for layer in self.layers:
@@ -18,12 +20,6 @@ class ScatterViewerState(ScatterViewerState):
             if len(ax_data) > 0:
                 ax_min = min(ax_min, np.nanmin(ax_data))
                 ax_max = max(ax_max, np.nanmax(ax_data))
-        return ax_min, ax_max
-
-    def _reset_att_limits(self, ax):
-        # override glue's _reset_x/y_limits to account for all layers,
-        # not just reference data
-        ax_min, ax_max = self._get_att_limits(ax)
 
         if not np.all(np.isfinite([ax_min, ax_max])):  # pragma: no cover
             return
@@ -37,11 +33,6 @@ class ScatterViewerState(ScatterViewerState):
 
     def _reset_y_limits(self, *event):
         self._reset_att_limits('y')
-
-    @property
-    def xlimits_contain_all_data(self):
-        data_min, data_max = self._get_att_limits('x')
-        return bool(self.x_min <= data_min and self.x_max >= data_max)
 
     def reset_limits(self, *event):
         x_min, x_max = np.inf, -np.inf

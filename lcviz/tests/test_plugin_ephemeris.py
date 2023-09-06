@@ -1,4 +1,3 @@
-from numpy.testing import assert_allclose
 
 def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     lcviz, lc = helper, light_curve_like_kepler_quarter
@@ -32,16 +31,10 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert ephem.period == 3.14
 
     pv = ephem._obj.phase_viewer
-    assert ephem._obj.xlimits_contain_all_data is True
     # original limits are set to 0->1 (technically 1-phase_wrap -> phase_wrap)
     assert (pv.state.x_min, pv.state.x_max) == (0.0, 1.0)
     ephem.wrap_at = 0.5
-    assert ephem._obj.xlimits_contain_all_data is False
-    ephem._obj.vue_reset_viewer_limits()
-    assert ephem._obj.xlimits_contain_all_data is True
-    # this won't be exactly 0 and 0.5, since it computes the outermost data points,
-    # actual values with the current test data are -0.49999989500376074, 0.4997347643670089
-    assert_allclose((pv.state.x_min, pv.state.x_max), (-0.5, 0.5), atol=0.01)
+    assert (pv.state.x_min, pv.state.x_max) == (-0.5, 0.5)
 
     ephem.add_component('custom component')
     assert not ephem._obj.phase_viewer_exists
