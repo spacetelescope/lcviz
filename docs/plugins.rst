@@ -199,12 +199,14 @@ Ephemeris
 The ephemeris plugin allows for setting, finding, and refining the ephemeris or ephemerides used
 for phase-folding.
 
+
 .. _binning:
 
 Binning
 =======
 
 This plugin supports binning a light curve in time or phase-space.
+
 
 .. admonition:: User API Example
     :class: dropdown
@@ -222,6 +224,13 @@ This plugin supports binning a light curve in time or phase-space.
       ephem.period = 4.88780258
       ephem.t0 = 2.43
       ephem.rename_component('default', 'my component name')
+
+
+.. seealso::
+
+  This plugin uses the following ``lightkurve`` implementations:
+
+  * :meth:`lightkurve.LightCurve.bin`
 
 
 .. _export-plot:
