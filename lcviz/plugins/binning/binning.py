@@ -1,5 +1,6 @@
 from astropy.time import Time
 from traitlets import Bool, observe
+from glue.config import data_translator
 
 from jdaviz.core.custom_traitlets import IntHandleEmpty
 from jdaviz.core.events import (ViewerAddedMessage, ViewerRemovedMessage)
@@ -184,10 +185,31 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                             scale=input_lc.time_original.scale)
             lc.add_column(time_col, name="time_original", index=len(lc._required_columns))
 
+            lc.meta.update({'_LCVIZ_BINNED': True})
+
+            # convert to glue Data manually, so we may edit the `phase` component:
+            handler, _ = data_translator.get_handler_for(lc)
+            data = handler.to_data(lc)
+            phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
+
+            # here we use the `value` attribute of `lc.time`, which has units of *phase*:
+            self.app._jdaviz_helper._set_data_component(data, phase_comp_lbl, lc.time.value)
+
+        else:
+            data = None
+
         if add_data:
             # add data to the collection/viewer
             # NOTE: lc will have _LCVIZ_EPHEMERIS set if phase-folded
-            self.add_results.add_results_from_plugin(lc)
+            self._set_results_viewer()
+            self.add_results.add_results_from_plugin(data or lc)
+
+            if self.ephemeris_selected != 'No ephemeris':
+                # prevent phase axis from becoming a time axis:
+                viewer_id = self.ephemeris_plugin._obj.phase_viewer_id
+                pv = self.app.get_viewer(viewer_id)
+                phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
+                pv.state.x_att = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
 
         return lc
 

@@ -227,4 +227,4 @@ class PhaseScatterView(TimeScatterView):
         if ephem is None:
             raise ValueError("must have ephemeris plugin loaded to convert")
 
-        return ephem.times_to_phases(times, component=self.ephemeris_component)
+        return ephem.times_to_phases(times, ephem_component=self.ephemeris_component)
