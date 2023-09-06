@@ -71,7 +71,7 @@ can be disabled through the plugin settings.
 
 .. seealso::
 
-    This plugin uses the following lightkurve implementations:
+    This plugin uses the following ``lightkurve`` implementations:
 
     * :meth:`lightkurve.LightCurve.flatten`
 
@@ -85,7 +85,7 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
 
 .. seealso::
 
-    This plugin uses the following lightkurve implementations:
+    This plugin uses the following ``lightkurve`` implementations:
 
     * :meth:`lightkurve.periodogram.LombScarglePeriodogram.from_lightcurve`
     * :meth:`lightkurve.periodogram.BoxLeastSquaresPeriodogram.from_lightcurve`
