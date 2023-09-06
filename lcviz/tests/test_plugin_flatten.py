@@ -10,6 +10,19 @@ def _get_marks_from_viewer(viewer, cls=(LivePreviewTrend, LivePreviewFlattened),
             if include_not_visible or m.visible]
 
 
+def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+    lcviz, lc = helper, light_curve_like_kepler_quarter
+
+    lcviz.load_data(lc)
+    # lcviz.show()
+
+    flatten = lcviz.plugins['Flatten']
+    flatten.open_in_tray()
+    flatten.polyorder = 4
+    flattened_lc = flatten.flatten(add_data=True)
+    print(flattened_lc)
+
+
 def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)

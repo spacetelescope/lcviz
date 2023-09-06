@@ -3,6 +3,20 @@ from numpy.testing import assert_allclose
 from lightkurve.periodogram import LombScarglePeriodogram, BoxLeastSquaresPeriodogram
 
 
+def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+    lcviz, lc = helper, light_curve_like_kepler_quarter
+
+    lcviz.load_data(lc)
+    # lcviz.show()
+
+    freq = lcviz.plugins['Frequency Analysis']
+    freq.open_in_tray()
+    freq.method = 'Lomb-Scargle'
+    freq.xunit = 'period'
+    periodogram = freq.periodogram
+    print(periodogram)
+
+
 def test_plugin_frequency_analysis(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     # tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)

@@ -19,6 +19,20 @@ def _assert_dict_allclose(dict1, dict2):
             assert v == dict2.get(k)
 
 
+def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+    lcviz, lc = helper, light_curve_like_kepler_quarter
+
+    lcviz.load_data(lc)
+    # lcviz.show()
+
+    markers = lcviz.plugins['Markers']
+    markers.open_in_tray()
+    # interactively mark by mousing over the viewer and pressing "M"
+    table = markers.export_table()
+    print(table)
+    markers.clear_table()
+
+
 def test_plugin_markers(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)

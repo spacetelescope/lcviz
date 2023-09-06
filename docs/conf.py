@@ -52,7 +52,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_automodapi.automodapi',
     'sphinx.ext.mathjax',
-    'sphinx_design']
+    'sphinx_design',
+    'sphinx_togglebutton']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
