@@ -22,12 +22,12 @@ We recommend using `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_
 to easily manage a compatible Python environment for ``jdaviz``; it should work
 with most modern shells, except CSH/TCSH.
 
-You may want to consider installing ``lcaviz`` in a new virtual or conda environment
+You may want to consider installing ``lcviz`` in a new virtual or conda environment
 to avoid version conflicts with other packages you may have installed, for example:
 
 .. code-block:: bash
 
-    conda create -n lcviz-env python=3.9
+    conda create -n lcviz-env python=3.11
     conda activate lcviz-env
 
 Pip Install
