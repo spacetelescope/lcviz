@@ -2,7 +2,6 @@ import numpy as np
 from astropy.time import Time
 from traitlets import Bool, Float, List, Unicode, observe
 
-from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
