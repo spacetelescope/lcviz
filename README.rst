@@ -22,6 +22,10 @@
     :target: https://github.com/spacetelescope/jdaviz/
     :alt: Powered by jdaviz Badge
 
+.. image:: http://img.shields.io/badge/powered%20by-lightkurve-6570b1.svg?style=flat
+    :target: https://github.com/lightkurve/lightkurve/
+    :alt: Powered by lightkurve Badge
+
 
 Early Development Software Warning
 ----------------------------------
