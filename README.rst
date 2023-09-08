@@ -1,5 +1,18 @@
-LCviz
-=====
+.. image:: docs/logos/lcviz.svg
+    :width: 400
+    :alt: lcviz logo
+    :align: center
+
+.. image:: https://github.com/spacetelescope/lcviz/workflows/CI/badge.svg
+    :target: https://github.com/spacetelescope/lcviz/actions
+    :alt: GitHub Actions CI Status
+
+.. image:: https://codecov.io/gh/spacetelescope/lcviz/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/spacetelescope/lcviz
+
+.. image:: https://readthedocs.org/projects/lcviz/badge/?version=latest
+    :target: https://lcviz.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org
@@ -8,6 +21,10 @@ LCviz
 .. image:: http://img.shields.io/badge/powered%20by-jdaviz-336699.svg?style=flat
     :target: https://github.com/spacetelescope/jdaviz/
     :alt: Powered by jdaviz Badge
+
+.. image:: http://img.shields.io/badge/powered%20by-lightkurve-6570b1.svg?style=flat
+    :target: https://github.com/lightkurve/lightkurve/
+    :alt: Powered by lightkurve Badge
 
 
 Early Development Software Warning
