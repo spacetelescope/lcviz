@@ -5,6 +5,18 @@ def _get_marks_from_viewer(viewer, cls=(LivePreviewBinning)):
     return [m for m in viewer.figure.marks if isinstance(m, cls) and m.visible]
 
 
+def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+    lcviz, lc = helper, light_curve_like_kepler_quarter
+
+    lcviz.load_data(lc)
+    # lcviz.show()
+
+    binning = lcviz.plugins['Binning']
+    binning.n_bins = 150
+    binned_lc = binning.bin(add_data=True)
+    print(binned_lc)
+
+
 def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)

@@ -210,6 +210,26 @@ The ephemeris plugin allows for setting, finding, and refining the ephemeris or 
 for phase-folding.
 
 
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.ephemeris.ephemeris.Ephemeris` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      ephem = lcviz.plugins['Ephemeris']
+      ephem.period = 4.88780258
+      ephem.t0 = 2.43
+      ephem.rename_component('default', 'my component name')
+
+
 .. _binning:
 
 Binning
@@ -232,10 +252,10 @@ This plugin supports binning a light curve in time or phase-space.
       lcviz.load_data(lc)
       lcviz.show()
 
-      ephem = lcviz.plugins['Ephemeris']
-      ephem.period = 4.88780258
-      ephem.t0 = 2.43
-      ephem.rename_component('default', 'my component name')
+      binning = lcviz.plugins['Binning']
+      binning.n_bins = 150
+      binned_lc = binning.bin(add_data=True)
+      print(binned_lc)
 
 
 .. seealso::
