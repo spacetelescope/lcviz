@@ -52,7 +52,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert ephem.period == 3.14
     assert ephem.ephemeris['period'] == 3.14
     # modify the ephemeris of the NON-selected ephemeris component
-    ephem.update_ephemeris(component='default', period=2)
+    ephem.update_ephemeris(ephem_component='default', period=2)
     assert ephem.period == 3.14
     assert ephem.ephemerides['default']['period'] == 2
 
