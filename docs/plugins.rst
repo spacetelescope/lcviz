@@ -13,6 +13,8 @@ This plugin allows viewing of any metadata associated with the selected data.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.metadata_viewer.metadata_viewer.MetadataViewer` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -43,6 +45,8 @@ This plugin gives access to per-viewer and per-layer plotting options.
 
 .. admonition:: User API Example
     :class: dropdown
+
+    See the :class:`~lcviz.plugins.plot_options.plot_options.PlotOptions` user API documentation for more details.
 
     .. code-block:: python
 
@@ -97,6 +101,8 @@ visible when the plugin is opened.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.markers.markers.Markers` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -132,6 +138,8 @@ can be disabled through the plugin settings.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.flatten.flatten.Flatten` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -165,6 +173,8 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
 
 .. admonition:: User API Example
     :class: dropdown
+
+    See the :class:`~lcviz.plugins.frequency_analysis.frequency_analysis.FrequencyAnalysis` user API documentation for more details.
 
     .. code-block:: python
 
@@ -245,6 +255,8 @@ This plugin allows exporting the plot in a given viewer to various image formats
 
 .. admonition:: User API Example
     :class: dropdown
+
+    See the :class:`~lcviz.plugins.export_plot.export_plot.ExportViewer` user API documentation for more details.
 
     .. code-block:: python
 
