@@ -12,6 +12,7 @@ from jdaviz.core.user_api import PluginUserApi
 from lcviz.events import EphemerisChangedMessage
 from lcviz.helper import _default_time_viewer_reference_name
 from lcviz.marks import LivePreviewBinning
+from lcviz.parsers import _data_with_reftime
 from lcviz.template_mixin import EphemerisSelectMixin
 
 
@@ -196,7 +197,8 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             self.app._jdaviz_helper._set_data_component(data, phase_comp_lbl, lc.time.value)
 
         else:
-            data = None
+            # need to send through parser-logic to assign the correct reference time
+            data = _data_with_reftime(self.app, lc)
 
         if add_data:
             # add data to the collection/viewer
