@@ -1,5 +1,7 @@
-LCviz
-=====
+.. image:: docs/logos/lcviz.svg
+    :width: 400
+    :alt: lcviz logo
+    :align: center
 
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org
