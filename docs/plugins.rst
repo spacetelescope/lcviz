@@ -211,6 +211,8 @@ This plugin supports binning a light curve in time or phase-space.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.binning.binning.Binning` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz

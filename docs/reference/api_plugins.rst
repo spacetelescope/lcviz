@@ -3,6 +3,9 @@
 Plugins API
 ===========
 
+.. automodapi:: lcviz.plugins.binning.binning
+  :no-inheritance-diagram:
+
 .. automodapi:: lcviz.plugins.ephemeris.ephemeris
   :no-inheritance-diagram:
 
