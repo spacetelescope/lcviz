@@ -212,6 +212,8 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 pv = self.app.get_viewer(viewer_id)
                 phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
                 pv.state.x_att = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+                # by resetting x_att, the preview marks may have dissappeared
+                self._live_update()
 
         return lc
 
