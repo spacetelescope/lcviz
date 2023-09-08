@@ -154,7 +154,7 @@
 module.exports = {
   computed: {
     wrap_at_range() {
-      const lower = 1-this.wrap_at
+      const lower = this.wrap_at - 1
       return '('+lower.toFixed(2)+', '+this.wrap_at.toFixed(2)+')'
     },
   }

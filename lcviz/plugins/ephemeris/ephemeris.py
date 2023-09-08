@@ -268,7 +268,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         pv = self.app.get_viewer(phase_viewer_id)
         if create_phase_viewer:
-            pv.state.x_min, pv.state.x_max = (1-self.wrap_at, self.wrap_at)
+            pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
         pv.state.x_att = self.phase_cids[self.component_selected]
         return pv
 
