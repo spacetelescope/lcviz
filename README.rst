@@ -3,6 +3,17 @@
     :alt: lcviz logo
     :align: center
 
+.. image:: https://github.com/spacetelescope/lcviz/workflows/CI/badge.svg
+    :target: https://github.com/spacetelescope/lcviz/actions
+    :alt: GitHub Actions CI Status
+
+.. image:: https://codecov.io/gh/spacetelescope/lcviz/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/spacetelescope/lcviz
+
+.. image:: https://readthedocs.org/projects/lcviz/badge/?version=latest
+    :target: https://lcviz.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org
     :alt: Powered by Astropy Badge
