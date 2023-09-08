@@ -6,6 +6,14 @@ API
 
 .. _lcviz-api-configs:
 
+Plugins
+=======
+
+.. toctree::
+  :maxdepth: 2
+
+  api_plugins
+
 LCviz Helper
 ============
 

@@ -9,9 +9,29 @@ Metadata Viewer
 
 This plugin allows viewing of any metadata associated with the selected data.
 
-If the data is loaded from multi-extension FITS that contains a primary header,
-you will also see a :guilabel:`Show primary header` toggle, when enabled, would
-display just the primary header metadata.
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      metadata = lcviz.plugins['Metadata']
+      print(f"dataset choices: {metadata.dataset.choices}")
+      metadata.dataset = metadata.dataset.choices[0]
+      print(metadata.metadata)
+      
+
+.. seealso::
+
+    :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
+        Jdaviz documentation on the Metadata Viewer plugin.
 
 .. _plot-options:
 
@@ -21,6 +41,33 @@ Plot Options
 This plugin gives access to per-viewer and per-layer plotting options.
 
 
+.. admonition:: User API Example
+    :class: dropdown
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      po = lcviz.plugins['Plot Options']
+      print(f"viewer choices: {po.viewer.choices}")
+      po.viewer = po.viewer.choices[0]
+      print(f"layer choices: {po.layer.choices}")
+      po.layer = po.layer.choices[0]
+
+      po.marker_size = 4
+      po.marker_color = 'blue'
+
+
+.. seealso::
+
+    :ref:`Jdaviz Plot Options <jdaviz:imviz-plot-options>`
+        Jdaviz documentation on the Plot Options plugin.
+
 .. _subset-tools:
 
 Subset Tools
@@ -28,6 +75,10 @@ Subset Tools
 
 This plugin allows viewing and modifying defined subsets.
 
+.. seealso::
+
+    :ref:`Jdaviz Subset Tools <jdaviz:imviz-subset-plugin>`
+        Jdaviz documentation on the Subset Tools plugin.
 
 .. _markers:
 
@@ -43,6 +94,32 @@ the viewer they were created (regardless of changes to the underlying data or li
 visible when the plugin is opened.
 
 
+.. admonition:: User API Example
+    :class: dropdown
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      markers = lcviz.plugins['Markers']
+      markers.open_in_tray()
+      # interactively mark by mousing over the viewer and pressing "M"
+      table = markers.export_table()
+      print(table)
+      markers.clear_table()
+
+
+.. seealso::
+
+    :ref:`Jdaviz Markers <jdaviz:markers-plugin>`
+        Jdaviz documentation on the Markers plugin.
+
+
 .. _flatten:
 
 Flatten
@@ -52,9 +129,30 @@ This plugin allows for flattening the light curve by removing trends.  By defaul
 "unnormalized" by multiplying the flattened light curve by the median of the trend, but this
 can be disabled through the plugin settings.
 
-This plugin uses the following lightkurve implementations:
+.. admonition:: User API Example
+    :class: dropdown
 
-* :meth:`lightkurve.LightCurve.flatten`
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      flatten = lcviz.plugins['Flatten']
+      flatten.open_in_tray()
+      flatten.polyorder = 4
+      flattened_lc = flatten.flatten(add_data=True)
+      print(flattened_lc)
+
+
+.. seealso::
+
+    This plugin uses the following ``lightkurve`` implementations:
+
+    * :meth:`lightkurve.LightCurve.flatten`
 
 
 .. _frequency_analysis:
@@ -64,10 +162,33 @@ Frequency Analysis
 
 This plugin exposes the periodogram (in period or frequency space) for an input light curve.
 
-This plugin uses the following lightkurve implementations:
 
-* :meth:`lightkurve.periodogram.LombScarglePeriodogram.from_lightcurve`
-* :meth:`lightkurve.periodogram.BoxLeastSquaresPeriodogram.from_lightcurve`
+.. admonition:: User API Example
+    :class: dropdown
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+      
+      freq = lcviz.plugins['Frequency Analysis']
+      freq.open_in_tray()
+      freq.method = 'Lomb-Scargle'
+      freq.xunit = 'period'
+      periodogram = freq.periodogram
+      print(periodogram)
+
+
+.. seealso::
+
+    This plugin uses the following ``lightkurve`` implementations:
+
+    * :meth:`lightkurve.periodogram.LombScarglePeriodogram.from_lightcurve`
+    * :meth:`lightkurve.periodogram.BoxLeastSquaresPeriodogram.from_lightcurve`
 
 
 .. _ephemeris:
@@ -79,9 +200,49 @@ The ephemeris plugin allows for setting, finding, and refining the ephemeris or 
 for phase-folding.
 
 
+.. admonition:: User API Example
+    :class: dropdown
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      ephem = lcviz.plugins['Ephemeris']
+      ephem.period = 4.88780258
+      ephem.t0 = 2.43
+      ephem.rename_component('default', 'my component name')
+
+
 .. _export-plot:
 
 Export Plot
 ===========
 
 This plugin allows exporting the plot in a given viewer to various image formats.
+
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      export = lcviz.plugins['Export Plot']
+      export.save_figure('test.png')
+
+
+.. seealso::
+
+    :ref:`Jdaviz Export Plot <jdaviz:imviz-export-plot>`
+        Jdaviz documentation on the Export Plot plugin.
