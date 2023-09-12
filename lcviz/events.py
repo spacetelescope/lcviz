@@ -27,7 +27,7 @@ class EphemerisComponentChangedMessage(Message):
             self.type = 'add'
         elif old_lbl is not None and new_lbl is None:
             self.type = 'remove'
-        else:
+        else:  # pragma: no cover
             raise ValueError("must provide at least one of old_lbl or new_lbl")
 
 

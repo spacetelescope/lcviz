@@ -187,7 +187,7 @@ class EphemerisSelect(SelectPluginComponent):
         return self.ephemeris_plugin.ephemerides.get(self.selected, None)
 
     def get_data_for_dataset(self, dataset, ycomp='flux'):
-        if not isinstance(dataset, DatasetSelect):
+        if not isinstance(dataset, DatasetSelect):  # pragma: no cover
             raise ValueError("dataset must be DatasetSelect object")
         if self.selected in self._manual_options:
             return dataset.selected_obj

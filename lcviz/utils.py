@@ -102,7 +102,7 @@ class LightCurveHandler:
             if hasattr(component_data, 'unit'):
                 try:
                     data.get_component(cid).units = str(component_data.unit)
-                except KeyError:
+                except KeyError:  # pragma: no cover
                     continue
 
         data.meta.update({'uncertainty_type': 'std'})

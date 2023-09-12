@@ -27,14 +27,23 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     ephem.period = 1.2345
     pv = ephem.create_phase_viewer()
 
-    assert b.ephemeris == 'No ephemeris'
-    assert len(_get_marks_from_viewer(tv)) == 1
-    assert len(_get_marks_from_viewer(pv)) == 0
+    with b.as_active():
+        assert b.ephemeris == 'No ephemeris'
+        assert len(_get_marks_from_viewer(tv)) == 1
+        assert len(_get_marks_from_viewer(pv)) == 0
+        assert b._obj.ephemeris_dict == {}
 
-    b.bin(add_data=True)
+        # update ephemeris will force re-phasing
+        ephem.period = 1.111
 
-    b.ephemeris = 'default'
-    assert len(_get_marks_from_viewer(tv)) == 0
-    assert len(_get_marks_from_viewer(pv)) == 1
+        b.bin(add_data=True)
 
-    b.bin(add_data=True)
+        b.ephemeris = 'default'
+        assert len(_get_marks_from_viewer(tv)) == 0
+        assert len(_get_marks_from_viewer(pv)) == 1
+        assert len(b._obj.ephemeris_dict.keys()) > 0
+
+        # update ephemeris will force re-binning
+        ephem.period = 1.222
+
+        b.bin(add_data=True)
