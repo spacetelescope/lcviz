@@ -71,7 +71,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     period_step = Float(0.1).tag(sync=True)
     dpdt = FloatHandleEmpty(_default_dpdt).tag(sync=True)
     dpdt_step = Float(0.1).tag(sync=True)
-    wrap_at = Float(_default_wrap_at).tag(sync=True)
+    wrap_at = FloatHandleEmpty(_default_wrap_at).tag(sync=True)
 
     # PERIOD FINDING
     method_items = List().tag(sync=True)
@@ -87,6 +87,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         self._ignore_ephem_change = False
         self._ephemerides = {}
+        self._prev_wrap_at = _default_wrap_at
 
         self.component = EditableSelectPluginComponent(self,
                                                        mode='component_mode',
@@ -403,9 +404,14 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         # update zoom-limits if wrap_at was changed
         if event.get('name') == 'wrap_at':
-            pvs = self.phase_viewer.state
-            delta_phase = event.get('new') - event.get('old')
-            pvs.x_min, pvs.x_max = pvs.x_min + delta_phase, pvs.x_max + delta_phase
+            old = event.get('old') if event.get('old') != '' else self._prev_wrap_at
+            if event.get('new') != '':
+                pvs = self.phase_viewer.state
+                delta_phase = event.get('new') - old
+                pvs.x_min, pvs.x_max = pvs.x_min + delta_phase, pvs.x_max + delta_phase
+                # we need to cache the old value since it could become a string
+                # if the widget is cleared
+                self._prev_wrap_at = event.get('new')
 
         # update step-sizes
         self.period_step = round_to_1(self.period/5000)
