@@ -74,6 +74,20 @@
         ></v-text-field>
       </v-row>
 
+      <v-row>
+        <v-text-field
+          ref="wrap_at"
+          type="number"
+          label="Wrapping phase"
+          v-model.number="wrap_at"
+          :step="0.1"
+          type="number"
+          :hint="'Phased data will encompass the range '+wrap_at_range+'.'"
+          persistent-hint
+          :rules="[() => wrap_at!=='' || 'This field is required']"
+        ></v-text-field>
+      </v-row>
+
       <j-plugin-section-header>Period Finding/Refining</j-plugin-section-header>
 
       <plugin-dataset-select
@@ -135,3 +149,14 @@
 
   </j-tray-plugin>
 </template>
+
+<script>
+module.exports = {
+  computed: {
+    wrap_at_range() {
+      const lower = this.wrap_at - 1
+      return '('+lower.toFixed(2)+', '+this.wrap_at.toFixed(2)+')'
+    },
+  }
+};
+</script>

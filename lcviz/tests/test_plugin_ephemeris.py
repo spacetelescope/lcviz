@@ -1,3 +1,4 @@
+
 def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
@@ -28,6 +29,12 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert ephem.period == 3.14 * 2
     ephem._obj.vue_period_halve()
     assert ephem.period == 3.14
+
+    pv = ephem._obj.phase_viewer
+    # original limits are set to 0->1 (technically 1-phase_wrap -> phase_wrap)
+    assert (pv.state.x_min, pv.state.x_max) == (0.0, 1.0)
+    ephem.wrap_at = 0.5
+    assert (pv.state.x_min, pv.state.x_max) == (-0.5, 0.5)
 
     ephem.add_component('custom component')
     assert not ephem._obj.phase_viewer_exists
@@ -60,3 +67,6 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert ephem._obj.method_err == ''
     ephem._obj.vue_adopt_period_at_max_power()
     assert ephem.period != 2
+
+    # test coverage for non-zero dpdt
+    ephem.dpdt = 0.00001

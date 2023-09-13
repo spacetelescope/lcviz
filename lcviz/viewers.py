@@ -113,6 +113,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
             xlabel = f'{str(x_unit.physical_type).title()} ({x_unit})'
 
         self.figure.axes[0].label = xlabel
+        self.figure.axes[0].num_ticks = 5
 
     def _set_plot_y_axes(self, dc, component_labels, light_curve):
         self.state.y_att = dc[0].components[component_labels.index('flux')]
@@ -141,6 +142,8 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         # Set (X,Y)-axis to scientific notation if necessary:
         self.figure.axes[0].tick_format = 'g'
         self.figure.axes[1].tick_format = 'g'
+
+        self.figure.axes[1].num_ticks = 5
 
     def _expected_subset_layer_default(self, layer_state):
         super()._expected_subset_layer_default(layer_state)
@@ -212,6 +215,7 @@ class PhaseScatterView(TimeScatterView):
         # setting of y_att will be handled by ephemeris plugin
         self.state.x_att = dc[0].components[component_labels.index(f'phase:{self.ephemeris_component}')]  # noqa
         self.figure.axes[0].label = 'phase'
+        self.figure.axes[0].num_ticks = 5
 
     def times_to_phases(self, times):
         ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
