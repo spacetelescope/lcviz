@@ -132,7 +132,12 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             self._clear_marks()
             return
 
-        lc = self.bin(add_data=False)
+        try:
+            lc = self.bin(add_data=False)
+        except Exception:
+            self._clear_marks()
+            return
+
         # TODO: remove the need for this (inconsistent quantity vs value setting in lc object)
         lc_time = getattr(lc.time, 'value', lc.time)
 
@@ -173,6 +178,10 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
         self._live_update()
 
     def bin(self, add_data=True):
+
+        if self.n_bins == '' or self.n_bins <= 0:
+            raise ValueError("n_bins must be a positive integer")
+
         input_lc = self.input_lc
 
         lc = input_lc.bin(time_bin_size=(input_lc.time[-1]-input_lc.time[0]).value/self.n_bins)
