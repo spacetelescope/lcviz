@@ -43,6 +43,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     show_live_preview = Bool(True).tag(sync=True)
 
     n_bins = IntHandleEmpty(100).tag(sync=True)
+    bin_enabled = Bool(True).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -130,13 +131,17 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     def _live_update(self, event={}):
         if not self.show_live_preview or not self.is_active:
             self._clear_marks()
+            self.bin_enabled = self.n_bins != '' and self.n_bins > 0
             return
 
         try:
             lc = self.bin(add_data=False)
         except Exception:
             self._clear_marks()
+            self.bin_enabled = False
             return
+        else:
+            self.bin_enabled = True
 
         # TODO: remove the need for this (inconsistent quantity vs value setting in lc object)
         lc_time = getattr(lc.time, 'value', lc.time)
