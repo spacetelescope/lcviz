@@ -1,3 +1,5 @@
+import pytest
+
 from lcviz.marks import LivePreviewBinning
 
 
@@ -47,3 +49,19 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
         ephem.period = 1.222
 
         b.bin(add_data=True)
+
+        # setting to invalid n_bins will raise error
+        b.n_bins = 0
+        assert b._obj.bin_enabled is False
+        with pytest.raises(ValueError):
+            b.bin(add_data=False)
+
+        # the enabled state of the button should work with or without live previews enabled
+        b.show_live_preview = False
+        assert len(_get_marks_from_viewer(tv)) == 0
+        assert len(_get_marks_from_viewer(pv)) == 0
+        assert b._obj.bin_enabled is False
+        b.n_bins = 1
+        assert b._obj.bin_enabled is True
+        b.n_bins = ''
+        assert b._obj.bin_enabled is False
