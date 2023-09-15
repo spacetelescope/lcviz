@@ -1,7 +1,7 @@
 import numpy as np
+from astropy.time import Time
 from traitlets import Bool, Float, List, Unicode, observe
 
-from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.message import DataCollectionAddMessage
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
@@ -11,8 +11,9 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin, SelectPluginCompone
                                         DatasetSelectMixin)
 from jdaviz.core.user_api import PluginUserApi
 
-from lightkurve import periodogram
+from lightkurve import periodogram, FoldedLightCurve
 
+from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
 from lcviz.template_mixin import EditableSelectPluginComponent
 from lcviz.viewers import PhaseScatterView
 
@@ -49,6 +50,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`add_component`
     * :meth:`rename_component`
     * :meth:`times_to_phases`
+    * :meth:`phases_to_times`
+    * :meth:`get_data`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for determining the period.
     * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
@@ -57,7 +60,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     template_file = __file__, "ephemeris.vue"
 
     # EPHEMERIS
-    phase_cids = {}
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
     component_items = List().tag(sync=True)
@@ -85,6 +87,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._default_initialized = False
         self._ignore_ephem_change = False
         self._ephemerides = {}
         self._prev_wrap_at = _default_wrap_at
@@ -95,6 +98,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                                                        items='component_items',
                                                        selected='component_selected',
                                                        manual_options=['default'],
+                                                       on_add=self._on_component_add,
                                                        on_rename=self._on_component_rename,
                                                        on_remove=self._on_component_remove)
         # force the original entry in ephemerides with defaults
@@ -117,12 +121,16 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'ephemeris', 'ephemerides',
                   'update_ephemeris', 'create_phase_viewer',
                   'add_component', 'remove_component', 'rename_component',
-                  'times_to_phases',
+                  'times_to_phases', 'phases_to_times', 'get_data',
                   'dataset', 'method']
         return PluginUserApi(self, expose=expose)
 
     def _phase_comp_lbl(self, component):
-        return f'phase:{component}'
+        if self.app._jdaviz_helper is None:
+            # duplicate logic from helper in case this is ever called before the helper
+            # is fully intialized
+            return f'phase:{component}'
+        return self.app._jdaviz_helper._phase_comp_lbl(component)
 
     @property
     def phase_comp_lbl(self):
@@ -170,6 +178,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             wrap_at = ephem.get('wrap_at', _default_wrap_at)
 
         def _callable(times):
+            if not len(times):
+                return []
             if dpdt != 0:
                 return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)) + (1-wrap_at), 1.0) - (1-wrap_at)  # noqa
             else:
@@ -177,44 +187,58 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         return _callable
 
-    def times_to_phases(self, times, component=None):
-        if component is None:
-            component = self.component.selected
+    def times_to_phases(self, times, ephem_component=None):
+        if ephem_component is None:
+            ephem_component = self.component.selected
 
-        return self._times_to_phases_callable(component)(times)
+        return self._times_to_phases_callable(ephem_component)(times)
 
-    def _update_all_phase_arrays(self, *args, component=None):
-        if component is None:
-            for component in self.component.choices:
-                self._update_all_phase_arrays(component=component)
+    def phases_to_times(self, phases, ephem_component=None):
+        if ephem_component is None:
+            ephem_component = self.component.selected
+
+        # this is not used internally, so we don't need the traitlet
+        # and callable optimizations
+        ephem = self.ephemerides.get(ephem_component, {})
+        t0 = ephem.get('t0', _default_t0)
+        period = ephem.get('period', _default_period)
+        dpdt = ephem.get('dpdt', _default_dpdt)
+
+        if dpdt != 0:
+            return t0 + period/dpdt*(np.exp(dpdt*(phases))-1.0)
+        else:
+            return t0 + (phases)*period
+
+    def _update_all_phase_arrays(self, *args, ephem_component=None):
+        # `ephem_component` is the name given to the
+        # *ephemeris* component in the orbiting system, e.g. "default",
+        # rather than the glue Data Component ID:
+
+        if ephem_component is None:
+            for ephem_component in self.component.choices:
+                self._update_all_phase_arrays(ephem_component=ephem_component)
             return
 
         dc = self.app.data_collection
 
-        phase_comp_lbl = self._phase_comp_lbl(component)
+        phase_comp_lbl = self._phase_comp_lbl(ephem_component)
 
         # we'll create the callable function for this component once so it can be re-used
-        _times_to_phases = self._times_to_phases_callable(component)
+        _times_to_phases = self._times_to_phases_callable(ephem_component)
 
         new_links = []
         for i, data in enumerate(dc):
+            data_is_folded = '_LCVIZ_EPHEMERIS' in data.meta.keys()
+            if data_is_folded:
+                continue
+
             times = data.get_component('World 0').data
             phases = _times_to_phases(times)
-            if component not in self.phase_cids:
-                self.phase_cids[component] = ComponentID(phase_comp_lbl)
 
-            if self.phase_cids[component] in data.components:
-                data.update_components({self.phase_cids[component]: phases})
-            else:
-                data.add_component(phases, self.phase_cids[component])
+            self.app._jdaviz_helper._set_data_component(
+                data, phase_comp_lbl, phases
+            )
 
-            # this loop catches phase components generated automatically by
-            # when add_results is triggered in other plugins:
-            for comp in data.components:
-                if phase_comp_lbl == comp.label:
-                    data.remove_component(phase_comp_lbl)
-
-            data.add_component(phases, self.phase_cids[component])
             if i != 0:
                 ref_data = dc[0]
                 new_link = LinkSame(
@@ -232,7 +256,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         # update any plugin markers
         # TODO: eventually might need to loop over multiple matching viewers
-        phase_viewer_id = self._phase_viewer_id(component)
+        phase_viewer_id = self._phase_viewer_id(ephem_component)
         if phase_viewer_id in self.app.get_viewer_ids():
             phase_viewer = self.app.get_viewer(phase_viewer_id)
             for mark in phase_viewer.custom_marks:
@@ -270,7 +294,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         pv = self.app.get_viewer(phase_viewer_id)
         if create_phase_viewer:
             pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
-        pv.state.x_att = self.phase_cids[self.component_selected]
+        pv.state.x_att = self.app._jdaviz_helper._component_ids[self.phase_comp_lbl]
         return pv
 
     def vue_create_phase_viewer(self, *args):
@@ -285,12 +309,28 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _check_if_phase_viewer_exists(self, *args):
         self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()
 
+    def _on_component_add(self, lbl):
+        self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=None, new_lbl=lbl,
+                                                            sender=self))
+
     def _on_component_rename(self, old_lbl, new_lbl):
         # this is triggered when the plugin component detects a change to the component name
         self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
         if self._phase_viewer_id(old_lbl) in self.app.get_viewer_ids():
             self.app._rename_viewer(self._phase_viewer_id(old_lbl), self._phase_viewer_id(new_lbl))
+
+        # update metadata entries so that they can be used for filtering applicable entries in
+        # data menus
+        for dc_item in self.app.data_collection:
+            if dc_item.meta.get('_LCVIZ_EPHEMERIS', {}).get('ephemeris', None) == old_lbl:
+                dc_item.meta['_LCVIZ_EPHEMERIS']['ephemeris'] = new_lbl
+        for data_item in self.app.state.data_items:
+            if data_item.get('meta', {}).get('_LCVIZ_EPHEMERIS', {}).get('ephemeris', None) == old_lbl:  # noqa
+                data_item['meta']['_LCVIZ_EPHEMERIS']['ephemeris'] = new_lbl
+
         self._check_if_phase_viewer_exists()
+        self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=old_lbl, new_lbl=new_lbl,
+                                                            sender=self))
 
     def _on_component_remove(self, lbl):
         _ = self._ephemerides.pop(lbl, {})
@@ -301,6 +341,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         cid = viewer_item.get('id', None)
         if cid is not None:
             self.app.vue_destroy_viewer_item(cid)
+        self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=lbl, new_lbl=None,
+                                                            sender=self))
 
     def rename_component(self, old_lbl, new_lbl):
         # NOTE: the component will call _on_component_rename after updating
@@ -341,7 +383,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             # otherwise, this is a new component and there is no need.
             self._ephem_traitlet_changed()
 
-    def update_ephemeris(self, component=None, t0=None, period=None, dpdt=None, wrap_at=None):
+    def update_ephemeris(self, ephem_component=None, t0=None, period=None, dpdt=None, wrap_at=None):
         """
         Update the ephemeris for a given component.
 
@@ -362,21 +404,23 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         -------
         dictionary of ephemeris corresponding to ``component``
         """
-        if component is None:
-            component = self.component_selected
+        if ephem_component is None:
+            ephem_component = self.component_selected
 
-        if component not in self.component.choices:  # pragma: no cover
+        if ephem_component not in self.component.choices:  # pragma: no cover
             raise ValueError(f"component must be one of {self.component.choices}")
 
-        existing_ephem = self._ephemerides.get(component, {})
+        existing_ephem = self._ephemerides.get(ephem_component, {})
         for name, value in {'t0': t0, 'period': period, 'dpdt': dpdt, 'wrap_at': wrap_at}.items():
             if value is not None:
                 existing_ephem[name] = value
-                if component == self.component_selected:
+                if ephem_component == self.component_selected:
                     setattr(self, name, value)
 
-        self._ephemerides[component] = existing_ephem
-        self._update_all_phase_arrays(component=component)
+        self._ephemerides[ephem_component] = existing_ephem
+        self._update_all_phase_arrays(ephem_component=ephem_component)
+        self.hub.broadcast(EphemerisChangedMessage(ephemeris_label=ephem_component,
+                                                   sender=self))
         return existing_ephem
 
     @observe('period', 'dpdt', 't0', 'wrap_at')
@@ -400,7 +444,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             self.update_ephemeris(**{event.get('name'): event.get('new')})
             # will call _update_all_phase_arrays
         else:
-            self._update_all_phase_arrays(component=self.component_selected)
+            self._update_all_phase_arrays(ephem_component=self.component_selected)
 
         # update zoom-limits if wrap_at was changed
         if event.get('name') == 'wrap_at':
@@ -418,6 +462,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.dpdt_step = max(round_to_1(abs(self.period * self.dpdt)/1000) if self.dpdt != 0 else 0,
                              1./1000000)
         self.t0_step = round_to_1(self.period/1000)
+
+        if not self._default_initialized:
+            # other plugins that use EphemerisSelect don't see the first entry yet
+            self._default_initialized = True
+            self._on_component_add(self.component_selected)
 
     @observe('dataset_selected', 'method_selected')
     def _update_periodogram(self, *args):
@@ -451,3 +500,38 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     def vue_adopt_period_at_max_power(self, *args):
         self.period = self.period_at_max_power
+
+    def get_data(self, dataset, ephem_component=None):
+        # TODO: support subset_to_apply and then include a wrapper at the helper-level?
+        # (would need to catch when cls does not result in a lightkurve object or write
+        # behaviors for other cases as well)
+        if ephem_component is None:
+            ephem_component = self.component.selected
+
+        lc = self.app._jdaviz_helper.get_data(dataset)
+        data = next((x for x in self.app.data_collection if x.label == dataset))
+
+        comps = {str(comp): comp for comp in data.components}
+        xcomp = f'phase:{ephem_component}'
+        phases = data.get_component(comps.get(xcomp)).data
+
+        # the following code is adopted directly from lightkurve
+        # 2. Create the folded object
+        phlc = FoldedLightCurve(data=lc)
+        # 3. Restore the folded time
+        with phlc._delay_required_column_checks():
+            phlc.remove_column("time")
+            # TODO: phased lc shouldn't have the same time format/scale, but this is needed
+            # in order for binning to work (until there's a fix to lightkurve)
+            phlc.add_column(Time(phases, format=lc.time.format, scale=lc.time.scale),
+                            name="time", index=0)
+            phlc.add_column(lc.time.copy(), name="time_original", index=len(lc._required_columns))
+
+        # Add extra column and meta data specific to FoldedLightCurve
+        ephemeris = self.ephemerides.get(ephem_component)
+        phlc.meta["_LCVIZ_EPHEMERIS"] = {'ephemeris': ephem_component, **ephemeris}
+        phlc.meta["PERIOD"] = ephemeris.get('period')
+        phlc.meta["EPOCH_TIME"] = ephemeris.get('t0')
+        phlc.sort("time")
+
+        return phlc

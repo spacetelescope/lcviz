@@ -12,10 +12,10 @@ from astropy.table import QTable
 from astropy.time import Time
 
 from lightkurve import (
-    LightCurve, KeplerLightCurve, TessLightCurve
+    LightCurve, KeplerLightCurve, TessLightCurve, FoldedLightCurve
 )
 
-__all__ = ['TimeCoordinates', 'LightCurveHandler']
+__all__ = ['TimeCoordinates', 'LightCurveHandler', 'data_not_folded']
 
 
 class TimeCoordinates(Coordinates):
@@ -68,9 +68,9 @@ class LightCurveHandler:
     lc_component_ids = {}
 
     def to_data(self, obj, reference_time=None):
-        time_coord = TimeCoordinates(
-            obj.time, reference_time=reference_time
-        )
+        is_folded = isinstance(obj, FoldedLightCurve)
+        time = obj.time_original if is_folded and hasattr(obj, 'time_original') else obj.time
+        time_coord = TimeCoordinates(time, reference_time=reference_time)
         data = Data(coords=time_coord)
 
         if hasattr(obj, 'label'):
@@ -87,14 +87,23 @@ class LightCurveHandler:
         # collect all other columns in the TimeSeries:
         for component_label in obj.colnames:
 
+            component_data = getattr(obj, component_label)
+            if is_folded and component_label == 'time':
+                ephem_comp = obj.meta.get('_LCVIZ_EPHEMERIS', {}).get('ephemeris')
+                if ephem_comp is None:
+                    continue
+                component_label = f'phase:{ephem_comp}'
+
             if component_label not in self.lc_component_ids:
                 self.lc_component_ids[component_label] = ComponentID(component_label)
             cid = self.lc_component_ids[component_label]
 
-            component_data = getattr(obj, component_label)
             data[cid] = component_data
             if hasattr(component_data, 'unit'):
-                data.get_component(cid).units = str(component_data.unit)
+                try:
+                    data.get_component(cid).units = str(component_data.unit)
+                except KeyError:  # pragma: no cover
+                    continue
 
         data.meta.update({'uncertainty_type': 'std'})
 
@@ -146,6 +155,9 @@ class LightCurveHandler:
             component_ids.remove(skip_comp)
 
         for component_id in component_ids:
+            if component_id.label in names:
+                # avoid duplicate column
+                continue
             component = data.get_component(component_id)
 
             values = component.data[glue_mask]
@@ -193,3 +205,8 @@ class KeplerLightCurveHandler(LightCurveHandler):
 class TessLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
     pass
+
+
+# plugin component filters
+def data_not_folded(data):
+    return data.meta.get('_LCVIZ_EPHEMERIS', None) is None

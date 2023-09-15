@@ -4,13 +4,18 @@ import os
 
 from lightkurve import LightCurve
 
+from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from jdaviz.core.helpers import ConfigHelper
 from lcviz.events import ViewerRenamedMessage
 
 __all__ = ['LCviz']
 
-custom_components = {'lcviz-editable-select': 'components/plugin_editable_select.vue'}
+
+_default_time_viewer_reference_name = 'flux-vs-time'
+
+custom_components = {'lcviz-editable-select': 'components/plugin_editable_select.vue',
+                     'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
 
 # Register pure vue component. This allows us to do recursive component instantiation only in the
 # vue component file
@@ -112,16 +117,18 @@ class LCviz(ConfigHelper):
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
         'tray': ['lcviz-metadata-viewer', 'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'flatten', 'frequency-analysis', 'ephemeris',
-                 'lcviz-export-plot'],
+                 'binning', 'lcviz-export-plot'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',
                                                     'plot': 'lcviz-time-viewer',
                                                     'reference': 'flux-vs-time'}]}]}]}
 
+    _component_ids = {}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._default_time_viewer_reference_name = 'flux-vs-time'
+        self._default_time_viewer_reference_name = _default_time_viewer_reference_name
 
         # override jdaviz behavior to support temporal subsets
         self.app._get_range_subset_bounds = (
@@ -187,3 +194,17 @@ class LCviz(ConfigHelper):
             Data is returned as type cls with subsets applied.
         """
         return super()._get_data(data_label=data_label, mask_subset=subset, cls=cls)
+
+    def _phase_comp_lbl(self, component):
+        return f'phase:{component}'
+
+    def _set_data_component(self, data, component_label, values):
+        if component_label not in self._component_ids:
+            self._component_ids[component_label] = ComponentID(component_label)
+
+        if self._component_ids[component_label] in data.components:
+            data.update_components({self._component_ids[component_label]: values})
+        else:
+            data.add_component(values, self._component_ids[component_label])
+
+        data.add_component(values, self._component_ids[component_label])

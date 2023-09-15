@@ -10,6 +10,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
+from lcviz.utils import data_not_folded
 from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.parsers import _data_with_reftime
 
@@ -53,6 +54,9 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # do not support flattening data in phase-space
+        self.dataset.add_filter(data_not_folded)
 
         # marks do not exist for the new viewer, so force another update to compute and draw
         # those marks

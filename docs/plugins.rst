@@ -13,6 +13,8 @@ This plugin allows viewing of any metadata associated with the selected data.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.metadata_viewer.metadata_viewer.MetadataViewer` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -43,6 +45,8 @@ This plugin gives access to per-viewer and per-layer plotting options.
 
 .. admonition:: User API Example
     :class: dropdown
+
+    See the :class:`~lcviz.plugins.plot_options.plot_options.PlotOptions` user API documentation for more details.
 
     .. code-block:: python
 
@@ -97,6 +101,8 @@ visible when the plugin is opened.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.markers.markers.Markers` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -132,6 +138,8 @@ can be disabled through the plugin settings.
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.flatten.flatten.Flatten` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -166,6 +174,8 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
 .. admonition:: User API Example
     :class: dropdown
 
+    See the :class:`~lcviz.plugins.frequency_analysis.frequency_analysis.FrequencyAnalysis` user API documentation for more details.
+
     .. code-block:: python
 
       from lcviz import LCviz
@@ -194,7 +204,7 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
 .. _ephemeris:
 
 Ephemeris
-============
+==========
 
 The ephemeris plugin allows for setting, finding, and refining the ephemeris or ephemerides used
 for phase-folding.
@@ -202,6 +212,8 @@ for phase-folding.
 
 .. admonition:: User API Example
     :class: dropdown
+
+    See the :class:`~lcviz.plugins.ephemeris.ephemeris.Ephemeris` user API documentation for more details.
 
     .. code-block:: python
 
@@ -218,6 +230,41 @@ for phase-folding.
       ephem.rename_component('default', 'my component name')
 
 
+.. _binning:
+
+Binning
+=======
+
+This plugin supports binning a light curve in time or phase-space.
+
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.binning.binning.Binning` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      binning = lcviz.plugins['Binning']
+      binning.n_bins = 150
+      binned_lc = binning.bin(add_data=True)
+      print(binned_lc)
+
+
+.. seealso::
+
+  This plugin uses the following ``lightkurve`` implementations:
+
+  * :meth:`lightkurve.LightCurve.bin`
+
+
 .. _export-plot:
 
 Export Plot
@@ -228,6 +275,8 @@ This plugin allows exporting the plot in a given viewer to various image formats
 
 .. admonition:: User API Example
     :class: dropdown
+
+    See the :class:`~lcviz.plugins.export_plot.export_plot.ExportViewer` user API documentation for more details.
 
     .. code-block:: python
 
