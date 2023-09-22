@@ -68,6 +68,7 @@
       :add_to_viewer_selected.sync="add_to_viewer_selected"
       action_label="Bin"
       action_tooltip="Bin data"
+      :action_disabled="!bin_enabled"
       @click:action="apply"
     ></plugin-add-results>
 

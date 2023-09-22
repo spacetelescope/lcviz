@@ -43,6 +43,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     show_live_preview = Bool(True).tag(sync=True)
 
     n_bins = IntHandleEmpty(100).tag(sync=True)
+    bin_enabled = Bool(True).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -130,9 +131,18 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
     def _live_update(self, event={}):
         if not self.show_live_preview or not self.is_active:
             self._clear_marks()
+            self.bin_enabled = self.n_bins != '' and self.n_bins > 0
             return
 
-        lc = self.bin(add_data=False)
+        try:
+            lc = self.bin(add_data=False)
+        except Exception:
+            self._clear_marks()
+            self.bin_enabled = False
+            return
+        else:
+            self.bin_enabled = True
+
         # TODO: remove the need for this (inconsistent quantity vs value setting in lc object)
         lc_time = getattr(lc.time, 'value', lc.time)
 
@@ -173,6 +183,10 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
         self._live_update()
 
     def bin(self, add_data=True):
+
+        if self.n_bins == '' or self.n_bins <= 0:
+            raise ValueError("n_bins must be a positive integer")
+
         input_lc = self.input_lc
 
         lc = input_lc.bin(time_bin_size=(input_lc.time[-1]-input_lc.time[0]).value/self.n_bins)
