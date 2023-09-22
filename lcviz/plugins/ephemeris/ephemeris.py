@@ -320,7 +320,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if self._phase_viewer_id(old_lbl) in self.app.get_viewer_reference_names():
             self.app._update_viewer_reference_name(
                 self._phase_viewer_id(old_lbl),
-                self._phase_viewer_id(new_lbl)
+                self._phase_viewer_id(new_lbl),
+                update_id=True
             )
 
         # update metadata entries so that they can be used for filtering applicable entries in
