@@ -9,3 +9,4 @@ class SubsetPlugin(SubsetPlugin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#subset-tools"
+        self.can_freeze = True
