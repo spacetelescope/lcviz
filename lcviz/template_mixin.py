@@ -3,22 +3,10 @@ from traitlets import List, Unicode
 from ipyvuetify import VuetifyTemplate
 from glue.core import HubListener
 
-import jdaviz
-from jdaviz.core.template_mixin import ViewerSelect, DatasetSelect, SelectPluginComponent
-from lcviz.events import ViewerRenamedMessage, EphemerisComponentChangedMessage
+from jdaviz.core.template_mixin import DatasetSelect, SelectPluginComponent
+from lcviz.events import EphemerisComponentChangedMessage
 
 __all__ = ['EphemerisSelect', 'EphemerisSelectMixin']
-
-
-# TODO: remove this if/when jdaviz supports renaming viewers natively
-class ViewerSelect(ViewerSelect):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.hub.subscribe(self, ViewerRenamedMessage, handler=self._on_viewers_changed)
-
-
-# monkey-patch upstream version so all plugins use the viewer-renamed logic
-jdaviz.core.template_mixin.ViewerSelect = ViewerSelect
 
 
 class EphemerisSelect(SelectPluginComponent):

@@ -144,13 +144,13 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             times = lc_time
 
         for viewer_id, mark in self.marks.items():
+            viewer_ref = self.app.get_viewer_by_id(viewer_id).reference
             if self.ephemeris_selected == 'No ephemeris':
                 visible = True
-                # TODO: fix this to be general and not rely on ugly id
-                do_phase = viewer_id != 'lcviz-0'
+                do_phase = viewer_ref != 'flux-vs-time'
             else:
                 # TODO: try to fix flashing as traitlets update
-                visible = viewer_id.split(':')[-1] == self.ephemeris_selected
+                visible = viewer_ref.split(':')[-1] == self.ephemeris_selected
                 do_phase = False
 
             if visible:

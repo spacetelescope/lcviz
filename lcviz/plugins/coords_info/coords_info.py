@@ -5,7 +5,6 @@ from jdaviz.configs.imviz.plugins.coords_info import CoordsInfo
 from jdaviz.core.registries import tool_registry
 
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-from lcviz.events import ViewerRenamedMessage
 
 
 __all__ = ['CoordsInfo']
@@ -18,10 +17,6 @@ class CoordsInfo(CoordsInfo):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # TODO: move to jdaviz if/once viewer renaming supported
-        self.hub.subscribe(self, ViewerRenamedMessage,
-                           handler=self._viewer_renamed)
 
     def _viewer_renamed(self, msg):
         self._marks[msg.new_viewer_ref] = self._marks.pop(msg.old_viewer_ref)
