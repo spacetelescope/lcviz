@@ -2,11 +2,10 @@ import numpy as np
 
 from glue.core.subset_group import GroupedSubset
 from jdaviz.configs.imviz.plugins.coords_info import CoordsInfo
+from jdaviz.core.events import ViewerRenamedMessage
 from jdaviz.core.registries import tool_registry
 
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-from lcviz.events import ViewerRenamedMessage
-
 
 __all__ = ['CoordsInfo']
 
