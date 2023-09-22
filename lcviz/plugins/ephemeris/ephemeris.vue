@@ -4,7 +4,7 @@
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
     :popout_button="popout_button">
 
-    <lcviz-editable-select
+    <plugin-editable-select
       :mode.sync="component_mode"
       :edit_value.sync="component_edit_value"
       :items="component_items"
@@ -12,7 +12,7 @@
       label="Component"
       hint="Select an ephemeris component."
       >
-    </lcviz-editable-select>
+    </plugin-editable-select>
 
     <v-row justify="end">
       <v-btn color="primary" text @click="create_phase_viewer" :disabled="phase_viewer_exists || component_selected.length == 0">
