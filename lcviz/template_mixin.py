@@ -4,7 +4,7 @@ from ipyvuetify import VuetifyTemplate
 from glue.core import HubListener
 
 import jdaviz
-from jdaviz.core.template_mixin import ViewerSelect, SelectPluginComponent
+from jdaviz.core.template_mixin import ViewerSelect, DatasetSelect, SelectPluginComponent
 from lcviz.events import ViewerRenamedMessage, EphemerisComponentChangedMessage
 
 __all__ = ['EphemerisSelect', 'EphemerisSelectMixin']
