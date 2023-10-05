@@ -1,3 +1,4 @@
+import numpy as np
 from functools import cached_property
 from traitlets import Bool, Float, List, Unicode, observe
 
@@ -69,7 +70,6 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
                                            selected='xunit_selected',
                                            manual_options=['frequency', 'period'])
 
-        self.plot.add_line('line', color='gray', marker_size=12)
         self.plot.figure.axes[1].label = 'power'
         self._update_xunit()
 
@@ -110,7 +110,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
             except Exception as err:
                 self.spinner = False
                 self.err = str(err)
-                self.plot.clear_all_marks()
+                self.plot.update_style('periodogram', visible=False)
                 return None
         elif self.method == 'Lomb-Scargle':
             try:
@@ -120,7 +120,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
             except Exception as err:
                 self.spinner = False
                 self.err = str(err)
-                self.plot.clear_all_marks()
+                self.plot.update_style('periodogram', visible=False)
                 return None
         else:
             self.spinner = False
@@ -134,9 +134,15 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     def _update_xunit(self, *args):
         per = self.periodogram
         if per is not None:
-            self.plot.marks['line'].x = getattr(per, self.xunit_selected)
+            x = getattr(per, self.xunit_selected).value
+            self.plot._update_data('periodogram', x=x)
+            self.plot.update_style('periodogram', visible=True)
+            old_xmin, old_xmax = self.plot.viewer.state.x_min, self.plot.viewer.state.x_max
+            new_xmin = old_xmax ** -1 if old_xmax > 0 else np.nanmin(x)
+            new_xmax = old_xmin ** -1 if old_xmin > 0 else np.nanmax(x)
+            self.plot.set_lims(x_min=new_xmin, x_max=new_xmax)
         else:
-            self.plot.clear_all_marks()
+            self.plot.update_style('periodogram', visible=False)
 
         self._update_periodogram_labels(per)
 
@@ -168,8 +174,8 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
 
         per = self.periodogram
         if per is not None:
-            line = self.plot.marks['line']
-            line.x, line.y = getattr(per, self.xunit_selected).value, per.power.value
+            self.plot._update_data('periodogram', x=getattr(per, self.xunit_selected), y=per.power.value)
+            self.plot.update_style('periodogram', line_visible=True, markers_visible=False)
             self._update_periodogram_labels(per)
         else:
-            self.plot.clear_all_marks()
+            self.plot.update_style('periodogram', visible=False)
