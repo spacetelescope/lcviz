@@ -17,13 +17,21 @@
             <v-row>
               <v-switch
                 v-model="show_live_preview"
-                label="Show live preview"
-                hint="Whether to show live preview of flattening options.  Note that the live-preview of the flattened light curve is not yet normalized."
+                label="Show flattened preview"
+                hint="Whether to show live-preview of the unnormalized flattened light curve."
                 persistent-hint
               ></v-switch>
             </v-row>
             <v-row v-if="show_live_preview && !unnormalize">
               <v-alert type="warning">Live preview is unnormalized, but flattening will normalize.</v-alert>
+            </v-row>
+            <v-row>
+              <v-switch
+                v-model="show_trend_preview"
+                label="Show trend preview"
+                hint="Whether to show live-preview of the trend used for flattening."
+                persistent-hint
+              ></v-switch>
             </v-row>
             <v-row>
               <v-switch
