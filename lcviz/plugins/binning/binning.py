@@ -140,7 +140,8 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
             mark.visible = this_visible
 
-        if visible:
+        if visible and event.get('name', '') in ('is_active', 'show_live_preview'):
+            # then the marks themselves need to be updated
             self._live_update(event)
 
     @observe('dataset_selected', 'ephemeris_selected',
@@ -151,6 +152,10 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             self._clear_marks()
             self.bin_enabled = self.n_bins != '' and self.n_bins > 0
             return
+
+        if event.get('name', '') not in ('is_active', 'show_live_preview'):
+            # mark visibility hasn't been handled yet
+            self._toggle_marks()
 
         try:
             lc = self.bin(add_data=False)

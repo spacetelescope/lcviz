@@ -54,7 +54,9 @@ def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
         # update polyorder (live-preview should re-appear and have changed from before)
         f.polyorder = before_polyorder + 1
         assert f._obj.flatten_err == ''
-        after_update = _get_marks_from_viewer(tv)[0].y
+        marks = _get_marks_from_viewer(tv)
+        assert len(marks) == 2
+        after_update = marks[0].y
         assert not np.allclose(before_update, after_update)
 
         orig_label = f.dataset.selected

@@ -170,7 +170,8 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         for mark in flattened_marks.values():
             mark.visible = visible
 
-        if visible:
+        if visible and event.get('name') in ('is_active', 'show_live_preview'):
+            # then the marks themselves need to be updated
             self._live_update(event)
 
     @observe('dataset_selected',
@@ -185,6 +186,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self._clear_marks()
             return
         self.flatten_err = ''
+
+        if event.get('name') not in ('is_active', 'show_live_preview'):
+            # mark visibility hasn't been handled yet
+            self._toggle_marks(event)
 
         if self.unnormalize:
             output_flux = output_lc.flux.value
