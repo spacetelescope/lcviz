@@ -26,7 +26,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     Only the following attributes and methods are available through the
     public plugin API.
 
-    * ``show_live_preview``
+    * ``show_live_preview`` : bool
+        Whether to show the live-preview of the (unnormalized) flattened light curve
+    * ``show_trend_preview`` : bool
+        Whether to show the live-preview of the trend curve used to flatten the light curve
     * ``default_to_overwrite``
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to flatten.
@@ -43,6 +46,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     uses_active_status = Bool(True).tag(sync=True)
 
     show_live_preview = Bool(True).tag(sync=True)
+    show_trend_preview = Bool(True).tag(sync=True)
     default_to_overwrite = Bool(True).tag(sync=True)
     flatten_err = Unicode().tag(sync=True)
 
@@ -65,7 +69,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
     @property
     def user_api(self):
-        expose = ['show_live_preview', 'default_to_overwrite',
+        expose = ['show_live_preview', 'show_trend_preview', 'default_to_overwrite',
                   'dataset', 'add_results',
                   'window_length', 'polyorder', 'break_tolerance',
                   'niters', 'sigma', 'unnormalize', 'flatten']
@@ -160,17 +164,19 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
                     mark.clear()
                     mark.visible = False
 
-    @observe('is_active', 'show_live_preview')
+    @observe('is_active', 'show_live_preview', 'show_trend_preview')
     def _toggle_marks(self, event={}):
-        visible = self.show_live_preview and self.is_active
+        live_visible = self.show_live_preview and self.is_active
+        trend_visible = self.show_trend_preview and self.is_active
 
         trend_marks, flattened_marks = self.marks
         for mark in trend_marks.values():
-            mark.visible = visible
+            mark.visible = trend_visible
         for mark in flattened_marks.values():
-            mark.visible = visible
+            mark.visible = live_visible
 
-        if visible and event.get('name') in ('is_active', 'show_live_preview'):
+        if ((live_visible or trend_visible) and
+                event.get('name') in ('is_active', 'show_live_preview', 'show_trend_preview')):
             # then the marks themselves need to be updated
             self._live_update(event)
 
@@ -187,7 +193,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             return
         self.flatten_err = ''
 
-        if event.get('name') not in ('is_active', 'show_live_preview'):
+        if event.get('name') not in ('is_active', 'show_live_preview', 'show_trend_preview'):
             # mark visibility hasn't been handled yet
             self._toggle_marks(event)
 
