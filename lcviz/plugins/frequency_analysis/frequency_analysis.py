@@ -71,6 +71,10 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
                                            manual_options=['frequency', 'period'])
 
         self.plot.figure.axes[1].label = 'power'
+        self.plot.figure.fig_margin = {'top': 60, 'bottom': 60, 'left': 65, 'right': 15}
+        self.plot.viewer.axis_y.num_ticks = 5
+        self.plot.viewer.axis_y.tick_format = '0.2e'
+        self.plot.viewer.axis_y.label_offset = '55px'
         self._update_xunit()
 
     # TODO: remove if/once inherited from jdaviz
