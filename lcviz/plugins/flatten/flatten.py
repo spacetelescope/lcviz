@@ -29,7 +29,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     * ``show_live_preview`` : bool
         Whether to show the live-preview of the (unnormalized) flattened light curve
     * ``show_trend_preview`` : bool
-        Whether to show the live-preview of the removed trend
+        Whether to show the live-preview of the trend curve used to flatten the light curve
     * ``default_to_overwrite``
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to flatten.
