@@ -6,7 +6,8 @@ from jdaviz.core.custom_traitlets import FloatHandleEmpty, IntHandleEmpty
 from jdaviz.core.events import ViewerAddedMessage
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
-                                        DatasetSelectMixin, AddResultsMixin)
+                                        DatasetSelectMixin, AddResultsMixin,
+                                        skip_if_no_updates_since_last_active)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
@@ -159,16 +160,25 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
                     mark.clear()
                     mark.visible = False
 
-    @observe('show_live_preview', 'is_active',
-             'dataset_selected',
+    @observe('is_active', 'show_live_preview')
+    def _toggle_marks(self, event={}):
+        visible = self.show_live_preview and self.is_active
+
+        trend_marks, flattened_marks = self.marks
+        for mark in trend_marks.values():
+            mark.visible = visible
+        for mark in flattened_marks.values():
+            mark.visible = visible
+
+        if visible and event.get('name') in ('is_active', 'show_live_preview'):
+            # then the marks themselves need to be updated
+            self._live_update(event)
+
+    @observe('dataset_selected',
              'window_length', 'polyorder', 'break_tolerance',
              'niters', 'sigma')
+    @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
-        if not self.show_live_preview or not self.is_active:
-            self._clear_marks()
-            self.flatten_err = ''
-            return
-
         try:
             output_lc, trend_lc = self.flatten(add_data=False)
         except Exception as e:
@@ -176,6 +186,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self._clear_marks()
             return
         self.flatten_err = ''
+
+        if event.get('name') not in ('is_active', 'show_live_preview'):
+            # mark visibility hasn't been handled yet
+            self._toggle_marks(event)
 
         if self.unnormalize:
             output_flux = output_lc.flux.value
@@ -188,10 +202,8 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         for mark in trend_marks.values():
             # TODO: need to account for phasing
             mark.update_ty(times.value, trend_lc.flux.value)
-            mark.visible = True
         for mark in flattened_marks.values():
             mark.update_ty(times.value, output_flux)
-            mark.visible = True
 
     def vue_apply(self, *args, **kwargs):
         try:

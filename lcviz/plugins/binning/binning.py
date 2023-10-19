@@ -6,7 +6,8 @@ from jdaviz.core.custom_traitlets import IntHandleEmpty
 from jdaviz.core.events import (ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
-                                        DatasetSelectMixin, AddResultsMixin)
+                                        DatasetSelectMixin, AddResultsMixin,
+                                        skip_if_no_updates_since_last_active)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.events import EphemerisChangedMessage
@@ -125,14 +126,36 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         self.add_results.viewer.filters = [viewer_filter]
 
-    @observe('show_live_preview', 'is_active',
-             'dataset_selected', 'ephemeris_selected',
+    @observe('is_active', 'show_live_preview')
+    def _toggle_marks(self, event={}):
+        visible = self.show_live_preview and self.is_active
+
+        for viewer_id, mark in self.marks.items():
+            if not visible:
+                this_visible = False
+            elif self.ephemeris_selected == 'No ephemeris':
+                this_visible = True
+            else:
+                this_visible = viewer_id.split(':')[-1] == self.ephemeris_selected
+
+            mark.visible = this_visible
+
+        if visible and event.get('name', '') in ('is_active', 'show_live_preview'):
+            # then the marks themselves need to be updated
+            self._live_update(event)
+
+    @observe('dataset_selected', 'ephemeris_selected',
              'n_bins')
+    @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
         if not self.show_live_preview or not self.is_active:
             self._clear_marks()
             self.bin_enabled = self.n_bins != '' and self.n_bins > 0
             return
+
+        if event.get('name', '') not in ('is_active', 'show_live_preview'):
+            # mark visibility hasn't been handled yet
+            self._toggle_marks()
 
         try:
             lc = self.bin(add_data=False)
@@ -155,23 +178,16 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         for viewer_id, mark in self.marks.items():
             if self.ephemeris_selected == 'No ephemeris':
-                visible = True
                 # TODO: fix this to be general and not rely on ugly id
                 do_phase = viewer_id != 'lcviz-0'
             else:
-                # TODO: try to fix flashing as traitlets update
-                visible = viewer_id.split(':')[-1] == self.ephemeris_selected
                 do_phase = False
 
-            if visible:
-                if do_phase:
-                    mark.update_ty(times, lc.flux.value)
-                else:
-                    mark.times = []
-                    mark.update_xy(times, lc.flux.value)
+            if do_phase:
+                mark.update_ty(times, lc.flux.value)
             else:
-                mark.clear()
-            mark.visible = visible
+                mark.times = []
+                mark.update_xy(times, lc.flux.value)
 
     def _on_ephemeris_update(self, msg):
         if not self.show_live_preview or not self.is_active:
