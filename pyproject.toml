@@ -20,7 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=5.2",
-    "jdaviz>=3.7",
+    "jdaviz>=3.7.1",
     "lightkurve@git+https://github.com/lightkurve/lightkurve",  # until https://github.com/lightkurve/lightkurve/pull/1342 is in a release (anything after 2.4.0)
 ]
 dynamic = [

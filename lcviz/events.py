@@ -1,16 +1,7 @@
 from glue.core.message import Message
 
-__all__ = ['ViewerRenamedMessage', 'EphemerisComponentChangedMessage',
+__all__ = ['EphemerisComponentChangedMessage',
            'EphemerisChangedMessage']
-
-
-class ViewerRenamedMessage(Message):
-    """Message emitted after a viewer is destroyed by the application."""
-    def __init__(self, old_viewer_ref, new_viewer_ref, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.old_viewer_ref = old_viewer_ref
-        self.new_viewer_ref = new_viewer_ref
 
 
 class EphemerisComponentChangedMessage(Message):
