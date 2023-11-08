@@ -138,6 +138,24 @@
       <v-alert type="warning">Live preview is unnormalized, but flattening will normalize.</v-alert>
     </v-row>
 
+    <v-alert v-if="previews_temp_disable && (show_live_preview || show_trend_preview)" type='warning' style="margin-left: -12px; margin-right: -12px">
+      Live-updating is temporarily disabled (last update took {{last_live_time}}s)
+      <v-row justify='center'>
+        <j-tooltip tooltipcontent='hide live trend and flattened previews (can be re-enabled from the settings section in the plugin).' span_style="width: 100%">
+          <v-btn style='width: 100%' @click="() => {show_live_preview = false; show_trend_preview = false}">
+            disable previews
+          </v-btn>
+        </j-tooltip>
+      </v-row>
+      <v-row justify='center'>
+        <j-tooltip tooltipcontent='manually update live-previews based on current plugin inputs.' span_style="width: 100%">
+          <v-btn style='width: 100%' @click="previews_temp_disable = false">
+            update preview
+          </v-btn>
+        </j-tooltip>
+      </v-row>
+    </v-alert>
+
     <plugin-add-results
       :label.sync="results_label"
       :label_default="results_label_default"
@@ -149,7 +167,7 @@
       :add_to_viewer_selected.sync="add_to_viewer_selected"
       action_label="Flatten"
       action_tooltip="Flatten data"
-      :action_disabled="flatten_err.length > 0"
+      :action_disabled="flatten_err.length > 0 || spinner"
       @click:action="apply"
     ></plugin-add-results>
 
