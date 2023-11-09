@@ -87,6 +87,7 @@
       action_label="Bin"
       action_tooltip="Bin data"
       :action_disabled="!bin_enabled"
+      :action_spinner="spinner"
       @click:action="apply"
     ></plugin-add-results>
 

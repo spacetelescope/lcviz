@@ -167,7 +167,8 @@
       :add_to_viewer_selected.sync="add_to_viewer_selected"
       action_label="Flatten"
       action_tooltip="Flatten data"
-      :action_disabled="flatten_err.length > 0 || spinner"
+      :action_disabled="flatten_err.length > 0"
+      :action_spinner="spinner"
       @click:action="apply"
     ></plugin-add-results>
 
