@@ -57,6 +57,24 @@
       </v-text-field>
     </v-row>
 
+    <v-alert v-if="previews_temp_disable && show_live_preview" type='warning' style="margin-left: -12px; margin-right: -12px">
+      Live-updating is temporarily disabled (last update took {{last_live_time}}s)
+      <v-row justify='center'>
+        <j-tooltip tooltipcontent='hide live preview (can be re-enabled from the settings section in the plugin).' span_style="width: 100%">
+          <v-btn style='width: 100%' @click="show_live_preview = false">
+            disable previews
+          </v-btn>
+        </j-tooltip>
+      </v-row>
+      <v-row justify='center'>
+        <j-tooltip tooltipcontent='manually update live-previews based on current plugin inputs.' span_style="width: 100%">
+          <v-btn style='width: 100%' @click="previews_temp_disable = false">
+            update preview
+          </v-btn>
+        </j-tooltip>
+      </v-row>
+    </v-alert>
+
     <plugin-add-results
       :label.sync="results_label"
       :label_default="results_label_default"

@@ -1,5 +1,7 @@
+import numpy as np
+from time import time
 from astropy.time import Time
-from traitlets import Bool, observe
+from traitlets import Bool, Float, observe
 from glue.config import data_translator
 
 from jdaviz.core.custom_traitlets import IntHandleEmpty
@@ -45,6 +47,10 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
     n_bins = IntHandleEmpty(100).tag(sync=True)
     bin_enabled = Bool(True).tag(sync=True)
+
+    last_live_time = Float(0).tag(sync=True)
+    previews_temp_disable = Bool(False).tag(sync=True)
+    spinner = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -145,13 +151,18 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
             self._live_update(event)
 
     @observe('dataset_selected', 'ephemeris_selected',
-             'n_bins')
+             'n_bins', 'previews_temp_disable')
     @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
         if not self.show_live_preview or not self.is_active:
             self._clear_marks()
             self.bin_enabled = self.n_bins != '' and self.n_bins > 0
             return
+
+        if self.previews_temp_disable:
+            return
+
+        start = time()
 
         if event.get('name', '') not in ('is_active', 'show_live_preview'):
             # mark visibility hasn't been handled yet
@@ -189,6 +200,10 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 mark.times = []
                 mark.update_xy(times, lc.flux.value)
 
+        self.last_live_time = np.round(time() - start, 2)
+        if self.last_live_time > 0.3:
+            self.previews_temp_disable = True
+
     def _on_ephemeris_update(self, msg):
         if not self.show_live_preview or not self.is_active:
             return
@@ -199,7 +214,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
         self._live_update()
 
     def bin(self, add_data=True):
-
+        self.spinner = True
         if self.n_bins == '' or self.n_bins <= 0:
             raise ValueError("n_bins must be a positive integer")
 
@@ -245,6 +260,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 # by resetting x_att, the preview marks may have dissappeared
                 self._live_update()
 
+        self.spinner = False
         return lc
 
     def vue_apply(self, event={}):
