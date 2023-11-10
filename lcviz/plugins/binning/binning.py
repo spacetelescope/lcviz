@@ -9,7 +9,8 @@ from jdaviz.core.events import (ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, AddResultsMixin,
-                                        skip_if_no_updates_since_last_active)
+                                        skip_if_no_updates_since_last_active,
+                                        with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.events import EphemerisChangedMessage
@@ -50,7 +51,6 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
     last_live_time = Float(0).tag(sync=True)
     previews_temp_disable = Bool(False).tag(sync=True)
-    spinner = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -213,8 +213,8 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
         self._live_update()
 
+    @with_spinner()
     def bin(self, add_data=True):
-        self.spinner = True
         if self.n_bins == '' or self.n_bins <= 0:
             raise ValueError("n_bins must be a positive integer")
 
@@ -260,7 +260,6 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
                 # by resetting x_att, the preview marks may have dissappeared
                 self._live_update()
 
-        self.spinner = False
         return lc
 
     def vue_apply(self, event={}):
