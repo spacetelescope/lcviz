@@ -107,6 +107,17 @@ class LightCurveHandler:
 
         data.meta.update({'uncertainty_type': 'std'})
 
+        # if the anticipated x and y axes are the first two components in the
+        # Data object, the viewer will load those components correctly before
+        # you hit the call to `viewer.set_plot_axes`:
+        reordered_components = {comp.label: comp for comp in data.components}
+        dt_comp = reordered_components.pop('dt')
+        flux_comp = reordered_components.pop('flux')
+        data.reorder_components(
+            [dt_comp, flux_comp] +
+            list(reordered_components.values())
+        )
+
         return data
 
     def to_object(self, data_or_subset):
