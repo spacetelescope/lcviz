@@ -181,7 +181,12 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
             self.plot._update_data('periodogram',
                                    x=getattr(per, self.xunit_selected),
                                    y=per.power.value)
-            self.plot.update_style('periodogram', line_visible=True, markers_visible=False)
+            self.plot.update_style(
+                'periodogram',
+                density_map=False,
+                line_visible=True,
+                markers_visible=False
+            )
             self._update_periodogram_labels(per)
         else:
             self.plot.update_style('periodogram', visible=False)
