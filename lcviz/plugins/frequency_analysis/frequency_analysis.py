@@ -169,7 +169,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         per = self.periodogram
         if per is not None:
             line = self.plot.marks['line']
-            line.x, line.y = getattr(per, self.xunit_selected), per.power
+            line.x, line.y = getattr(per, self.xunit_selected).value, per.power.value
             self._update_periodogram_labels(per)
         else:
             self.plot.clear_all_marks()
