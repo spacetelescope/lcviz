@@ -219,8 +219,13 @@ class PhaseScatterView(TimeScatterView):
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
         self.state.x_att = dc[0].components[component_labels.index(f'phase:{self.ephemeris_component}')]  # noqa
-        self.figure.axes[0].label = 'phase'
         self.figure.axes[0].num_ticks = 5
+
+        ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
+        if ephem:
+            self.figure.axes[0].label = f'phase (P = {ephem.period:.2g} d)'
+        else:
+            self.figure.axes[0].label = 'phase'
 
     def times_to_phases(self, times):
         ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
