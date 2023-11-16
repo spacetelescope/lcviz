@@ -123,7 +123,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'update_ephemeris', 'create_phase_viewer',
                   'add_component', 'remove_component', 'rename_component',
                   'times_to_phases', 'phases_to_times', 'get_data',
-                  'dataset', 'method']
+                  'dataset', 'method', 'period_at_max_power', 'adopt_period_at_max_power']
         return PluginUserApi(self, expose=expose)
 
     def _phase_comp_lbl(self, component):
@@ -503,8 +503,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.period_at_max_power = per.period_at_max_power.value
         self.method_spinner = False
 
-    def vue_adopt_period_at_max_power(self, *args):
+    def adopt_period_at_max_power(self):
         self.period = self.period_at_max_power
+
+    def vue_adopt_period_at_max_power(self, *args):
+        self.adopt_period_at_max_power()
 
     def get_data(self, dataset, ephem_component=None):
         # TODO: support subset_to_apply and then include a wrapper at the helper-level?
