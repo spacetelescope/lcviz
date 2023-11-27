@@ -1,6 +1,7 @@
 import numpy as np
+from time import time
 
-from traitlets import Bool, Unicode, observe
+from traitlets import Bool, Float, Unicode, observe
 
 from jdaviz.core.custom_traitlets import FloatHandleEmpty, IntHandleEmpty
 from jdaviz.core.events import ViewerAddedMessage
@@ -56,6 +57,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     niters = IntHandleEmpty(3).tag(sync=True)
     sigma = FloatHandleEmpty(3).tag(sync=True)
     unnormalize = Bool(False).tag(sync=True)
+
+    last_live_time = Float(0).tag(sync=True)
+    previews_temp_disable = Bool(False).tag(sync=True)
+    spinner = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -133,6 +138,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         trend_lc : `~lightkurve.LightCurve`
             The trend used to flatten the light curve.
         """
+        self.spinner = True
         input_lc = self.dataset.selected_obj
         if input_lc is None:  # pragma: no cover
             raise ValueError("no input dataset selected")
@@ -155,6 +161,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             data = _data_with_reftime(self.app, output_lc)
             self.add_results.add_results_from_plugin(data)
 
+        self.spinner = False
         return output_lc, trend_lc
 
     def _clear_marks(self):
@@ -182,9 +189,13 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
     @observe('dataset_selected',
              'window_length', 'polyorder', 'break_tolerance',
-             'niters', 'sigma')
+             'niters', 'sigma', 'previews_temp_disable')
     @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
+        if self.previews_temp_disable:
+            return
+
+        start = time()
         try:
             output_lc, trend_lc = self.flatten(add_data=False)
         except Exception as e:
@@ -210,6 +221,10 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             mark.update_ty(times.value, trend_lc.flux.value)
         for mark in flattened_marks.values():
             mark.update_ty(times.value, output_flux)
+
+        self.last_live_time = np.round(time() - start, 2)
+        if self.last_live_time > 0.3:
+            self.previews_temp_disable = True
 
     def vue_apply(self, *args, **kwargs):
         try:
