@@ -69,7 +69,7 @@ class Binning(PluginTemplateMixin, DatasetSelectMixin, EphemerisSelectMixin, Add
 
     @property
     def user_api(self):
-        expose = ['dataset', 'ephemeris', 'input_lc',
+        expose = ['show_live_preview', 'dataset', 'ephemeris', 'input_lc',
                   'n_bins', 'add_results', 'bin']
         return PluginUserApi(self, expose=expose)
 

@@ -37,19 +37,19 @@ def test_plugin_frequency_analysis(helper, light_curve_like_kepler_quarter):
 
     freq.xunit = 'period'
     assert freq._obj.plot.figure.axes[0].label == 'period (d)'
-    line_x = freq._obj.plot.marks['line'].x
+    line_x = freq._obj.plot.layers['periodogram'].layer['x']
     assert_allclose((line_x.min(), line_x.max()), (0.3508333334885538, 31.309906458683404))
 
     freq.auto_range = False
     assert_allclose((freq.minimum, freq.maximum), (1, 10))
     while freq._obj.spinner:
         pass
-    line_x = freq._obj.plot.marks['line'].x
+    line_x = freq._obj.plot.layers['periodogram'].layer['x']
     assert_allclose((line_x.min(), line_x.max()), (1, 10.00141))
 
     freq.xunit = 'frequency'
     assert_allclose((freq.minimum, freq.maximum), (0.1, 1))
     while freq._obj.spinner:
         pass
-    line_x = freq._obj.plot.marks['line'].x
+    line_x = freq._obj.plot.layers['periodogram'].layer['x']
     assert_allclose((line_x.min(), line_x.max()), (0.0999859, 1))
