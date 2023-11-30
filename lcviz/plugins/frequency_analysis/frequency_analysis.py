@@ -144,7 +144,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
             old_xmin, old_xmax = self.plot.viewer.state.x_min, self.plot.viewer.state.x_max
             new_xmin = old_xmax ** -1 if old_xmax > 0 else np.nanmin(x)
             new_xmax = old_xmin ** -1 if old_xmin > 0 else np.nanmax(x)
-            self.plot.set_lims(x_min=new_xmin, x_max=new_xmax)
+            self.plot.set_limits(x_min=new_xmin, x_max=new_xmax)
         else:
             self.plot.update_style('periodogram', visible=False)
 
