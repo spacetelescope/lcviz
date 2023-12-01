@@ -10,8 +10,6 @@ from jdaviz.core.helpers import ConfigHelper
 
 __all__ = ['LCviz']
 
-custom_components = {}
-
 _default_time_viewer_reference_name = 'flux-vs-time'
 
 custom_components = {'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
@@ -98,8 +96,12 @@ class LCviz(ConfigHelper):
             lambda *args, **kwargs: _link_new_data(self.app, *args, **kwargs)
         )
 
-        # inject the style widget to override app-css from lcviz_style.vue
-        self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
+        # inject custom css from lcviz_style.vue (on top of jdaviz styles)
+        if hasattr(self.app, '_add_style'):
+            # will be guaranteed after jdaviz 3.9
+            self.app._add_style((__file__, 'lcviz_style.vue'))
+        else:
+            self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
 
         # set the link to read the docs
         self.app.docs_link = "https://lcviz.readthedocs.io"
