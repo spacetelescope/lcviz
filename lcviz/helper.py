@@ -92,11 +92,7 @@ class LCviz(ConfigHelper):
         )
 
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)
-        if hasattr(self.app, '_add_style'):
-            # will be guaranteed after jdaviz 3.9
-            self.app._add_style((__file__, 'lcviz_style.vue'))
-        else:
-            self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
+        self.app._add_style((__file__, 'lcviz_style.vue'))
 
         # set the link to read the docs
         self.app.docs_link = "https://lcviz.readthedocs.io"
