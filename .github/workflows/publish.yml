@@ -14,6 +14,8 @@ jobs:
   build-n-publish:
     name: Build and publish Python 🐍 distributions 📦 to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     if: github.repository == 'spacetelescope/lcviz'
 
     steps:
@@ -48,6 +50,3 @@ jobs:
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       if: github.event_name != 'pull_request'
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_TOKEN }}
