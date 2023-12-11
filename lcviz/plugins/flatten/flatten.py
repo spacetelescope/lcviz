@@ -8,7 +8,8 @@ from jdaviz.core.events import ViewerAddedMessage
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, AddResultsMixin,
-                                        skip_if_no_updates_since_last_active)
+                                        skip_if_no_updates_since_last_active,
+                                        with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
@@ -60,7 +61,6 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
     last_live_time = Float(0).tag(sync=True)
     previews_temp_disable = Bool(False).tag(sync=True)
-    spinner = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -121,6 +121,7 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         else:
             self.results_label_default = f"{self.dataset_selected} (flattened)"
 
+    @with_spinner()
     def flatten(self, add_data=True):
         """
         Flatten the input light curve (``dataset``) using lightkurve.flatten.
@@ -138,7 +139,6 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         trend_lc : `~lightkurve.LightCurve`
             The trend used to flatten the light curve.
         """
-        self.spinner = True
         input_lc = self.dataset.selected_obj
         if input_lc is None:  # pragma: no cover
             raise ValueError("no input dataset selected")
@@ -161,7 +161,6 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             data = _data_with_reftime(self.app, output_lc)
             self.add_results.add_results_from_plugin(data)
 
-        self.spinner = False
         return output_lc, trend_lc
 
     def _clear_marks(self):
