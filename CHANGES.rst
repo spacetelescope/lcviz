@@ -1,4 +1,5 @@
-Changes included in this version
---------------------------------
+0.1.0 - unreleased
+------------------
 
-Edit this template to detail updates to the codebase
+* Initial release of lcviz with support to import time-series light curves via lightkurve and
+  process them through binning, flattening, frequency analysis, and ephemeris plugins.
