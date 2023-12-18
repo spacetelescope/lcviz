@@ -308,7 +308,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.period *= 2
 
     def _check_if_phase_viewer_exists(self, *args):
-        self.phase_viewer_exists = self.phase_viewer_id in self.app.get_viewer_ids()
+        viewer_base_refs = [id.split('[')[0] for id in self.app.get_viewer_ids()]
+        self.phase_viewer_exists = self.phase_viewer_id in viewer_base_refs
 
     def _on_component_add(self, lbl):
         self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=None, new_lbl=lbl,

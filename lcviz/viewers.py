@@ -10,6 +10,7 @@ from glue_jupyter.bqplot.scatter import BqplotScatterView
 from astropy import units as u
 from astropy.time import Time
 
+from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
@@ -30,7 +31,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
                     ['jdaviz:boxzoom', 'jdaviz:xrangezoom', 'jdaviz:yrangezoom'],
                     ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
                     ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
-                    ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     default_class = LightCurve
     _state_cls = ScatterViewerState
@@ -209,12 +210,46 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
         super().apply_roi(roi, use_current=use_current)
 
+    def _get_clone_viewer_reference(self):
+        base_name = self.reference.split("[")[0]
+        name = base_name
+        ind = 0
+        while name in self.jdaviz_helper.viewers.keys():
+            ind += 1
+            name = f"{base_name}[{ind}]"
+        return name
+
+    def clone_viewer(self):
+        name = self._get_clone_viewer_reference()
+
+        self.jdaviz_app._on_new_viewer(NewViewerMessage(self.__class__,
+                                                        data=None,
+                                                        sender=self.jdaviz_app),
+                                       vid=name, name=name)
+
+        this_viewer_item = self.jdaviz_app._get_viewer_item(self.reference)
+        this_state = self.state.as_dict()
+        for data in self.jdaviz_app.data_collection:
+            data_id = self.jdaviz_app._data_id_from_label(data.label)
+            visible = this_viewer_item['selected_data_items'].get(data_id, 'hidden')
+            self.jdaviz_app.set_data_visibility(name, data.label, visible == 'visible')
+            # TODO: don't revert color when adding same data to a new viewer
+            # (same happens when creating a phase-viewer from ephemeris plugin)
+
+        new_viewer = self.jdaviz_helper.viewers[name]._obj
+        for k, v in this_state.items():
+            if k in ('layers',):
+                continue
+            setattr(new_viewer.state, k, v)
+
+        return new_viewer.user_api
+
 
 @viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
 class PhaseScatterView(TimeScatterView):
     @property
     def ephemeris_component(self):
-        return self.reference.split(':')[-1]
+        return self.reference.split('[')[0].split(':')[-1]
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
