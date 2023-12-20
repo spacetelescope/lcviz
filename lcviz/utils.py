@@ -11,8 +11,10 @@ from scipy.interpolate import interp1d
 from lightkurve import (
     LightCurve, KeplerLightCurve, TessLightCurve, FoldedLightCurve
 )
-from lightkurve.targetpixelfile import KeplerTargetPixelFile, TargetPixelFileFactory
-from lightkurve.utils import KeplerQualityFlags
+from lightkurve.targetpixelfile import (
+    KeplerTargetPixelFile, TessTargetPixelFile, TargetPixelFileFactory
+)
+from lightkurve.utils import KeplerQualityFlags, TessQualityFlags
 
 from astropy import units as u
 from astropy.table import QTable
@@ -287,8 +289,8 @@ class LightCurveHandler:
         return LightCurve(table, **kwargs)
 
 
-@data_translator(KeplerTargetPixelFile)
-class KeplerTPFHandler:
+class TPFHandler:
+    quality_flag_cls = None
     tpf_attrs = ['flux', 'flux_bkg', 'flux_bkg_err', 'flux_err']
     meta_attrs = [
         'cadenceno',
@@ -443,7 +445,7 @@ class KeplerTPFHandler:
             if hasattr(tpf, attr) and getattr(getattr(tpf, attr), 'fset', None) is not None:
                 setattr(tpf, attr, data.meta[attr])
 
-        tpf.quality_mask = KeplerQualityFlags.create_quality_mask(
+        tpf.quality_mask = self.quality_flag_cls.create_quality_mask(
             quality_array=tpf.hdu[1].data["QUALITY"], bitmask=tpf.quality_bitmask
         )
 
@@ -480,6 +482,16 @@ class KeplerLightCurveHandler(LightCurveHandler):
 class TessLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
     pass
+
+
+@data_translator(KeplerTargetPixelFile)
+class KeplerTPFHandler(TPFHandler):
+    quality_flag_cls = KeplerQualityFlags
+
+
+@data_translator(TessTargetPixelFile)
+class TessTPFHandler(TPFHandler):
+    quality_flag_cls = TessQualityFlags
 
 
 # plugin component filters
