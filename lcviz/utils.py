@@ -23,6 +23,9 @@ from astropy.wcs.wcsapi import HighLevelWCSMixin
 __all__ = ['TimeCoordinates', 'LightCurveHandler', 'data_not_folded', 'enable_hot_reloading']
 
 
+component_ids = {'dt': ComponentID('dt')}
+
+
 class TimeCoordinates(Coordinates):
     """
     This is a sub-class of Coordinates that is intended for a time axis
@@ -73,11 +76,17 @@ class PaddedTimeWCS(BaseWCSWrapper, HighLevelWCSMixin):
 
     # NOTE: This class could be updated to use CompoundLowLevelWCS from NDCube.
 
-    def __init__(self, wcs, times, ndim=3, reference_time=None):
-        self.temporal_wcs = TimeCoordinates(times, reference_time=reference_time)
+    def __init__(self, wcs, times, ndim=3, reference_time=None, unit=u.d):
+        self.temporal_wcs = TimeCoordinates(
+            times, reference_time=reference_time, unit=unit
+        )
         self.spatial_wcs = wcs
         self.flux_ndim = ndim
         self.spatial_keys = [f"spatial{i}" for i in range(0, self.flux_ndim-1)]
+
+    @property
+    def time_axis(self):
+        return self.temporal_wcs.time_axis
 
     @property
     def pixel_n_dim(self):
@@ -158,7 +167,6 @@ class PaddedTimeWCS(BaseWCSWrapper, HighLevelWCSMixin):
 
 @data_translator(LightCurve)
 class LightCurveHandler:
-    lc_component_ids = {}
 
     def to_data(self, obj, reference_time=None):
         is_folded = isinstance(obj, FoldedLightCurve)
@@ -173,7 +181,7 @@ class LightCurveHandler:
         data.meta.update(
             {"reference_time": time_coord.reference_time}
         )
-        data['dt'] = (obj.time - time_coord.reference_time).to(time_coord.unit)
+        data[component_ids['dt']] = (obj.time - time_coord.reference_time).to(time_coord.unit)
         data.get_component('dt').units = str(time_coord.unit)
 
         # LightCurve is a subclass of astropy TimeSeries, so
@@ -187,9 +195,9 @@ class LightCurveHandler:
                     continue
                 component_label = f'phase:{ephem_comp}'
 
-            if component_label not in self.lc_component_ids:
-                self.lc_component_ids[component_label] = ComponentID(component_label)
-            cid = self.lc_component_ids[component_label]
+            if component_label not in component_ids:
+                component_ids[component_label] = ComponentID(component_label)
+            cid = component_ids[component_label]
 
             data[cid] = component_data
             if hasattr(component_data, 'unit'):
@@ -281,7 +289,6 @@ class LightCurveHandler:
 
 @data_translator(KeplerTargetPixelFile)
 class KeplerTPFHandler:
-    lc_component_ids = {}
     tpf_attrs = ['flux', 'flux_bkg', 'flux_bkg_err', 'flux_err']
     meta_attrs = [
         'cadenceno',
@@ -306,8 +313,8 @@ class KeplerTPFHandler:
         'wcs'
     ]
 
-    def to_data(self, obj, reference_time=None):
-        coords = PaddedTimeWCS(obj.wcs, obj.time, reference_time=reference_time)
+    def to_data(self, obj, reference_time=None, unit=u.d):
+        coords = PaddedTimeWCS(obj.wcs, obj.time, reference_time=reference_time, unit=unit)
         data = Data(coords=coords)
 
         flux_shape = obj.flux.shape
@@ -320,7 +327,7 @@ class KeplerTPFHandler:
             {"reference_time": coords.temporal_wcs.reference_time}
         )
 
-        data['dt'] = np.broadcast_to(
+        data[component_ids['dt']] = np.broadcast_to(
             (
                 obj.time - coords.temporal_wcs.reference_time
             ).to(coords.temporal_wcs.unit)[:, None, None], flux_shape
@@ -332,9 +339,9 @@ class KeplerTPFHandler:
         for component_label in self.tpf_attrs:
 
             component_data = getattr(obj, component_label)
-            if component_label not in self.lc_component_ids:
-                self.lc_component_ids[component_label] = ComponentID(component_label)
-            cid = self.lc_component_ids[component_label]
+            if component_label not in component_ids:
+                component_ids[component_label] = ComponentID(component_label)
+            cid = component_ids[component_label]
 
             data[cid] = component_data
             if hasattr(component_data, 'unit'):
@@ -389,7 +396,7 @@ class KeplerTPFHandler:
             meta.pop(attr)
 
         # extract a Time object out of the TimeCoordinates object:
-        time = data.coords.temporal_wcs.time_axis
+        time = data.coords.time_axis
 
         if subset_state is None:
             # pass through mask of all True's if no glue subset is chosen

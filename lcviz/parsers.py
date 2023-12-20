@@ -22,6 +22,10 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     elif isinstance(file_obj, lightkurve.LightCurve):
         light_curve = file_obj
 
+    # load a LightCurve object:
+    elif isinstance(file_obj, lightkurve.targetpixelfile.KeplerTargetPixelFile):
+        light_curve = file_obj
+
     # make a data label:
     if data_label is not None:
         new_data_label = f'{data_label}'

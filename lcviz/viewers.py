@@ -108,7 +108,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         self._set_plot_y_axes(dc, component_labels, light_curve)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
-        self.state.x_att = dc[0].components[component_labels.index('World 0')]
+        self.state.x_att = dc[0].components[component_labels.index('dt')]
 
         x_unit = self.time_unit
         reference_time = light_curve.meta.get('reference_time', None)
