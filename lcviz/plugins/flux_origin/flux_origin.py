@@ -61,6 +61,8 @@ class FluxOrigin(PluginTemplateMixin, DatasetSelectMixin):
             return lk_obj[col].unit == lk_obj['flux'].unit
 
         lk_obj = self.dataset.selected_obj
+        if lk_obj is None:
+            return
         self.origin.choices = [col for col in lk_obj.columns if _include_col(lk_obj, col)]
         flux_origin = lk_obj.meta.get('FLUX_ORIGIN')
         if flux_origin in self.origin.choices:

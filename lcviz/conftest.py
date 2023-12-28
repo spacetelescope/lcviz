@@ -32,9 +32,12 @@ def light_curve_like_kepler_quarter(seed=42):
 
     quality = np.zeros(len(time), dtype=np.int32)
 
-    return LightCurve(
+    lc = LightCurve(
         time=time, flux=flux, flux_err=flux_err, quality=quality
     )
+    lc['flux_alt'] = flux + 1
+    lc['flux_alt_err'] = flux_err
+    return lc
 
 
 try:

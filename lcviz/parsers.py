@@ -30,7 +30,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
 
     # handle flux_origin default
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
-    if flux_origin == 'flux':
+    if flux_origin == 'flux' or (flux_origin is None and 'flux' in light_curve.columns):
         # then make a copy of this column so it won't be lost when changing with the flux_column
         # plugin
         light_curve['flux:orig'] = light_curve['flux']
