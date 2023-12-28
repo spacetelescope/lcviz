@@ -58,6 +58,8 @@ class FluxOrigin(PluginTemplateMixin, DatasetSelectMixin):
                 return False
             if col.endswith('quality'):
                 return False
+            # TODO: need to think about flatten losing units in the flux column (and that other
+            # columns still exist but are not flattened)
             return lk_obj[col].unit == lk_obj['flux'].unit
 
         lk_obj = self.dataset.selected_obj

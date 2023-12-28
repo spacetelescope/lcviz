@@ -3,6 +3,9 @@
 
 * Clone viewer tool. [#74]
 
+* Flux origin plugin to choose which column is treated as the flux column for each dataset. [#77]
+
+
 0.1.0 (12-14-2023)
 ------------------
 
