@@ -35,6 +35,15 @@ This plugin allows viewing of any metadata associated with the selected data.
     :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
         Jdaviz documentation on the Metadata Viewer plugin.
 
+.. _flux-origin::
+
+Flux Origin
+===========
+
+This plugin allows choosing which column in the underlying data should be used as the flux origin
+throughout the app (when plotting and in any data analysis plugins).
+
+
 .. _plot-options:
 
 Plot Options
