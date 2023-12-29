@@ -7,11 +7,13 @@ from jdaviz.core.custom_traitlets import FloatHandleEmpty, IntHandleEmpty
 from jdaviz.core.events import ViewerAddedMessage
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
-                                        DatasetSelectMixin, AddResultsMixin,
+                                        DatasetSelectMixin,
+                                        AutoTextField,
                                         skip_if_no_updates_since_last_active,
                                         with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
+from lcviz.components import FluxOriginSelectMixin
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
 from lcviz.utils import data_not_folded
 from lcviz.viewers import TimeScatterView, PhaseScatterView
@@ -21,7 +23,7 @@ __all__ = ['Flatten']
 
 
 @tray_registry('flatten', label="Flatten")
-class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
+class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
     """
     See the :ref:`Flatten Plugin Documentation <flatten>` for more details.
 
@@ -32,16 +34,17 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         Whether to show the live-preview of the (unnormalized) flattened light curve
     * ``show_trend_preview`` : bool
         Whether to show the live-preview of the trend curve used to flatten the light curve
-    * ``default_to_overwrite``
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to flatten.
-    * ``add_results`` (:class:`~jdaviz.core.template_mixin.AddResults`)
     * ``window_length``
     * ``polyorder``
     * ``break_tolerance``
     * ``niters``
     * ``sigma``
     * ``unnormalize``
+    * ``flux_label`` (:class:`~jdaviz.core.template_mixin.AutoTextField`):
+      Label for the resulting flux column added to ``dataset`` and automatically selected as the new
+      flux origin.
     * :meth:`flatten`
     """
     template_file = __file__, "flatten.vue"
@@ -49,7 +52,6 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
     show_live_preview = Bool(True).tag(sync=True)
     show_trend_preview = Bool(True).tag(sync=True)
-    default_to_overwrite = Bool(True).tag(sync=True)
     flatten_err = Unicode().tag(sync=True)
 
     window_length = IntHandleEmpty(101).tag(sync=True)
@@ -59,11 +61,21 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
     sigma = FloatHandleEmpty(3).tag(sync=True)
     unnormalize = Bool(False).tag(sync=True)
 
+    flux_label_label = Unicode().tag(sync=True)
+    flux_label_default = Unicode().tag(sync=True)
+    flux_label_auto = Bool(True).tag(sync=True)
+    flux_label_invalid_msg = Unicode('').tag(sync=True)
+    flux_label_overwrite = Bool(False).tag(sync=True)
+
     last_live_time = Float(0).tag(sync=True)
     previews_temp_disable = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.flux_label = AutoTextField(self, 'flux_label_label',
+                                        'flux_label_default', 'flux_label_auto',
+                                        'flux_label_invalid_msg')
 
         # do not support flattening data in phase-space
         self.dataset.add_filter(data_not_folded)
@@ -72,12 +84,14 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         # those marks
         self.hub.subscribe(self, ViewerAddedMessage, handler=lambda _: self._live_update())
 
+        self._set_default_label()
+
     @property
     def user_api(self):
-        expose = ['show_live_preview', 'show_trend_preview', 'default_to_overwrite',
-                  'dataset', 'add_results',
+        expose = ['show_live_preview', 'show_trend_preview',
+                  'dataset',
                   'window_length', 'polyorder', 'break_tolerance',
-                  'niters', 'sigma', 'unnormalize', 'flatten']
+                  'niters', 'sigma', 'unnormalize', 'flux_label', 'flatten']
         return PluginUserApi(self, expose=expose)
 
     @property
@@ -108,18 +122,26 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
 
         return trend_marks, flattened_marks
 
-    @observe('default_to_overwrite', 'dataset_selected')
-    def _set_default_results_label(self, event={}):
+    @observe('dataset_selected', 'flux_origin_selected')
+    def _set_default_label(self, event={}):
         '''Generate a label and set the results field to that value'''
         if not hasattr(self, 'dataset'):  # pragma: no cover
             return
 
-        self.add_results.label_whitelist_overwrite = [self.dataset_selected]
+        # TODO: have an option to create new data entry and drop other columns?
+        # (or should that just go through future data cloning)
+        self.flux_label.default = f"{self.flux_origin_selected}_flattened"
 
-        if self.default_to_overwrite:
-            self.results_label_default = self.dataset_selected
+    @observe('flux_label_label', 'dataset')
+    def _update_label_valid(self, event={}):
+        if self.flux_label.value in self.flux_origin.choices:
+            self.flux_label.invalid_msg = ''
+            self.flux_label_overwrite = True
+        elif self.flux_label.value in getattr(self.dataset.selected_obj, 'columns', []):
+            self.flux_label.invalid_msg = 'name already in use'
         else:
-            self.results_label_default = f"{self.dataset_selected} (flattened)"
+            self.flux_label.invalid_msg = ''
+            self.flux_label_overwrite = False
 
     @with_spinner()
     def flatten(self, add_data=True):
@@ -129,8 +151,8 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
         Parameters
         ----------
         add_data : bool
-            Whether to add the resulting trace to the application, according to the options
-            defined in the plugin.
+            Whether to add the resulting light curve as a flux column and select that as the new
+            flux origin for that data entry.
 
         Returns
         -------
@@ -157,9 +179,13 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             output_lc.meta['NORMALIZED'] = False
 
         if add_data:
-            # add data to the collection/viewer
+            # add data as a new flux and corresponding err columns in the existing data entry
+            # and select as flux origin
             data = _data_with_reftime(self.app, output_lc)
-            self.add_results.add_results_from_plugin(data)
+            self.flux_origin.add_new_flux_column(flux=data['flux'],
+                                                 flux_err=data['flux_err'],
+                                                 label=self.flux_label.value,
+                                                 selected=True)
 
         return output_lc, trend_lc
 
@@ -186,12 +212,15 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             # then the marks themselves need to be updated
             self._live_update(event)
 
-    @observe('dataset_selected',
+    @observe('dataset_selected', 'flux_origin_selected',
              'window_length', 'polyorder', 'break_tolerance',
              'niters', 'sigma', 'previews_temp_disable')
     @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
         if self.previews_temp_disable:
+            return
+        if self.dataset_selected == '' or self.flux_origin_selected == '':
+            self._clear_marks()
             return
 
         start = time()
@@ -232,7 +261,3 @@ class Flatten(PluginTemplateMixin, DatasetSelectMixin, AddResultsMixin):
             self.flatten_err = str(e)
         else:
             self.flatten_err = ''
-        if self.add_results.label_overwrite:
-            # then this will change the input data without triggering a
-            # change to dataset_selected
-            self._live_update()

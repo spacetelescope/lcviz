@@ -19,8 +19,8 @@
       <v-select
         :menu-props="{ left: true }"
         attach
-        :items="origin_items.map(i => i.label)"
-        v-model="origin_selected"
+        :items="flux_origin_items.map(i => i.label)"
+        v-model="flux_origin_selected"
         label="Flux Column"
         hint="Select the column to adopt as flux."
         persistent-hint

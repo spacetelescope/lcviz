@@ -59,30 +59,17 @@ def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
         after_update = marks[0].y
         assert not np.allclose(before_update, after_update)
 
-        orig_label = f.dataset.selected
+        orig_flux_origin = f._obj.flux_origin.selected
         assert f.dataset.selected_obj is not None
-        assert f._obj.add_results.label_overwrite is True
-        assert f._obj.add_results.label == orig_label
+        assert f._obj.flux_label_overwrite is False
+        assert f._obj.flux_label.value == f'{orig_flux_origin}_flattened'
         f._obj.vue_apply(add_data=True)
+        assert f._obj.flux_origin.selected == f'{orig_flux_origin}_flattened'
         assert f._obj.flatten_err == ''
 
     # marks are hidden
     assert len(_get_marks_from_viewer(tv)) == 0
     assert len(_get_marks_from_viewer(pv)) == 0
-
-
-def test_no_overwrite(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
-
-    f = helper.plugins['Flatten']
-
-    orig_label = f.dataset.selected
-    assert f._obj.add_results.label_overwrite is True
-    assert f._obj.add_results.label == orig_label
-    f.default_to_overwrite = False
-    assert f._obj.add_results.label_overwrite is False
-    assert f._obj.add_results.label != orig_label
-    f.flatten(add_data=True)
 
 
 def test_unnormalize(helper, light_curve_like_kepler_quarter):
