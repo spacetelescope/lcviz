@@ -35,7 +35,7 @@ This plugin allows viewing of any metadata associated with the selected data.
     :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
         Jdaviz documentation on the Metadata Viewer plugin.
 
-.. _flux-origin::
+.. _flux-origin:
 
 Flux Origin
 ===========
