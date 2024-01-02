@@ -1,3 +1,5 @@
+import pytest
+
 
 def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     lcviz, lc = helper, light_curve_like_kepler_quarter
@@ -42,6 +44,13 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert len(helper.app.get_viewer_ids()) == 3
     assert len(ephem.ephemerides) == 2
     assert 'custom component' in ephem.ephemerides
+
+    with pytest.raises(ValueError):
+        # brackets interfere with cloned viewer label logic
+        ephem.rename_component('custom component', 'custom component[blah]')
+    with pytest.raises(ValueError):
+        # colons interfere with viewer ephemeris logic
+        ephem.rename_component('custom component', 'custom component:blah')
 
     ephem.rename_component('custom component', 'renamed custom component')
     assert len(ephem.ephemerides) == 2
