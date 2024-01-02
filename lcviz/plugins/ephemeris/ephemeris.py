@@ -469,6 +469,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                              1./1000000)
         self.t0_step = round_to_1(self.period/1000)
 
+        # update x axis label
+        self.phase_viewer.set_plot_axes()
+
         if not self._default_initialized:
             # other plugins that use EphemerisSelect don't see the first entry yet
             self._default_initialized = True
