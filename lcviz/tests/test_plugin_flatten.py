@@ -59,12 +59,12 @@ def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
         after_update = marks[0].y
         assert not np.allclose(before_update, after_update)
 
-        orig_flux_origin = f._obj.flux_origin.selected
+        orig_flux_column = f._obj.flux_column.selected
         assert f.dataset.selected_obj is not None
         assert f._obj.flux_label_overwrite is False
-        assert f._obj.flux_label.value == f'{orig_flux_origin}_flattened'
+        assert f._obj.flux_label.value == f'{orig_flux_column}_flattened'
         f._obj.vue_apply(add_data=True)
-        assert f._obj.flux_origin.selected == f'{orig_flux_origin}_flattened'
+        assert f._obj.flux_column.selected == f'{orig_flux_column}_flattened'
         assert f._obj.flatten_err == ''
 
     # marks are hidden

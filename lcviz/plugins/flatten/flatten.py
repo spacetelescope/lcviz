@@ -13,7 +13,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
-from lcviz.components import FluxOriginSelectMixin
+from lcviz.components import FluxColumnSelectMixin
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
 from lcviz.utils import data_not_folded
 from lcviz.viewers import TimeScatterView, PhaseScatterView
@@ -23,7 +23,7 @@ __all__ = ['Flatten']
 
 
 @tray_registry('flatten', label="Flatten")
-class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
+class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     """
     See the :ref:`Flatten Plugin Documentation <flatten>` for more details.
 
@@ -44,7 +44,7 @@ class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
     * ``unnormalize``
     * ``flux_label`` (:class:`~jdaviz.core.template_mixin.AutoTextField`):
       Label for the resulting flux column added to ``dataset`` and automatically selected as the new
-      flux origin.
+      flux column (origin).
     * :meth:`flatten`
     """
     template_file = __file__, "flatten.vue"
@@ -122,7 +122,7 @@ class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
 
         return trend_marks, flattened_marks
 
-    @observe('dataset_selected', 'flux_origin_selected')
+    @observe('dataset_selected', 'flux_column_selected')
     def _set_default_label(self, event={}):
         '''Generate a label and set the results field to that value'''
         if not hasattr(self, 'dataset'):  # pragma: no cover
@@ -130,11 +130,11 @@ class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
 
         # TODO: have an option to create new data entry and drop other columns?
         # (or should that just go through future data cloning)
-        self.flux_label.default = f"{self.flux_origin_selected}_flattened"
+        self.flux_label.default = f"{self.flux_column_selected}_flattened"
 
     @observe('flux_label_label', 'dataset')
     def _update_label_valid(self, event={}):
-        if self.flux_label.value in self.flux_origin.choices:
+        if self.flux_label.value in self.flux_column.choices:
             self.flux_label.invalid_msg = ''
             self.flux_label_overwrite = True
         elif self.flux_label.value in getattr(self.dataset.selected_obj, 'columns', []):
@@ -152,7 +152,7 @@ class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
         ----------
         add_data : bool
             Whether to add the resulting light curve as a flux column and select that as the new
-            flux origin for that data entry.
+            flux column (origin) for that data entry.
 
         Returns
         -------
@@ -180,9 +180,9 @@ class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
 
         if add_data:
             # add data as a new flux and corresponding err columns in the existing data entry
-            # and select as flux origin
+            # and select as flux column (origin)
             data = _data_with_reftime(self.app, output_lc)
-            self.flux_origin.add_new_flux_column(flux=data['flux'],
+            self.flux_column.add_new_flux_column(flux=data['flux'],
                                                  flux_err=data['flux_err'],
                                                  label=self.flux_label.value,
                                                  selected=True)
@@ -212,14 +212,14 @@ class Flatten(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin):
             # then the marks themselves need to be updated
             self._live_update(event)
 
-    @observe('dataset_selected', 'flux_origin_selected',
+    @observe('dataset_selected', 'flux_column_selected',
              'window_length', 'polyorder', 'break_tolerance',
              'niters', 'sigma', 'previews_temp_disable')
     @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
         if self.previews_temp_disable:
             return
-        if self.dataset_selected == '' or self.flux_origin_selected == '':
+        if self.dataset_selected == '' or self.flux_column_selected == '':
             self._clear_marks()
             return
 

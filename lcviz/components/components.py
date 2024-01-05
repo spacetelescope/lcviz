@@ -5,12 +5,12 @@ from traitlets import List, Unicode
 
 from jdaviz.core.template_mixin import SelectPluginComponent
 
-from lcviz.events import FluxOriginChangedMessage
+from lcviz.events import FluxColumnChangedMessage
 
-__all__ = ['FluxOriginSelect', 'FluxOriginSelectMixin']
+__all__ = ['FluxColumnSelect', 'FluxColumnSelectMixin']
 
 
-class FluxOriginSelect(SelectPluginComponent):
+class FluxColumnSelect(SelectPluginComponent):
     def __init__(self, plugin, items, selected, dataset):
         super().__init__(plugin,
                          items=items,
@@ -22,8 +22,8 @@ class FluxOriginSelect(SelectPluginComponent):
                          self._on_change_dataset)
 
         # sync between instances in different plugins
-        self.hub.subscribe(self, FluxOriginChangedMessage,
-                           handler=self._on_flux_origin_changed_msg)
+        self.hub.subscribe(self, FluxColumnChangedMessage,
+                           handler=self._on_flux_column_changed_msg)
 
     def _on_change_dataset(self, *args):
         def _include_col(lk_obj, col):
@@ -53,28 +53,28 @@ class FluxOriginSelect(SelectPluginComponent):
         if lk_obj is None:
             return
         self.choices = [col for col in lk_obj.columns if _include_col(lk_obj, col)]
-        flux_origin = lk_obj.meta.get('FLUX_ORIGIN')
-        if flux_origin in self.choices:
-            self.selected = flux_origin
+        flux_column = lk_obj.meta.get('FLUX_ORIGIN')
+        if flux_column in self.choices:
+            self.selected = flux_column
         else:
             self.selected = ''
 
-    def _on_flux_origin_changed_msg(self, msg):
+    def _on_flux_column_changed_msg(self, msg):
         if msg.dataset != self.dataset.selected:
             return
 
         # need to clear the cache due to the change in metadata made to the data-collection entry
         self.dataset._clear_cache('selected_obj', 'selected_dc_item')
         self._on_change_dataset()
-        self.selected = msg.flux_origin
+        self.selected = msg.flux_column
 
     def _on_change_selected(self, *args):
         if self.selected == '':
             return
 
         dc_item = self.dataset.selected_dc_item
-        old_flux_origin = dc_item.meta.get('FLUX_ORIGIN')
-        if self.selected == old_flux_origin:
+        old_flux_column = dc_item.meta.get('FLUX_ORIGIN')
+        if self.selected == old_flux_column:
             # nothing to do here!
             return
 
@@ -85,8 +85,8 @@ class FluxOriginSelect(SelectPluginComponent):
         self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err', dc_item[self.selected+"_err"])  # noqa
         dc_item.meta['FLUX_ORIGIN'] = self.selected
 
-        self.hub.broadcast(FluxOriginChangedMessage(dataset=self.dataset.selected,
-                                                    flux_origin=self.selected,
+        self.hub.broadcast(FluxColumnChangedMessage(dataset=self.dataset.selected,
+                                                    flux_column=self.selected,
                                                     sender=self))
 
     def add_new_flux_column(self, flux, flux_err, label, selected=False):
@@ -99,19 +99,19 @@ class FluxOriginSelect(SelectPluginComponent):
                                                     flux_err)
 
         # broadcast so all instances update to get the new column and selection (if applicable)
-        self.hub.broadcast(FluxOriginChangedMessage(dataset=self.dataset.selected,
-                                                    flux_origin=label if selected else self.selected,  # noqa
+        self.hub.broadcast(FluxColumnChangedMessage(dataset=self.dataset.selected,
+                                                    flux_column=label if selected else self.selected,  # noqa
                                                     sender=self))
 
 
-class FluxOriginSelectMixin(VuetifyTemplate, HubListener):
-    flux_origin_items = List().tag(sync=True)
-    flux_origin_selected = Unicode().tag(sync=True)
+class FluxColumnSelectMixin(VuetifyTemplate, HubListener):
+    flux_column_items = List().tag(sync=True)
+    flux_column_selected = Unicode().tag(sync=True)
     # assumes DatasetSelectMixin is also used (DatasetSelectMixin must appear after in inheritance)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.flux_origin = FluxOriginSelect(self,
-                                            'flux_origin_items',
-                                            'flux_origin_selected',
+        self.flux_column = FluxColumnSelect(self,
+                                            'flux_column_items',
+                                            'flux_column_selected',
                                             dataset='dataset')

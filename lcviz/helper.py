@@ -72,7 +72,7 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
-        'tray': ['lcviz-metadata-viewer', 'flux-origin',
+        'tray': ['lcviz-metadata-viewer', 'flux-column',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'lcviz-export-plot'],

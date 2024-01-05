@@ -35,13 +35,13 @@ This plugin allows viewing of any metadata associated with the selected data.
     :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
         Jdaviz documentation on the Metadata Viewer plugin.
 
-.. _flux-origin:
+.. _flux-column:
 
-Flux Origin
+Flux Column
 ===========
 
-This plugin allows choosing which column in the underlying data should be used as the flux origin
-throughout the app (when plotting and in any data analysis plugins).
+This plugin allows choosing which column in the underlying data should be used as the flux column
+(origin) throughout the app (when plotting and in any data analysis plugins).
 
 
 .. admonition:: User API Example
@@ -58,9 +58,9 @@ throughout the app (when plotting and in any data analysis plugins).
       lcviz.load_data(lc)
       lcviz.show()
 
-      flux_origin = lcviz.plugins['Flux Origin']
-      print(flux_origin.flux_origin.choices)
-      flux_origin.flux_origin = 'sap_flux'
+      flux_col = lcviz.plugins['Flux Column']
+      print(flux_col.flux_column.choices)
+      flux_col.flux_column = 'sap_flux'
 
 
 .. seealso::

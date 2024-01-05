@@ -13,7 +13,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
-from lcviz.components import FluxOriginSelectMixin
+from lcviz.components import FluxColumnSelectMixin
 from lcviz.events import EphemerisChangedMessage
 from lcviz.helper import _default_time_viewer_reference_name
 from lcviz.marks import LivePreviewBinning
@@ -25,7 +25,7 @@ __all__ = ['Binning']
 
 
 @tray_registry('binning', label="Binning")
-class Binning(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin,
+class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
               EphemerisSelectMixin, AddResultsMixin):
     """
     See the :ref:`Binning Plugin Documentation <binning>` for more details.
@@ -152,7 +152,7 @@ class Binning(PluginTemplateMixin, FluxOriginSelectMixin, DatasetSelectMixin,
             # then the marks themselves need to be updated
             self._live_update(event)
 
-    @observe('flux_origin_selected', 'dataset_selected',
+    @observe('flux_column_selected', 'dataset_selected',
              'ephemeris_selected',
              'n_bins', 'previews_temp_disable')
     @skip_if_no_updates_since_last_active()

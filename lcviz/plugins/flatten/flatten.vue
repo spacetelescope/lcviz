@@ -157,7 +157,7 @@
     </v-alert>
 
     <v-row justify="end">
-      <j-tooltip tooltipcontent="Flatten and select new column as flux origin">
+      <j-tooltip tooltipcontent="Flatten and select the new column as the adopted flux column">
         <plugin-action-button 
           :spinner="spinner"
           :disabled="flux_label_invalid_msg.length > 0"

@@ -1,7 +1,7 @@
 <template>
   <j-tray-plugin
     description='Choose which column to use as flux across lcviz.'
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flux-origin'"
+    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flux-column'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     :keep_active.sync="keep_active"
@@ -19,8 +19,8 @@
       <v-select
         :menu-props="{ left: true }"
         attach
-        :items="flux_origin_items.map(i => i.label)"
-        v-model="flux_origin_selected"
+        :items="flux_column_items.map(i => i.label)"
+        v-model="flux_column_selected"
         label="Flux Column"
         hint="Select the column to adopt as flux."
         persistent-hint
