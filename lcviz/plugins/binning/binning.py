@@ -18,7 +18,7 @@ from lcviz.events import EphemerisChangedMessage
 from lcviz.helper import _default_time_viewer_reference_name
 from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
-from lcviz.template_mixin import EphemerisSelectMixin
+from lcviz.components import EphemerisSelectMixin
 
 
 __all__ = ['Binning']
