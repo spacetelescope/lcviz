@@ -27,9 +27,16 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         new_data_label = f'{data_label}'
     else:
         new_data_label = light_curve.meta.get('OBJECT', 'Light curve')
+
+    # handle flux_origin default
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
-    if flux_origin is not None:
-        new_data_label += f'[{flux_origin}]'
+    if flux_origin == 'flux' or (flux_origin is None and 'flux' in light_curve.columns):
+        # then make a copy of this column so it won't be lost when changing with the flux_column
+        # plugin
+        light_curve['flux:orig'] = light_curve['flux']
+        if 'flux_err' in light_curve.columns:
+            light_curve['flux:orig_err'] = light_curve['flux_err']
+        light_curve.meta['FLUX_ORIGIN'] = 'flux:orig'
 
     data = _data_with_reftime(app, light_curve)
     app.add_data(data, new_data_label)

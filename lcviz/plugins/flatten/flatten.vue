@@ -33,14 +33,6 @@
                 persistent-hint
               ></v-switch>
             </v-row>
-            <v-row>
-              <v-switch
-                v-model="default_to_overwrite"
-                label="Overwrite by default"
-                hint="Whether the output label should default to overwriting the input data."
-                persistent-hint
-              ></v-switch>
-            </v-row>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -138,6 +130,14 @@
       <v-alert type="warning">Live preview is unnormalized, but flattening will normalize.</v-alert>
     </v-row>
 
+    <plugin-auto-label
+      :value.sync="flux_label_label"
+      :default="flux_label_default"
+      :auto.sync="flux_label_auto"
+      :invalid_msg="flux_label_invalid_msg"
+      hint="Label for flux column."
+    ></plugin-auto-label>
+
     <v-alert v-if="previews_temp_disable && (show_live_preview || show_trend_preview)" type='warning' style="margin-left: -12px; margin-right: -12px">
       Live-updating is temporarily disabled (last update took {{last_live_time}}s)
       <v-row justify='center'>
@@ -156,21 +156,17 @@
       </v-row>
     </v-alert>
 
-    <plugin-add-results
-      :label.sync="results_label"
-      :label_default="results_label_default"
-      :label_auto.sync="results_label_auto"
-      :label_invalid_msg="results_label_invalid_msg"
-      :label_overwrite="results_label_overwrite"
-      label_hint="Label for the flattened data."
-      :add_to_viewer_items="add_to_viewer_items"
-      :add_to_viewer_selected.sync="add_to_viewer_selected"
-      action_label="Flatten"
-      action_tooltip="Flatten data"
-      :action_disabled="flatten_err.length > 0"
-      :action_spinner="spinner"
-      @click:action="apply"
-    ></plugin-add-results>
+    <v-row justify="end">
+      <j-tooltip tooltipcontent="Flatten and select the new column as the adopted flux column">
+        <plugin-action-button 
+          :spinner="spinner"
+          :disabled="flux_label_invalid_msg.length > 0"
+          :results_isolated_to_plugin="false"
+          @click="apply">
+            Flatten{{flux_label_overwrite ? ' (Overwrite)' : ''}}
+        </plugin-action-button>
+      </j-tooltip>
+    </v-row>
 
     <v-row v-if="flatten_err">
       <span class="v-messages v-messages__message text--secondary">

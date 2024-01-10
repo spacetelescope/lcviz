@@ -35,6 +35,41 @@ This plugin allows viewing of any metadata associated with the selected data.
     :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
         Jdaviz documentation on the Metadata Viewer plugin.
 
+.. _flux-column:
+
+Flux Column
+===========
+
+This plugin allows choosing which column in the underlying data should be used as the flux column
+(origin) throughout the app (when plotting and in any data analysis plugins).
+
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.plot_options.plot_options.PlotOptions` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      flux_col = lcviz.plugins['Flux Column']
+      print(flux_col.flux_column.choices)
+      flux_col.flux_column = 'sap_flux'
+
+
+.. seealso::
+
+    This plugin reproduces the behavior also available in ``lightkurve`` as:
+
+    * :meth:`lightkurve.LightCurve.select_flux`
+
+
 .. _plot-options:
 
 Plot Options

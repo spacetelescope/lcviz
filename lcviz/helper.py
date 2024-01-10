@@ -72,7 +72,8 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
-        'tray': ['lcviz-metadata-viewer', 'lcviz-plot-options', 'lcviz-subset-plugin',
+        'tray': ['lcviz-metadata-viewer', 'flux-column',
+                 'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'lcviz-export-plot'],
         'viewer_area': [{'container': 'col',
@@ -155,12 +156,17 @@ class LCviz(ConfigHelper):
         return f'phase:{component}'
 
     def _set_data_component(self, data, component_label, values):
-        if component_label not in self._component_ids:
-            self._component_ids[component_label] = ComponentID(component_label)
-
-        if self._component_ids[component_label] in data.components:
-            data.update_components({self._component_ids[component_label]: values})
+        if component_label in self._component_ids:
+            component_id = self._component_ids[component_label]
         else:
-            data.add_component(values, self._component_ids[component_label])
+            existing_components = [component.label for component in data.components]
+            if component_label in existing_components:
+                component_id = data.components[existing_components.index(component_label)]
+            else:
+                component_id = ComponentID(component_label)
+                self._component_ids[component_label] = component_id
 
-        data.add_component(values, self._component_ids[component_label])
+        if component_id in data.components:
+            data.update_components({component_id: values})
+        else:
+            data.add_component(values, component_id)

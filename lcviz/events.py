@@ -1,7 +1,8 @@
 from glue.core.message import Message
 
 __all__ = ['EphemerisComponentChangedMessage',
-           'EphemerisChangedMessage']
+           'EphemerisChangedMessage',
+           'FluxColumnChangedMessage']
 
 
 class EphemerisComponentChangedMessage(Message):
@@ -27,3 +28,12 @@ class EphemerisChangedMessage(Message):
     in the ephemeris plugin"""
     def __init__(self, ephemeris_label, *args, **kwargs):
         self.ephemeris_label = ephemeris_label
+
+
+class FluxColumnChangedMessage(Message):
+    """Message emitted by the FluxColumnSelect component when the selection has been changed.
+    To subscribe to a change for a particular dataset, consider using FluxColumnSelect directly
+    and observing the traitlet, rather than subscribing to this message"""
+    def __init__(self, dataset, flux_column, *args, **kwargs):
+        self.dataset = dataset
+        self.flux_column = flux_column
