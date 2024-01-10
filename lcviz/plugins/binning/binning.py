@@ -157,9 +157,10 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
              'n_bins', 'previews_temp_disable')
     @skip_if_no_updates_since_last_active()
     def _live_update(self, event={}):
-        if not self.show_live_preview or not self.is_active:
+        self.bin_enabled = self.n_bins != '' and self.n_bins > 0
+
+        if not self.show_live_preview or not self.is_active or not self.bin_enabled:
             self._clear_marks()
-            self.bin_enabled = self.n_bins != '' and self.n_bins > 0
             return
 
         if self.previews_temp_disable:
