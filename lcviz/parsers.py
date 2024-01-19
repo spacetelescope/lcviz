@@ -36,6 +36,11 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
 
     # handle flux_origin default
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
+    if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
+        new_data_label += '[TPF]'
+    elif flux_origin is not None:
+        new_data_label += f'[{flux_origin}]'
+
     if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(light_curve, 'columns', [])):  # noqa
         # then make a copy of this column so it won't be lost when changing with the flux_column
         # plugin
@@ -47,14 +52,27 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     data = _data_with_reftime(app, light_curve)
     app.add_data(data, new_data_label)
 
-    if show_in_viewer:
-        app.add_data_to_viewer(time_viewer_reference_name, new_data_label)
+    if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
+        # ensure a TPF viewer exists
+        # TODO: move this to an event listener on add_data so that we can also remove when empty?
+        from jdaviz.core.events import NewViewerMessage
+        from lcviz.viewers import CubeView
+        viewer_reference_name = 'tpf'
+        if viewer_reference_name not in app._viewer_store.keys():
+            app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
+                               vid='tpf', name='tpf')
+        if show_in_viewer:
+            app.add_data_to_viewer(viewer_reference_name, new_data_label)
 
-        # add to any known phase viewers
-        ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
-        if ephem_plugin is not None:
-            for viewer_id in ephem_plugin._obj.phase_viewer_ids:
-                app.add_data_to_viewer(viewer_id, new_data_label)
+    else:
+        if show_in_viewer:
+            app.add_data_to_viewer(time_viewer_reference_name, new_data_label)
+
+            # add to any known phase viewers
+            ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
+            if ephem_plugin is not None:
+                for viewer_id in ephem_plugin._obj.phase_viewer_ids:
+                    app.add_data_to_viewer(viewer_id, new_data_label)
 
 
 def _data_with_reftime(app, light_curve):
