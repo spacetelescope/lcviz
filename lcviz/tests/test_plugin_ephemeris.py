@@ -1,8 +1,4 @@
 import pytest
-from packaging.version import Version
-
-import jdaviz
-JDAVIZ_LT_3_9_0 = Version(jdaviz.__version__) < Version('3.9.0')
 
 
 def test_docs_snippets(helper, light_curve_like_kepler_quarter):
@@ -49,13 +45,12 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     assert len(ephem.ephemerides) == 2
     assert 'custom component' in ephem.ephemerides
 
-    if not JDAVIZ_LT_3_9_0:
-        with pytest.raises(ValueError):
-            # brackets interfere with cloned viewer label logic
-            ephem.rename_component('custom component', 'custom component[blah]')
-        with pytest.raises(ValueError):
-            # colons interfere with viewer ephemeris logic
-            ephem.rename_component('custom component', 'custom component:blah')
+    with pytest.raises(ValueError):
+        # brackets interfere with cloned viewer label logic
+        ephem.rename_component('custom component', 'custom component[blah]')
+    with pytest.raises(ValueError):
+        # colons interfere with viewer ephemeris logic
+        ephem.rename_component('custom component', 'custom component:blah')
 
     ephem.rename_component('custom component', 'renamed custom component')
     assert len(ephem.ephemerides) == 2
