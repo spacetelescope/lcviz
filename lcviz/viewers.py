@@ -6,13 +6,13 @@ from glue.core.roi import RangeROI
 from glue.core.subset_group import GroupedSubset
 
 from glue_jupyter.bqplot.scatter import BqplotScatterView
-from glue_jupyter.bqplot.image import BqplotImageView
 
 from astropy import units as u
 from astropy.time import Time
 
 from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import viewer_registry
+from jdaviz.configs.cubeviz.plugins.viewers import CubevizImageView
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
@@ -267,7 +267,7 @@ class PhaseScatterView(TimeScatterView):
 
 
 @viewer_registry("lcviz-cube-viewer", label="cube")
-class CubeView(JdavizViewerMixin, CloneViewerMixin, BqplotImageView):
+class CubeView(CloneViewerMixin, CubevizImageView):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -291,6 +291,25 @@ class CubeView(JdavizViewerMixin, CloneViewerMixin, BqplotImageView):
 
         # Hide axes by default
         self.state.show_axes = False
+
+        # TODO: refactor upstream so lcviz can inherit cubeviewer methods/setup with jdaviz-specific
+        # logic:
+        # * _default_spectrum_viewer_reference_name
+        # * _default_flux_viewer_reference_name
+        # * _default_uncert_viewer_reference_name
+
+    def _initial_x_axis(self, *args):
+        # Make sure that the x_att/y_att is correct on data load
+        ref_data = self.state.reference_data
+        self.state.x_att = ref_data.id['Pixel Axis 2 [x]']
+        self.state.y_att = ref_data.id['Pixel Axis 1 [y]']
+
+    def _on_layers_update(self, layers=None):
+        super()._on_layers_update(layers=layers)
+        flux_comp = self.state.reference_data.id['flux']
+        for layer in self.state.layers:
+            if layer.attribute != flux_comp:
+                layer.attribute = flux_comp
 
     def data(self, cls=None):
         # TODO: generalize upstream in jdaviz.
