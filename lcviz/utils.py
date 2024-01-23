@@ -1,6 +1,7 @@
 from glue.config import data_translator
 from glue.core import Data, Subset
 from ipyvue import watch
+import warnings
 
 import os
 from glue.core.coordinates import Coordinates
@@ -438,7 +439,10 @@ class TPFHandler:
                 values = values.value
             setattr(tpf_factory, attr, values)
 
-        tpf = tpf_factory.get_tpf()
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',
+                                    message='Could not detect filetype as TESSTargetPixelFile or KeplerTargetPixelFile, returning generic TargetPixelFile instead.')  # noqa
+            tpf = tpf_factory.get_tpf()
 
         for attr in self.meta_attrs:
             # if this attribute exists and can be set:
