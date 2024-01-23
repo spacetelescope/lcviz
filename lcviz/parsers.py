@@ -10,6 +10,13 @@ __all__ = ["light_curve_parser"]
 def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
     time_viewer_reference_name = app._jdaviz_helper._default_time_viewer_reference_name
 
+    # load a LightCurve or TargetPixelFile object:
+    cls_with_translator = (
+        lightkurve.LightCurve,
+        lightkurve.targetpixelfile.KeplerTargetPixelFile,
+        lightkurve.targetpixelfile.TessTargetPixelFile
+    )
+
     # load local FITS file from disk by its path:
     if isinstance(file_obj, str) and os.path.exists(file_obj):
         if data_label is None:
@@ -18,8 +25,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         # read the light curve:
         light_curve = lightkurve.read(file_obj)
 
-    # load a LightCurve object:
-    elif isinstance(file_obj, lightkurve.LightCurve):
+    elif isinstance(file_obj, cls_with_translator):
         light_curve = file_obj
 
     # make a data label:
@@ -30,7 +36,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
 
     # handle flux_origin default
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
-    if flux_origin == 'flux' or (flux_origin is None and 'flux' in light_curve.columns):
+    if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(light_curve, 'columns', [])):  # noqa
         # then make a copy of this column so it won't be lost when changing with the flux_column
         # plugin
         light_curve['flux:orig'] = light_curve['flux']

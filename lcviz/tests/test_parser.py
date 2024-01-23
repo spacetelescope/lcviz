@@ -3,7 +3,7 @@ import numpy as np
 from glue.core.roi import XRangeROI, YRangeROI
 from astropy.time import Time
 from astropy.utils.data import download_file
-from lightkurve import LightCurve
+from lightkurve import LightCurve, KeplerTargetPixelFile, search_targetpixelfile
 from lightkurve.io import kepler
 import astropy.units as u
 
@@ -48,6 +48,17 @@ def test_kepler_via_mast_preparsed(helper):
     assert isinstance(data.coords, TimeCoordinates)
     assert isinstance(flux, u.Quantity)
     assert flux.unit.is_equivalent(u.electron / u.s)
+
+
+@pytest.mark.remote_data
+def test_kepler_tpf_via_lightkurve(helper):
+    tpf = search_targetpixelfile("KIC 001429092",
+                                 mission="Kepler",
+                                 cadence="long",
+                                 quarter=10).download()
+    helper.load_data(tpf)
+    assert helper.get_data().shape == (4447, 4, 6)  # (time, x, y)
+    assert helper.app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
 
 
 def test_synthetic_lc(helper):
