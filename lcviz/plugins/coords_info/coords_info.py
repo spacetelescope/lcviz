@@ -5,14 +5,14 @@ from jdaviz.configs.imviz.plugins.coords_info import CoordsInfo
 from jdaviz.core.events import ViewerRenamedMessage
 from jdaviz.core.registries import tool_registry
 
-from lcviz.viewers import TimeScatterView, PhaseScatterView
+from lcviz.viewers import TimeScatterView, PhaseScatterView, CubeView
 
 __all__ = ['CoordsInfo']
 
 
 @tool_registry('lcviz-coords-info')
 class CoordsInfo(CoordsInfo):
-    _supported_viewer_classes = (TimeScatterView, PhaseScatterView)
+    _supported_viewer_classes = (TimeScatterView, PhaseScatterView, CubeView)
     _viewer_classes_with_marker = (TimeScatterView, PhaseScatterView)
 
     def __init__(self, *args, **kwargs):
@@ -25,12 +25,7 @@ class CoordsInfo(CoordsInfo):
     def _viewer_renamed(self, msg):
         self._marks[msg.new_viewer_ref] = self._marks.pop(msg.old_viewer_ref)
 
-    def update_display(self, viewer, x, y):
-        self._dict = {}
-
-        if not len(viewer.state.layers):
-            return
-
+    def _lc_viewer_update(self, viewer, x, y):
         is_phase = isinstance(viewer, PhaseScatterView)
         # TODO: update with display_unit when supported in lcviz
         x_unit = '' if is_phase else str(viewer.time_unit)
@@ -138,3 +133,14 @@ class CoordsInfo(CoordsInfo):
 
         self.marks[viewer._reference_id].update_xy([closest_x], [closest_y])  # noqa
         self.marks[viewer._reference_id].visible = True
+
+    def update_display(self, viewer, x, y):
+        self._dict = {}
+
+        if not len(viewer.state.layers):
+            return
+
+        if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
+            self._lc_viewer_update(viewer, x, y)
+        elif isinstance(viewer, CubeView):
+            self._image_viewer_update(viewer, x, y)
