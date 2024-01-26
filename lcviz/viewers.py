@@ -308,7 +308,7 @@ class CubeView(CloneViewerMixin, CubevizImageView):
         super()._on_layers_update(layers=layers)
         flux_comp = self.state.reference_data.id['flux']
         for layer in self.state.layers:
-            if layer.attribute != flux_comp:
+            if hasattr(layer, 'attribute') and layer.attribute != flux_comp:
                 layer.attribute = flux_comp
 
     def data(self, cls=None):
