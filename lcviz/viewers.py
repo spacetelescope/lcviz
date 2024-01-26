@@ -298,6 +298,7 @@ class CubeView(CloneViewerMixin, CubevizImageView):
 
     def _initial_x_axis(self, *args):
         # Make sure that the x_att/y_att is correct on data load
+        # called via a callback set upstream in CubevizImageView when reference_data is changed
         ref_data = self.state.reference_data
         self.state.x_att = ref_data.id['Pixel Axis 2 [x]']
         self.state.y_att = ref_data.id['Pixel Axis 1 [y]']
