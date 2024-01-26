@@ -274,7 +274,7 @@ class CubeView(CloneViewerMixin, CubevizImageView):
                     ['jdaviz:boxzoom'],
                     ['jdaviz:panzoom'],
                     ['bqplot:rectangle'],
-                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     # TODO: can we vary this default_class based on Kepler vs TESS, etc?
     default_class = KeplerTargetPixelFile
@@ -300,12 +300,16 @@ class CubeView(CloneViewerMixin, CubevizImageView):
         # Make sure that the x_att/y_att is correct on data load
         # called via a callback set upstream in CubevizImageView when reference_data is changed
         ref_data = self.state.reference_data
-        self.state.x_att = ref_data.id['Pixel Axis 2 [x]']
-        self.state.y_att = ref_data.id['Pixel Axis 1 [y]']
+        if ref_data is not None:
+            self.state.x_att = ref_data.id['Pixel Axis 2 [x]']
+            self.state.y_att = ref_data.id['Pixel Axis 1 [y]']
 
     def _on_layers_update(self, layers=None):
         super()._on_layers_update(layers=layers)
-        flux_comp = self.state.reference_data.id['flux']
+        ref_data = self.state.reference_data
+        if ref_data is None:
+            return
+        flux_comp = ref_data.id['flux']
         for layer in self.state.layers:
             if hasattr(layer, 'attribute') and layer.attribute != flux_comp:
                 layer.attribute = flux_comp
