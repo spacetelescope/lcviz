@@ -18,7 +18,7 @@ from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
 from lcviz.state import ScatterViewerState
 
-from lightkurve import LightCurve
+from lightkurve import LightCurve, KeplerTargetPixelFile
 
 __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
@@ -276,10 +276,8 @@ class CubeView(CloneViewerMixin, CubevizImageView):
                     ['bqplot:rectangle'],
                     ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
-#    default_class = TargetPixelFile  # TODO: does this need to use the factory?
-#    _state_cls = ScatterViewerState
-
-#    _native_mark_classnames = ('Image', 'ImageGL', 'Scatter', 'ScatterGL')
+    # TODO: can we vary this default_class based on Kepler vs TESS, etc?
+    default_class = KeplerTargetPixelFile
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
