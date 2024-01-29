@@ -12,6 +12,7 @@ from astropy.time import Time
 
 from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import viewer_registry
+from jdaviz.configs.cubeviz.plugins.viewers import CubevizImageView
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
@@ -19,12 +20,47 @@ from lcviz.state import ScatterViewerState
 
 from lightkurve import LightCurve
 
+__all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
-__all__ = ['TimeScatterView', 'PhaseScatterView']
+
+class CloneViewerMixin:
+    def _get_clone_viewer_reference(self):
+        base_name = self.reference.split("[")[0]
+        name = base_name
+        ind = 0
+        while name in self.jdaviz_helper.viewers.keys():
+            ind += 1
+            name = f"{base_name}[{ind}]"
+        return name
+
+    def clone_viewer(self):
+        name = self._get_clone_viewer_reference()
+
+        self.jdaviz_app._on_new_viewer(NewViewerMessage(self.__class__,
+                                                        data=None,
+                                                        sender=self.jdaviz_app),
+                                       vid=name, name=name)
+
+        this_viewer_item = self.jdaviz_app._get_viewer_item(self.reference)
+        this_state = self.state.as_dict()
+        for data in self.jdaviz_app.data_collection:
+            data_id = self.jdaviz_app._data_id_from_label(data.label)
+            visible = this_viewer_item['selected_data_items'].get(data_id, 'hidden')
+            self.jdaviz_app.set_data_visibility(name, data.label, visible == 'visible')
+            # TODO: don't revert color when adding same data to a new viewer
+            # (same happens when creating a phase-viewer from ephemeris plugin)
+
+        new_viewer = self.jdaviz_helper.viewers[name]._obj
+        for k, v in this_state.items():
+            if k in ('layers',):
+                continue
+            setattr(new_viewer.state, k, v)
+
+        return new_viewer.user_api
 
 
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
-class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
+class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, BqplotScatterView):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -43,7 +79,6 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
         self.display_mask = False
         self.time_unit = kwargs.get('time_unit', u.d)
-        self._subscribe_to_layers_update()
         self.initialize_toolbar()
         self._subscribe_to_layers_update()
         # hack to inherit a small subset of methods from SpecvizProfileView
@@ -210,40 +245,6 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 
         super().apply_roi(roi, use_current=use_current)
 
-    def _get_clone_viewer_reference(self):
-        base_name = self.reference.split("[")[0]
-        name = base_name
-        ind = 0
-        while name in self.jdaviz_helper.viewers.keys():
-            ind += 1
-            name = f"{base_name}[{ind}]"
-        return name
-
-    def clone_viewer(self):
-        name = self._get_clone_viewer_reference()
-
-        self.jdaviz_app._on_new_viewer(NewViewerMessage(self.__class__,
-                                                        data=None,
-                                                        sender=self.jdaviz_app),
-                                       vid=name, name=name)
-
-        this_viewer_item = self.jdaviz_app._get_viewer_item(self.reference)
-        this_state = self.state.as_dict()
-        for data in self.jdaviz_app.data_collection:
-            data_id = self.jdaviz_app._data_id_from_label(data.label)
-            visible = this_viewer_item['selected_data_items'].get(data_id, 'hidden')
-            self.jdaviz_app.set_data_visibility(name, data.label, visible == 'visible')
-            # TODO: don't revert color when adding same data to a new viewer
-            # (same happens when creating a phase-viewer from ephemeris plugin)
-
-        new_viewer = self.jdaviz_helper.viewers[name]._obj
-        for k, v in this_state.items():
-            if k in ('layers',):
-                continue
-            setattr(new_viewer.state, k, v)
-
-        return new_viewer.user_api
-
 
 @viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
 class PhaseScatterView(TimeScatterView):
@@ -263,3 +264,62 @@ class PhaseScatterView(TimeScatterView):
             raise ValueError("must have ephemeris plugin loaded to convert")
 
         return ephem.times_to_phases(times, ephem_component=self.ephemeris_component)
+
+
+@viewer_registry("lcviz-cube-viewer", label="cube")
+class CubeView(CloneViewerMixin, CubevizImageView):
+    # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
+    tools_nested = [
+                    ['jdaviz:homezoom', 'jdaviz:prevzoom'],
+                    ['jdaviz:boxzoom'],
+                    ['jdaviz:panzoom'],
+                    ['bqplot:rectangle'],
+                    ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                ]
+    # TODO: can we vary this default_class based on Kepler vs TESS, etc?
+    # see https://github.com/spacetelescope/lcviz/pull/81#discussion_r1469721009
+    default_class = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.display_mask = False
+        self.time_unit = kwargs.get('time_unit', u.d)
+        self.initialize_toolbar()
+        self._subscribe_to_layers_update()
+
+        # Hide axes by default
+        self.state.show_axes = False
+
+        # TODO: refactor upstream so lcviz can inherit cubeviewer methods/setup with jdaviz-specific
+        # logic:
+        # * _default_spectrum_viewer_reference_name
+        # * _default_flux_viewer_reference_name
+        # * _default_uncert_viewer_reference_name
+
+    def _initial_x_axis(self, *args):
+        # Make sure that the x_att/y_att is correct on data load
+        # called via a callback set upstream in CubevizImageView when reference_data is changed
+        ref_data = self.state.reference_data
+        if ref_data is not None:
+            self.state.x_att = ref_data.id['Pixel Axis 2 [x]']
+            self.state.y_att = ref_data.id['Pixel Axis 1 [y]']
+
+    def _on_layers_update(self, layers=None):
+        super()._on_layers_update(layers=layers)
+        ref_data = self.state.reference_data
+        if ref_data is None:
+            return
+        flux_comp = ref_data.id['flux']
+        for layer in self.state.layers:
+            if hasattr(layer, 'attribute') and layer.attribute != flux_comp:
+                layer.attribute = flux_comp
+
+    def data(self, cls=None):
+        # TODO: generalize upstream in jdaviz.
+        # This method is generalized from
+        # jdaviz/configs/cubeviz/plugins/viewers.py
+        return [layer_state.layer
+                for layer_state in self.state.layers
+                if hasattr(layer_state, 'layer') and
+                isinstance(layer_state.layer, BaseData)]
