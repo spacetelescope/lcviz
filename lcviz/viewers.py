@@ -18,7 +18,7 @@ from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
 from lcviz.state import ScatterViewerState
 
-from lightkurve import LightCurve, KeplerTargetPixelFile
+from lightkurve import LightCurve
 
 __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
@@ -277,7 +277,8 @@ class CubeView(CloneViewerMixin, CubevizImageView):
                     ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     # TODO: can we vary this default_class based on Kepler vs TESS, etc?
-    default_class = KeplerTargetPixelFile
+    # see https://github.com/spacetelescope/lcviz/pull/81#discussion_r1469721009
+    default_class = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
