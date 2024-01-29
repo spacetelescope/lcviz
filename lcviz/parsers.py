@@ -53,14 +53,14 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     app.add_data(data, new_data_label)
 
     if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
-        # ensure a TPF viewer exists
+        # ensure an image/cube/TPF viewer exists
         # TODO: move this to an event listener on add_data so that we can also remove when empty?
         from jdaviz.core.events import NewViewerMessage
         from lcviz.viewers import CubeView
-        viewer_reference_name = 'tpf'
+        viewer_reference_name = 'image'
         if viewer_reference_name not in app._viewer_store.keys():
             app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
-                               vid='tpf', name='tpf')
+                               vid='image', name='image')
         if show_in_viewer:
             app.add_data_to_viewer(viewer_reference_name, new_data_label)
 
