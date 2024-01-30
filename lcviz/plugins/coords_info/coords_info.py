@@ -25,6 +25,18 @@ class CoordsInfo(CoordsInfo):
     def _viewer_renamed(self, msg):
         self._marks[msg.new_viewer_ref] = self._marks.pop(msg.old_viewer_ref)
 
+    def _image_shape_inds(self, image):
+        if image.ndim == 3:
+            # exception to the upstream cubeviz case of (0, 1)
+            return (2, 1)
+        return super()._image_shape_inds(image)
+
+    def _get_cube_value(self, image, arr, x, y, viewer):
+        if image.ndim == 3:
+            # exception to the upstream cubeviz case of x, y, slice
+            return arr[viewer.state.slices[0], int(round(y)), int(round(x))]
+        return super()._get_cube_value(image, arr, x, y, viewer)
+
     def _lc_viewer_update(self, viewer, x, y):
         is_phase = isinstance(viewer, PhaseScatterView)
         # TODO: update with display_unit when supported in lcviz
