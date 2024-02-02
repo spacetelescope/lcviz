@@ -35,7 +35,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
-    * ``component`` (:class:`~jdaviz.template_mixin.EditableSelectPluginComponent`):
+    * ``component`` (:class:`~jdaviz.core.template_mixin.EditableSelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
     * :attr:`t0` : float
       Zeropoint of the ephemeris.
@@ -56,7 +56,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`get_data`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for determining the period.
-    * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+    * ``method`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Method/algorithm to determine the period.
     """
     template_file = __file__, "ephemeris.vue"

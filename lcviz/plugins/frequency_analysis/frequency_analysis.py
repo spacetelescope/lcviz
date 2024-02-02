@@ -29,9 +29,9 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for analysis.
-    * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+    * ``method`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Method/algorithm to determine the period.
-    * ``xunit`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+    * ``xunit`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Whether to plot power vs fequency or period.
     * ``auto_range`` : bool
     * ``minimum`` : float
