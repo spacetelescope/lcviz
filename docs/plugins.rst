@@ -47,7 +47,7 @@ This plugin allows choosing which column in the underlying data should be used a
 .. admonition:: User API Example
     :class: dropdown
 
-    See the :class:`~lcviz.plugins.plot_options.plot_options.PlotOptions` user API documentation for more details.
+    See the :class:`~lcviz.plugins.flux_column.flux_column.FluxColumn` user API documentation for more details.
 
     .. code-block:: python
 
@@ -113,6 +113,24 @@ Subset Tools
 ============
 
 This plugin allows viewing and modifying defined subsets.
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.subset_plugin.subset_plugin.SubsetPlugin` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      subset_tools = lcviz.plugins['Subset Tools']
+      subset_tools.open_in_tray()
+
 
 .. seealso::
 

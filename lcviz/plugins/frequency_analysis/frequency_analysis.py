@@ -22,17 +22,20 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     See the :ref:`Frequency Analysis Plugin Documentation <frequency_analysis>` for more details.
 
     Only the following attributes and methods are available through the
-    public plugin API.
+    :ref:`public plugin API <plugin-apis>`:
 
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for analysis.
-    * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+    * ``method`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Method/algorithm to determine the period.
-    * ``xunit`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+    * ``xunit`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Whether to plot power vs fequency or period.
-    * ``auto_range``
-    * ``minimum``
-    * ``maximum``
+    * ``auto_range`` : bool
+    * ``minimum`` : float
+    * ``maximum`` : float
     * :meth:``periodogram``
     """
     template_file = __file__, "frequency_analysis.vue"
