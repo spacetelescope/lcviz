@@ -33,13 +33,16 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
     Only the following attributes and methods are available through the
     public plugin API.
 
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to bin.
     * ``ephemeris`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
     * :meth:`input_lc`
       Data used as input to binning, based on ``dataset`` and ``ephemeris``.
-    * ``n_bins``
+    * ``n_bins`` : int
     * ``add_results`` (:class:`~jdaviz.core.template_mixin.AddResults`)
     * :meth:`bin`
     """

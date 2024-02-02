@@ -32,15 +32,18 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     Only the following attributes and methods are available through the
     public plugin API.
 
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``component`` (:class:`~jdaviz.template_mixin.EditableSelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
-    * :attr:`t0`:
+    * :attr:`t0` : float
       Zeropoint of the ephemeris.
-    * :attr:`period`:
+    * :attr:`period` : float
       Period of the ephemeris, defined at ``t0``.
-    * :attr:`dpdt`:
+    * :attr:`dpdt` : float
       First derivative of the period of the ephemeris.
-    * :attr:`wrap_at`:
+    * :attr:`wrap_at` : float
       Phase at which to wrap (phased data will encompass the range 1-wrap_at to wrap_at).
     * :meth:`ephemeris`
     * :meth:`ephemerides`

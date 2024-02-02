@@ -16,6 +16,9 @@ class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin)
     Only the following attributes and methods are available through the
     public plugin API.
 
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to bin.
     * ``flux_column`` (:class:`~lcviz.components.FluxColumnSelect`)

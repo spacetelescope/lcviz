@@ -30,18 +30,21 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     Only the following attributes and methods are available through the
     public plugin API.
 
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``show_live_preview`` : bool
         Whether to show the live-preview of the (unnormalized) flattened light curve
     * ``show_trend_preview`` : bool
         Whether to show the live-preview of the trend curve used to flatten the light curve
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to flatten.
-    * ``window_length``
-    * ``polyorder``
-    * ``break_tolerance``
-    * ``niters``
-    * ``sigma``
-    * ``unnormalize``
+    * ``window_length`` : int
+    * ``polyorder`` : int
+    * ``break_tolerance`` : int
+    * ``niters`` : int
+    * ``sigma`` : float
+    * ``unnormalize`` : bool
     * ``flux_label`` (:class:`~jdaviz.core.template_mixin.AutoTextField`):
       Label for the resulting flux column added to ``dataset`` and automatically selected as the new
       flux column (origin).
