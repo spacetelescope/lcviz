@@ -12,7 +12,7 @@ class PlotOptions(PlotOptions):
     For a full list of exposed attributes, call ``dir(plugin)``.  Note that some attributes are
     applicable depending on the selection of ``viewer`` and/or ``layer``.  Below are
     a list of some common attributes and methods are available through the
-    public plugin API.
+    :ref:`public plugin API <plugin-apis>`:
 
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`

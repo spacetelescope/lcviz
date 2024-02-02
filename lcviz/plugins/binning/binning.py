@@ -31,7 +31,7 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
     See the :ref:`Binning Plugin Documentation <binning>` for more details.
 
     Only the following attributes and methods are available through the
-    public plugin API.
+    :ref:`public plugin API <plugin-apis>`:
 
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`

@@ -10,7 +10,7 @@ class MetadataViewer(MetadataViewer):
     See the :ref:`Metadata Viewer Plugin Documentation <metadata-viewer>` for more details.
 
     Only the following attributes and methods are available through the
-    public plugin API.
+    :ref:`public plugin API <plugin-apis>`:
 
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`

@@ -12,7 +12,7 @@ class Markers(Markers):
     See the :ref:`Markers Plugin Documentation <markers>` for more details.
 
     Only the following attributes and methods are available through the
-    public plugin API.
+    :ref:`public plugin API <plugin-apis>`:
 
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
