@@ -12,7 +12,7 @@ from astropy.time import Time
 
 from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import viewer_registry
-from jdaviz.configs.cubeviz.plugins.viewers import CubevizImageView
+from jdaviz.configs.cubeviz.plugins.viewers import CubevizImageView, WithSliceIndicator
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
@@ -60,13 +60,14 @@ class CloneViewerMixin:
 
 
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
-class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, BqplotScatterView):
+class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, BqplotScatterView):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
                     ['jdaviz:boxzoom', 'jdaviz:xrangezoom', 'jdaviz:yrangezoom'],
                     ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
                     ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
+                    ['jdaviz:selectslice'],
                     ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     default_class = LightCurve
@@ -248,6 +249,15 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, BqplotScatterView):
 
 @viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
 class PhaseScatterView(TimeScatterView):
+    # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
+    tools_nested = [
+                    ['jdaviz:homezoom', 'jdaviz:prevzoom'],
+                    ['jdaviz:boxzoom', 'jdaviz:xrangezoom', 'jdaviz:yrangezoom'],
+                    ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
+                    ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
+                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                ]
+
     @property
     def ephemeris_component(self):
         return self.reference.split('[')[0].split(':')[-1]
