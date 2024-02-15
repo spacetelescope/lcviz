@@ -289,6 +289,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
             time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper._default_time_viewer_reference_name)  # noqa
             for data in dc:
+                if data.ndim > 1:
+                    # skip image/cube entries
+                    continue
                 data_id = self.app._data_id_from_label(data.label)
                 visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')
                 self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
