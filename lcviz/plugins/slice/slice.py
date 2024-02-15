@@ -20,6 +20,23 @@ class Slice(Slice):
                 self._watch_viewer(viewer, True)
 
     @property
+    def slice_component_label(self):
+        # label of the component in the cubes corresponding to the slice axis
+        # calling data_collection_item.get_component(slice_component_label) on any
+        # input cube-data must work
+        return 'dt'
+
+    @property
+    def slice_index(self):
+        # index in viewer.slices corresponding to the slice axis
+        return 0
+
+    @property
+    def slice_axis(self):
+        # global display unit "axis" corresponding to the slice axis
+        return 'time'
+
+    @property
     def user_api(self):
         api = super().user_api
         # can be removed after deprecated upstream attributes for wavelength/wavelength_value
@@ -38,6 +55,7 @@ class Slice(Slice):
             if viewer not in self._indicator_viewers:
                 self._indicator_viewers.append(viewer)
                 # if the units (or data) change, we need to update internally
+# need to subscribe to add_data instead of reference_data....
 #                viewer.state.add_callback("reference_data",
 #                                          self._update_reference_data)
 
@@ -46,13 +64,9 @@ class Slice(Slice):
             return  # pragma: no cover
         self._update_data(reference_data.get_object().time)
 
-    @property
-    def slice_axis(self):
-        return 'time'
+#    def _viewer_slices_changed(self, value):
+#        if len(value) == 3:
+#            self.slice = float(value[0])
 
-    def _viewer_slices_changed(self, value):
-        if len(value) == 3:
-            self.slice = float(value[0])
-
-    def _set_viewer_to_slice(self, viewer, value):
-        viewer.state.slices = (value, 0, 0)
+#    def _set_viewer_to_slice(self, viewer, value):
+#        viewer.state.slices = (value, 0, 0)

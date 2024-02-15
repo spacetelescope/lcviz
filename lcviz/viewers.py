@@ -80,7 +80,7 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
         self.display_mask = False
         self.time_unit = kwargs.get('time_unit', u.d)
-        self.initialize_toolbar()
+        self.initialize_toolbar(default_tool_priority=['jdaviz:selectslice'])
         self._subscribe_to_layers_update()
         # hack to inherit a small subset of methods from SpecvizProfileView
         # TODO: refactor jdaviz so these can be included in some mixin
