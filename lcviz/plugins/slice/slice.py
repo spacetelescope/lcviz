@@ -6,13 +6,16 @@ from glue.core.message import (DataCollectionAddMessage,
 from jdaviz.configs.cubeviz.plugins import Slice
 from jdaviz.core.registries import tray_registry
 
-#from lcviz.viewers import CubeView
+from lcviz.viewers import CubeView
 
 __all__ = ['Slice']
 
 
 @tray_registry('lcviz-slice', label="Slice")
 class Slice(Slice):
+    _cube_viewer_cls = CubeView
+    _cube_viewer_default_label = 'image'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#slice"
@@ -82,10 +85,3 @@ class Slice(Slice):
         if reference_data is None:
             return  # pragma: no cover
         self._update_data(reference_data.get_object().time)
-
-#    def _viewer_slices_changed(self, value):
-#        if len(value) == 3:
-#            self.slice = float(value[0])
-
-#    def _set_viewer_to_slice(self, viewer, value):
-#        viewer.state.slices = (value, 0, 0)
