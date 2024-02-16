@@ -1,7 +1,12 @@
 from glue_jupyter.bqplot.scatter import BqplotScatterView
+from glue.core.message import (DataCollectionAddMessage,
+                               DataCollectionDeleteMessage)
+
 
 from jdaviz.configs.cubeviz.plugins import Slice
 from jdaviz.core.registries import tray_registry
+
+#from lcviz.viewers import CubeView
 
 __all__ = ['Slice']
 
@@ -19,6 +24,10 @@ class Slice(Slice):
             if isinstance(viewer, BqplotScatterView) or len(viewer.data()):
                 self._watch_viewer(viewer, True)
 
+        for msg in (DataCollectionAddMessage, DataCollectionDeleteMessage):
+            self.session.hub.subscribe(self, msg, handler=self._update_relevant)
+        self._update_relevant()
+
     @property
     def slice_component_label(self):
         # label of the component in the cubes corresponding to the slice axis
@@ -35,6 +44,16 @@ class Slice(Slice):
     def slice_axis(self):
         # global display unit "axis" corresponding to the slice axis
         return 'time'
+
+    def _update_relevant(self, *args):
+        # whether the plugin is currently relevant and should appear in the tray
+        # TODO: if adding a button in the slice plugin to create an image viewer, then this
+        # should be changed to check for cube data in the data-collection instead
+        for data in self.app.data_collection:
+            if data.ndim == 3:
+                self.irrelevant_msg = ''
+                return
+        self.irrelevant_msg = 'Slice plugin is only relevant when cube-like data (e.g., TPF data) is loaded in the app'  # noqa
 
     @property
     def user_api(self):
