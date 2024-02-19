@@ -67,7 +67,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
     assert len(_get_markers_from_viewer(tv).x) == 1
 
     ephem = helper.plugins['Ephemeris']
-    pv = ephem.create_phase_viewer()
+    pv = ephem.create_phase_viewer()._obj
 
     # test event in flux-vs-phase viewer
     label_mouseover._viewer_mouse_event(pv,
