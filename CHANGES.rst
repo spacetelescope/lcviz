@@ -8,6 +8,11 @@
 * Flatten plugin no longer creates new data entries, but instead appends a new column to the input
   light curve and selects as the flux column (origin). [#77]
 
+* Ephemeris plugin now supports passing floats to ``times_to_phases``. [#87]
+
+* Ephemeris plugin's ``create_phase_viewer`` now returns the public user API instance of the viewer
+  instead of the underlying object. [#87]
+
 0.1.0 (12-14-2023)
 ------------------
 
