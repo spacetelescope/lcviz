@@ -300,7 +300,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if create_phase_viewer:
             pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
         pv.state.x_att = self.app._jdaviz_helper._component_ids[self.phase_comp_lbl]
-        return pv
+        return pv.user_api
 
     def vue_create_phase_viewer(self, *args):
         self.create_phase_viewer()
