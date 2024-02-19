@@ -179,18 +179,19 @@ visible when the plugin is opened.
         Jdaviz documentation on the Markers plugin.
 
 
-.. _slice:
+.. _time-indicator:
 
-Slice
-=====
+Time Selector
+==============
 
-The slice plugin allows defining the time at which all image cubes are displayed.
+The time selector plugin allows defining the time indicated in all light curve viewers
+(time and phase viewers) as well as the time at which all image cubes are displayed.
 
 
 .. admonition:: User API Example
     :class: dropdown
 
-    See the :class:`~lcviz.plugins.slice.slice.Slice` user API documentation for more details.
+    See the :class:`~lcviz.plugins.time_selector.time_selector.TimeSelector` user API documentation for more details.
 
     .. code-block:: python
 
@@ -201,14 +202,14 @@ The slice plugin allows defining the time at which all image cubes are displayed
       lcviz.load_data(lc)
       lcviz.show()
 
-      sl = lcviz.plugins['Slice']
-      sl.open_in_tray()
+      ts = lcviz.plugins['Time Selector']
+      ts.open_in_tray()
 
 
 .. seealso::
 
-    :ref:`Jdaviz Markers <jdaviz:markers-plugin>`
-        Jdaviz documentation on the Markers plugin.
+    :ref:`Jdaviz Slice Plugin <jdaviz:slice>`
+        Jdaviz documentation on the Slice plugin.
 
 
 

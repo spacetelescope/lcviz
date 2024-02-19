@@ -12,7 +12,8 @@ from astropy.time import Time
 
 from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import viewer_registry
-from jdaviz.configs.cubeviz.plugins.viewers import CubevizImageView, WithSliceIndicator
+from jdaviz.configs.cubeviz.plugins.viewers import (CubevizImageView,
+                                                    WithSliceIndicator, WithSliceSelection)
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
@@ -89,6 +90,12 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         # TODO: _plot_uncertainties in specviz is hardcoded to look at spectral_axis and so crashes
         self._clean_error = lambda: SpecvizProfileView._clean_error(self)
         self.density_map = kwargs.get('density_map', False)
+
+    @property
+    def slice_component_label(self):
+        # label of the component in the lightcurves corresponding to the slice axis
+        # calling data_collection_item.get_component(slice_component_label) must work
+        return 'dt'
 
     def data(self, cls=None):
         data = []
@@ -275,9 +282,13 @@ class PhaseScatterView(TimeScatterView):
 
         return ephem.times_to_phases(times, ephem_component=self.ephemeris_component)
 
+    def _set_slice_indicator_value(self, value):
+        # NOTE: on first call, this will initialize the indicator itself
+        self.slice_indicator.value = self.times_to_phases(value)
+
 
 @viewer_registry("lcviz-cube-viewer", label="cube")
-class CubeView(CloneViewerMixin, CubevizImageView):
+class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -306,6 +317,18 @@ class CubeView(CloneViewerMixin, CubevizImageView):
         # * _default_spectrum_viewer_reference_name
         # * _default_flux_viewer_reference_name
         # * _default_uncert_viewer_reference_name
+
+    @property
+    def slice_component_label(self):
+        # label of the component in the cubes corresponding to the slice axis
+        # calling data_collection_item.get_component(slice_component_label) on any
+        # input cube-data must work
+        return 'dt'
+
+    @property
+    def slice_index(self):
+        # index in viewer.slices corresponding to the slice axis
+        return 0
 
     def _initial_x_axis(self, *args):
         # Make sure that the x_att/y_att is correct on data load

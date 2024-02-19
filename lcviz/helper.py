@@ -74,7 +74,7 @@ class LCviz(ConfigHelper):
         'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
         'tray': ['lcviz-metadata-viewer', 'flux-column',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
-                 'lcviz-markers', 'lcviz-slice',
+                 'lcviz-markers', 'time-selector',
                  'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'lcviz-export-plot'],
         'viewer_area': [{'container': 'col',
