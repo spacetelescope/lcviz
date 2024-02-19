@@ -30,17 +30,20 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     See the :ref:`Ephemeris Plugin Documentation <ephemeris>` for more details.
 
     Only the following attributes and methods are available through the
-    public plugin API.
+    :ref:`public plugin API <plugin-apis>`:
 
-    * ``component`` (:class:`~jdaviz.template_mixin.EditableSelectPluginComponent`):
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
+    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
+    * ``component`` (:class:`~jdaviz.core.template_mixin.EditableSelectPluginComponent`):
       Label of the component corresponding to the active ephemeris.
-    * :attr:`t0`:
+    * :attr:`t0` : float
       Zeropoint of the ephemeris.
-    * :attr:`period`:
+    * :attr:`period` : float
       Period of the ephemeris, defined at ``t0``.
-    * :attr:`dpdt`:
+    * :attr:`dpdt` : float
       First derivative of the period of the ephemeris.
-    * :attr:`wrap_at`:
+    * :attr:`wrap_at` : float
       Phase at which to wrap (phased data will encompass the range 1-wrap_at to wrap_at).
     * :meth:`ephemeris`
     * :meth:`ephemerides`
@@ -53,7 +56,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     * :meth:`get_data`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Dataset to use for determining the period.
-    * ``method`` (:class:`~jdaviz.core.template_mixing.SelectPluginComponent`):
+    * ``method`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Method/algorithm to determine the period.
     """
     template_file = __file__, "ephemeris.vue"
@@ -180,7 +183,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             wrap_at = ephem.get('wrap_at', _default_wrap_at)
 
         def _callable(times):
-            if not len(times):
+            if hasattr(times, '__len__') and not len(times):
                 return []
             if dpdt != 0:
                 return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)) + (1-wrap_at), 1.0) - (1-wrap_at)  # noqa
@@ -300,7 +303,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if create_phase_viewer:
             pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
         pv.state.x_att = self.app._jdaviz_helper._component_ids[self.phase_comp_lbl]
-        return pv
+        return pv.user_api
 
     def vue_create_phase_viewer(self, *args):
         self.create_phase_viewer()
