@@ -183,7 +183,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             wrap_at = ephem.get('wrap_at', _default_wrap_at)
 
         def _callable(times):
-            if not len(times):
+            if hasattr(times, '__len__') and not len(times):
                 return []
             if dpdt != 0:
                 return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)) + (1-wrap_at), 1.0) - (1-wrap_at)  # noqa
@@ -300,7 +300,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if create_phase_viewer:
             pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
         pv.state.x_att = self.app._jdaviz_helper._component_ids[self.phase_comp_lbl]
-        return pv
+        return pv.user_api
 
     def vue_create_phase_viewer(self, *args):
         self.create_phase_viewer()

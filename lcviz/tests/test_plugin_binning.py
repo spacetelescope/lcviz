@@ -27,7 +27,7 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     b._obj.plugin_opened = True
     ephem = helper.plugins['Ephemeris']
     ephem.period = 1.2345
-    pv = ephem.create_phase_viewer()
+    pv = ephem.create_phase_viewer()._obj
 
     with b.as_active():
         assert b.ephemeris == 'No ephemeris'

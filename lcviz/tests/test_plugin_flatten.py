@@ -28,7 +28,7 @@ def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
     tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
 
     ephem = helper.plugins['Ephemeris']
-    pv = ephem.create_phase_viewer()
+    pv = ephem.create_phase_viewer()._obj
     f = helper.plugins['Flatten']
 
     # no marks until plugin opened/active
