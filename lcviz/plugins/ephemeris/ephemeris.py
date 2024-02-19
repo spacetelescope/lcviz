@@ -183,7 +183,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             wrap_at = ephem.get('wrap_at', _default_wrap_at)
 
         def _callable(times):
-            if not len(times):
+            if hasattr(times, '__len__') and not len(times):
                 return []
             if dpdt != 0:
                 return np.mod(1./dpdt * np.log(1 + dpdt/period*(times-t0)) + (1-wrap_at), 1.0) - (1-wrap_at)  # noqa
