@@ -36,7 +36,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem._obj.vue_period_halve()
     assert ephem.period == 3.14
 
-    pv = ephem._obj.phase_viewer
+    pv = ephem._obj.default_phase_viewer
     # original limits are set to 0->1 (technically 1-phase_wrap -> phase_wrap)
     assert (pv.state.x_min, pv.state.x_max) == (0.0, 1.0)
     ephem.wrap_at = 0.5
