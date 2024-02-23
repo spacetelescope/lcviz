@@ -1,7 +1,7 @@
 0.2.0 - unreleased
 ------------------
 
-* Clone viewer tool. [#74]
+* Clone viewer tool. [#74, #91]
 
 * Flux column plugin to choose which column is treated as the flux column for each dataset. [#77]
 
