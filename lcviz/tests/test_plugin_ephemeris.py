@@ -36,7 +36,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem._obj.vue_period_halve()
     assert ephem.period == 3.14
 
-    pv = ephem._obj.phase_viewer
+    pv = ephem._obj.default_phase_viewer
     # original limits are set to 0->1 (technically 1-phase_wrap -> phase_wrap)
     assert (pv.state.x_min, pv.state.x_max) == (0.0, 1.0)
     ephem.wrap_at = 0.5
@@ -84,3 +84,22 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
 
     # test that non-zero dpdt does not crash
     ephem.dpdt = 0.005
+
+
+def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
+    helper.load_data(light_curve_like_kepler_quarter)
+    ephem = helper.plugins['Ephemeris']
+
+    pv1 = ephem.create_phase_viewer()
+    pv2 = pv1._obj.clone_viewer()
+    assert len(helper.viewers) == 3
+    assert pv1._obj.reference_id == 'flux-vs-phase:default'
+    assert pv2._obj.reference_id == 'flux-vs-phase:default[1]'
+
+    # renaming ephemeris should update both labels
+    ephem.rename_component('default', 'renamed')
+    assert pv1._obj.reference_id == 'flux-vs-phase:renamed'
+    assert pv2._obj.reference_id == 'flux-vs-phase:renamed[1]'
+
+    ephem.remove_component('renamed')
+    assert len(helper.viewers) == 1  # just flux-vs-phase

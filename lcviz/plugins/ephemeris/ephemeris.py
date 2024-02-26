@@ -155,10 +155,19 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         return self._phase_viewer_id(self.component_selected)
 
     @property
-    def phase_viewer(self):
+    def default_phase_viewer(self):
         if not self.phase_viewer_exists:
             return None
-        return self.app.get_viewer(self.phase_viewer_id)
+        # we'll just treat the "default" as the first viewer connected to this
+        # ephemeris component
+        return self._get_phase_viewers()[0]
+
+    def _get_phase_viewers(self, lbl=None):
+        if lbl is None:
+            lbl = self.component_selected
+        return [viewer for vid, viewer in self.app._viewer_store.items()
+                if isinstance(viewer, PhaseScatterView)
+                and viewer.ephemeris_component == lbl]
 
     @property
     def ephemerides(self):
@@ -312,8 +321,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.period *= 2
 
     def _check_if_phase_viewer_exists(self, *args):
-        viewer_base_refs = [id.split('[')[0] for id in self.app.get_viewer_ids()]
-        self.phase_viewer_exists = self.phase_viewer_id in viewer_base_refs
+        self.phase_viewer_exists = len(self._get_phase_viewers()) > 0
 
     def _validate_component(self, lbl):
         if '[' in lbl or ']' in lbl:
@@ -329,10 +337,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _on_component_rename(self, old_lbl, new_lbl):
         # this is triggered when the plugin component detects a change to the component name
         self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
-        if self._phase_viewer_id(old_lbl) in self.app.get_viewer_ids():
+        for viewer in self._get_phase_viewers(old_lbl):
             self.app._update_viewer_reference_name(
-                self._phase_viewer_id(old_lbl),
-                self._phase_viewer_id(new_lbl),
+                viewer._ref_or_id,
+                viewer._ref_or_id.replace(old_lbl, new_lbl),
                 update_id=True
             )
 
@@ -351,13 +359,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     def _on_component_remove(self, lbl):
         _ = self._ephemerides.pop(lbl, {})
-        # remove the corresponding viewer, if it exists
-        viewer_item = self.app._viewer_item_by_id(self._phase_viewer_id(lbl))
-        if viewer_item is None:  # pragma: no cover
-            return
-        cid = viewer_item.get('id', None)
-        if cid is not None:
-            self.app.vue_destroy_viewer_item(cid)
+        # remove the corresponding viewer(s), if any exist
+        for viewer in self._get_phase_viewers(lbl):
+            self.app.vue_destroy_viewer_item(viewer._ref_or_id)
         self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=lbl, new_lbl=None,
                                                             sender=self))
 
@@ -467,7 +471,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if event.get('name') == 'wrap_at':
             old = event.get('old') if event.get('old') != '' else self._prev_wrap_at
             if event.get('new') != '':
-                pvs = self.phase_viewer.state
+                pvs = self.default_phase_viewer.state
                 delta_phase = event.get('new') - old
                 pvs.x_min, pvs.x_max = pvs.x_min + delta_phase, pvs.x_max + delta_phase
                 # we need to cache the old value since it could become a string
