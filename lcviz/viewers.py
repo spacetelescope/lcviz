@@ -245,7 +245,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
         return new_viewer.user_api
 
 
-@viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
+@viewer_registry("lcviz-phase-viewer", label="flux-vs-phase")
 class PhaseScatterView(TimeScatterView):
     @property
     def ephemeris_component(self):

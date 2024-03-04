@@ -1,5 +1,7 @@
-from .binning.binning import *  # noqa
+from .viewer_creator.viewer_creator import *  # noqa
 from .coords_info.coords_info import *  # noqa
+
+from .binning.binning import *  # noqa
 from .ephemeris.ephemeris import *  # noqa
 from .export_plot.export_plot import *  # noqa
 from .flatten.flatten import *  # noqa
