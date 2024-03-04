@@ -48,6 +48,10 @@ class TimeSelector(Slice):
         return 'time'
 
     @property
+    def valid_slice_att_names(self):
+        return ["time", "dt"]
+
+    @property
     def user_api(self):
         api = super().user_api
         # can be removed after deprecated upstream attributes for wavelength/wavelength_value
