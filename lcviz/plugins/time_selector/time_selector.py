@@ -1,7 +1,7 @@
 from jdaviz.configs.cubeviz.plugins import Slice
 from jdaviz.core.registries import tray_registry
 
-from lcviz.viewers import CubeView
+from lcviz.viewers import CubeView, PhaseScatterView
 
 __all__ = ['TimeSelector']
 
@@ -59,3 +59,12 @@ class TimeSelector(Slice):
         api._expose = [e for e in api._expose if e not in ('slice', 'wavelength',
                                                            'wavelength_value', 'show_wavelength')]
         return api
+
+    def _on_select_slice_message(self, msg):
+        viewer = msg.sender.viewer
+        if isinstance(viewer, PhaseScatterView):
+            prev_phase = viewer.times_to_phases(self.value)
+            new_phase = msg.value
+            self.value = self.value + (new_phase - prev_phase) * viewer.ephemeris.get('period', 1.0)
+        else:
+            super()._on_select_slice_message(msg)

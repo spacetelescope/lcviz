@@ -256,18 +256,16 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
 @viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
 class PhaseScatterView(TimeScatterView):
-    # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
-    tools_nested = [
-                    ['jdaviz:homezoom', 'jdaviz:prevzoom'],
-                    ['jdaviz:boxzoom', 'jdaviz:xrangezoom', 'jdaviz:yrangezoom'],
-                    ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
-                    ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
-                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
-                ]
-
     @property
     def ephemeris_component(self):
         return self.reference.split('[')[0].split(':')[-1]
+
+    @property
+    def ephemeris(self):
+        ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
+        if ephem is None:
+            raise ValueError("must have ephemeris plugin loaded to access ephemeris")
+        return ephem.ephemerides.get(self.ephemeris_component)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
