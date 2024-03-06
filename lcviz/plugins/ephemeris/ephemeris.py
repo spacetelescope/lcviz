@@ -130,7 +130,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                   'dataset', 'method', 'period_at_max_power', 'adopt_period_at_max_power']
         return PluginUserApi(self, expose=expose)
 
-    def _phase_comp_lbl(self, component):
+    def _phase_comp_lbl(self, component=None):
+        if component is None:
+            component = self.component_selected
         if self.app._jdaviz_helper is None:
             # duplicate logic from helper in case this is ever called before the helper
             # is fully intialized
@@ -139,9 +141,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @property
     def phase_comp_lbl(self):
-        return self._phase_comp_lbl(self.component_selected)
+        return self._phase_comp_lbl()
 
-    def _phase_viewer_id(self, component):
+    def _phase_viewer_id(self, component=None):
+        if component is None:
+            component = self.component_selected
         return f'flux-vs-phase:{component}'
 
     @property
@@ -152,7 +156,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @property
     def phase_viewer_id(self):
-        return self._phase_viewer_id(self.component_selected)
+        return self._phase_viewer_id()
 
     @property
     def default_phase_viewer(self):
@@ -269,31 +273,34 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         dc.add_link(new_links)
 
         # update any plugin markers
-        # TODO: eventually might need to loop over multiple matching viewers
-        phase_viewer_id = self._phase_viewer_id(ephem_component)
-        if phase_viewer_id in self.app.get_viewer_ids():
-            phase_viewer = self.app.get_viewer(phase_viewer_id)
-            for mark in phase_viewer.custom_marks:
+        for viewer in self._get_phase_viewers(ephem_component):
+            for mark in viewer.custom_marks:
                 if hasattr(mark, 'update_phase_folding'):
                     mark.update_phase_folding()
 
         return phase_comp_lbl
 
-    def create_phase_viewer(self):
+    def create_phase_viewer(self, ephem_component=None):
         """
         Create a new phase viewer corresponding to ``component`` and populate the phase arrays
         with the current ephemeris, if necessary.
+
+        Parameters
+        ----------
+        ephem_component : str, optional
+            label of the component.  If not provided or ``None``, will default to plugin value.
         """
-        phase_viewer_id = self.phase_viewer_id
+        phase_viewer_id = self._phase_viewer_id(ephem_component)
+        phase_comp_lbl = self._phase_comp_lbl(ephem_component)
         dc = self.app.data_collection
 
         # check to see if this component already has a phase array.  We'll just check the first
         # item in the data-collection since the rest of the logic in this plugin /should/ populate
         # the arrays across all entries.
-        if self.phase_comp_lbl not in [comp.label for comp in dc[0].components]:
+        if phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self.update_ephemeris()  # calls _update_all_phase_arrays
 
-        create_phase_viewer = not self.phase_viewer_exists
+        create_phase_viewer = len(self._get_phase_viewers(ephem_component)) == 0
         if create_phase_viewer:
             # TODO: stack horizontally by default?
             self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
@@ -308,7 +315,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         pv = self.app.get_viewer(phase_viewer_id)
         if create_phase_viewer:
             pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
-        pv.state.x_att = self.app._jdaviz_helper._component_ids[self.phase_comp_lbl]
+        pv.state.x_att = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
         return pv.user_api
 
     def vue_create_phase_viewer(self, *args):
@@ -410,7 +417,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         Parameters
         ----------
-        component : str, optional
+        ephem_component : str, optional
             label of the component.  If not provided or ``None``, will default to plugin value.
         t0 : float, optional
             value of t0 to replace

@@ -1,6 +1,7 @@
 from jdaviz.configs.default.plugins import ViewerCreator
 from jdaviz.core.registries import tool_registry, viewer_registry
 from lcviz.events import EphemerisComponentChangedMessage
+from lcviz.viewers import ephem_component_from_phase_viewer_name
 
 __all__ = ['ViewerCreator']
 
@@ -38,13 +39,15 @@ class ViewerCreator(ViewerCreator):
 
         if label in self.app._jdaviz_helper.viewers:
             # clone whenever possible
+            # TODO: update this to not rely directly on the label for phase-viewers, but rather
+            # checking for the same ephemeris
             self.app._jdaviz_helper.viewers[label]._obj.clone_viewer()
             return
 
         if name == 'lcviz-phase-viewer':
-            # TODO: parse label to get ephemeris
-            # TODO: copy of plugin and set the correct ephemeris (or allow create_phase_viewer to take ephem component)
-            self.app._jdaviz_helper.plugins['Ephemeris'].create_phase_viewer()
+            ephem_comp = ephem_component_from_phase_viewer_name(label)
+            ephem_plg = self.app._jdaviz_helper.plugins['Ephemeris']
+            ephem_plg.create_phase_viewer(ephem_comp)
             return
 
         super().vue_create_viewer(name)

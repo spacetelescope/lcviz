@@ -20,7 +20,11 @@ from lcviz.state import ScatterViewerState
 from lightkurve import LightCurve
 
 
-__all__ = ['TimeScatterView', 'PhaseScatterView']
+__all__ = ['TimeScatterView', 'PhaseScatterView', 'ephem_component_from_phase_viewer_name']
+
+
+def ephem_component_from_phase_viewer_name(label):
+    return label.split('[')[0].split(':')[-1]
 
 
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
@@ -249,7 +253,7 @@ class TimeScatterView(JdavizViewerMixin, BqplotScatterView):
 class PhaseScatterView(TimeScatterView):
     @property
     def ephemeris_component(self):
-        return self.reference.split('[')[0].split(':')[-1]
+        return ephem_component_from_phase_viewer_name(self.reference)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
