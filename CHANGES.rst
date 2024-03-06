@@ -1,4 +1,9 @@
-0.2.0 - unreleased
+0.3.0 - unreleased
+------------------
+
+* Ability to create additional viewers. [#94]
+
+0.2.0 (02-26-2024)
 ------------------
 
 * Clone viewer tool. [#74, #91]
