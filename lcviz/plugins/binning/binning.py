@@ -17,7 +17,7 @@ from lcviz.components import FluxColumnSelectMixin
 from lcviz.events import EphemerisChangedMessage
 from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
-from lcviz.viewers import TimeScatterView
+from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.components import EphemerisSelectMixin
 
 
@@ -130,7 +130,7 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
         def viewer_filter(viewer):
             if self.ephemeris_selected in self.ephemeris._manual_options:
                 return isinstance(viewer, TimeScatterView)
-            if 'flux-vs-phase:' not in viewer.reference:
+            if not isinstance(viewer, PhaseScatterView):
                 # ephemeris selected, but no active phase viewers
                 return False
             return viewer._ephemeris_component == self.ephemeris_selected

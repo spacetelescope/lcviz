@@ -23,7 +23,7 @@ def test_clone(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
 
     def_viewer = helper.viewers['flux-vs-time']
-    assert def_viewer._obj._get_clone_viewer_reference() == 'flux-vs-time[1]'
+    assert helper._get_clone_viewer_reference(def_viewer._obj.reference) == 'flux-vs-time[1]'
 
     new_viewer = def_viewer._obj.clone_viewer()
-    assert new_viewer._obj._get_clone_viewer_reference() == 'flux-vs-time[2]'
+    assert helper._get_clone_viewer_reference(new_viewer._obj.reference) == 'flux-vs-time[2]'

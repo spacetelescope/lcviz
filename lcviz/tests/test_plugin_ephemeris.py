@@ -28,7 +28,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem.period = 3.14
     assert len(helper.app.get_viewer_ids()) == 2
     assert ephem._obj.phase_viewer_exists
-    assert ephem._obj.phase_viewer_id in helper.app.get_viewer_ids()
+    assert 'flux-vs-phase:default' in helper.app.get_viewer_ids()
 
     ephem.t0 = 5
     ephem._obj.vue_period_double()
@@ -90,16 +90,47 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
+    assert len(ephem._obj._get_phase_viewers()) == 0
     pv1 = ephem.create_phase_viewer()
+    assert len(ephem._obj._get_phase_viewers()) == 1
     pv2 = pv1._obj.clone_viewer()
+    assert len(ephem._obj._get_phase_viewers()) == 2
     assert len(helper.viewers) == 3
     assert pv1._obj.reference_id == 'flux-vs-phase:default'
+    assert pv1._obj._ephemeris_component == 'default'
     assert pv2._obj.reference_id == 'flux-vs-phase:default[1]'
+    assert pv2._obj._ephemeris_component == 'default'
 
     # renaming ephemeris should update both labels
     ephem.rename_component('default', 'renamed')
     assert pv1._obj.reference_id == 'flux-vs-phase:renamed'
+    assert pv1._obj._ephemeris_component == 'renamed'
     assert pv2._obj.reference_id == 'flux-vs-phase:renamed[1]'
+    assert pv2._obj._ephemeris_component == 'renamed'
+    assert len(ephem._obj._get_phase_viewers()) == 2
 
     ephem.remove_component('renamed')
     assert len(helper.viewers) == 1  # just flux-vs-phase
+
+
+def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
+    helper.load_data(light_curve_like_kepler_quarter)
+    ephem = helper.plugins['Ephemeris']
+    vc = helper._tray_tools['lcviz-viewer-creator']
+
+    assert len(vc.viewer_types) == 1  # just time viewer
+    _ = ephem.create_phase_viewer()
+    assert len(vc.viewer_types) == 2
+
+    vc.vue_create_viewer('flux-vs-phase:default')
+    assert len(ephem._obj._get_phase_viewers()) == 2
+    for pv in ephem._obj._get_phase_viewers():
+        assert pv._ephemeris_component == 'default'
+
+    ephem.rename_component('default', 'renamed')
+    assert len(vc.viewer_types) == 2
+    vc.vue_create_viewer('flux-vs-phase:renamed')
+    assert len(ephem._obj._get_phase_viewers()) == 3
+
+    for pv in ephem._obj._get_phase_viewers():
+        assert pv._ephemeris_component == 'renamed'
