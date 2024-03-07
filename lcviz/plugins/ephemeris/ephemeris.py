@@ -143,20 +143,17 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def phase_comp_lbl(self):
         return self._phase_comp_lbl()
 
-    def _phase_viewer_id(self, component=None):
+    def _generate_phase_viewer_id(self, component=None):
         if component is None:
             component = self.component_selected
-        return f'flux-vs-phase:{component}'
+        return self.app._jdaviz_helper._get_clone_viewer_reference(f'flux-vs-phase:{component}')
 
-    @property
-    def phase_viewer_ids(self):
-        viewer_ids = self.app.get_viewer_ids()
-        return [self._phase_viewer_id(component) for component in self.component.choices
-                if self._phase_viewer_id(component) in viewer_ids]
-
-    @property
-    def phase_viewer_id(self):
-        return self._phase_viewer_id()
+    def _get_phase_viewers(self, lbl=None):
+        if lbl is None:
+            lbl = self.component_selected
+        return [viewer for vid, viewer in self.app._viewer_store.items()
+                if isinstance(viewer, PhaseScatterView)
+                and viewer._ephemeris_component == lbl]
 
     @property
     def default_phase_viewer(self):
@@ -165,13 +162,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         # we'll just treat the "default" as the first viewer connected to this
         # ephemeris component
         return self._get_phase_viewers()[0]
-
-    def _get_phase_viewers(self, lbl=None):
-        if lbl is None:
-            lbl = self.component_selected
-        return [viewer for vid, viewer in self.app._viewer_store.items()
-                if isinstance(viewer, PhaseScatterView)
-                and viewer.ephemeris_component == lbl]
 
     @property
     def ephemerides(self):
@@ -290,7 +280,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         ephem_component : str, optional
             label of the component.  If not provided or ``None``, will default to plugin value.
         """
-        phase_viewer_id = self._phase_viewer_id(ephem_component)
+        if ephem_component is None:
+            ephem_component = self.component_selected
         phase_comp_lbl = self._phase_comp_lbl(ephem_component)
         dc = self.app.data_collection
 
@@ -300,26 +291,37 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self.update_ephemeris()  # calls _update_all_phase_arrays
 
-        create_phase_viewer = len(self._get_phase_viewers(ephem_component)) == 0
-        if create_phase_viewer:
-            # TODO: stack horizontally by default?
-            self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
-                                    vid=phase_viewer_id, name=phase_viewer_id)
+        phase_viewer_id = self._generate_phase_viewer_id(ephem_component)
+        # TODO: stack horizontally by default?
+        self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
+                                vid=phase_viewer_id, name=phase_viewer_id)
 
-            time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper._default_time_viewer_reference_name)  # noqa
-            for data in dc:
-                data_id = self.app._data_id_from_label(data.label)
-                visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')
-                self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
-
+        # access new viewer, set bookkeeping for ephemeris component
         pv = self.app.get_viewer(phase_viewer_id)
-        if create_phase_viewer:
-            pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
-        pv.state.x_att = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+        pv._ephemeris_component = ephem_component
+        # since we couldn't set ephemeris_component right away, _check_if_phase_viewer_exists
+        # might be out-of-date
+        self._check_if_phase_viewer_exists()
+
+        # set default data visibility
+        time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper._default_time_viewer_reference_name)  # noqa
+        for data in dc:
+            data_id = self.app._data_id_from_label(data.label)
+            visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')
+            self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
+
+        # set x_att
+        phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+        pv.state.x_att = phase_comp
+
+        # set viewer limits
+        pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
+
         return pv.user_api
 
     def vue_create_phase_viewer(self, *args):
-        self.create_phase_viewer()
+        if not self.phase_viewer_exists:
+            self.create_phase_viewer()
 
     def vue_period_halve(self, *args):
         self.period /= 2
@@ -350,6 +352,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 viewer._ref_or_id.replace(old_lbl, new_lbl),
                 update_id=True
             )
+            viewer._ephemeris_component = new_lbl
 
         # update metadata entries so that they can be used for filtering applicable entries in
         # data menus
@@ -465,7 +468,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             return round(x, -int(np.floor(np.log10(abs(x)))))
 
         # if phase-viewer doesn't yet exist in the app, create it now
-        self.create_phase_viewer()
+        if not self.phase_viewer_exists:
+            self.create_phase_viewer()
 
         # update value in the dictionary (to support multi-ephems)
         if event:
@@ -478,9 +482,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if event.get('name') == 'wrap_at':
             old = event.get('old') if event.get('old') != '' else self._prev_wrap_at
             if event.get('new') != '':
-                pvs = self.default_phase_viewer.state
                 delta_phase = event.get('new') - old
-                pvs.x_min, pvs.x_max = pvs.x_min + delta_phase, pvs.x_max + delta_phase
+                for pv in self._get_phase_viewers():
+                    pvs = pv.state
+                    pvs.x_min, pvs.x_max = pvs.x_min + delta_phase, pvs.x_max + delta_phase
                 # we need to cache the old value since it could become a string
                 # if the widget is cleared
                 self._prev_wrap_at = event.get('new')

@@ -152,6 +152,31 @@ class LCviz(ConfigHelper):
         """
         return super()._get_data(data_label=data_label, mask_subset=subset, cls=cls)
 
+    @property
+    def _tray_tools(self):
+        """
+        Access API objects for plugins in the app toolbar.
+
+        Returns
+        -------
+        plugins : dict
+            dict of plugin objects
+        """
+        # TODO: provide user-friendly labels, user API, and move upstream to be public
+        # for now this is just useful for dev-debugging access to toolbar entries
+        from ipywidgets.widgets import widget_serialization
+        return {item['name']: widget_serialization['from_json'](item['widget'], None)
+                for item in self.app.state.tool_items}
+
+    def _get_clone_viewer_reference(self, reference):
+        base_name = reference.split("[")[0]
+        name = base_name
+        ind = 0
+        while name in self.viewers.keys():
+            ind += 1
+            name = f"{base_name}[{ind}]"
+        return name
+
     def _phase_comp_lbl(self, component):
         return f'phase:{component}'
 
