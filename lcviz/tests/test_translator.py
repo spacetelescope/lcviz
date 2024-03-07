@@ -72,9 +72,7 @@ def test_round_trip(helper):
         '2009-05-02 03:52'
     ], format='iso')
 
-    viewer = helper.app.get_viewer(
-        helper._default_time_viewer_reference_name
-    )
+    viewer = helper.default_time_viewer._obj
     viewer.apply_roi(XRangeROI(*near_transit))
 
     columns_to_check = ['time', 'flux', 'flux_err']

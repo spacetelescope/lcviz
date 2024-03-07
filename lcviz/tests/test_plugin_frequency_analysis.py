@@ -19,7 +19,6 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 def test_plugin_frequency_analysis(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
-    # tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
 
     freq = helper.plugins['Frequency Analysis']
     freq.open_in_tray()

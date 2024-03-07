@@ -15,9 +15,9 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.events import EphemerisChangedMessage
-from lcviz.helper import _default_time_viewer_reference_name
 from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
+from lcviz.viewers import TimeScatterView
 from lcviz.components import EphemerisSelectMixin
 
 
@@ -129,11 +129,11 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
         def viewer_filter(viewer):
             if self.ephemeris_selected in self.ephemeris._manual_options:
-                return viewer.reference == _default_time_viewer_reference_name
+                return isinstance(viewer, TimeScatterView)
             if 'flux-vs-phase:' not in viewer.reference:
                 # ephemeris selected, but no active phase viewers
                 return False
-            return viewer.reference.split('flux-vs-phase:')[1] == self.ephemeris_selected
+            return viewer._ephemeris_component == self.ephemeris_selected
 
         self.add_results.viewer.filters = [viewer_filter]
 

@@ -304,7 +304,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._check_if_phase_viewer_exists()
 
         # set default data visibility
-        time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper._default_time_viewer_reference_name)  # noqa
+        time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper.default_time_viewer._obj.reference)  # noqa
         for data in dc:
             data_id = self.app._data_id_from_label(data.label)
             visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')

@@ -1,6 +1,8 @@
 from jdaviz.configs.default.plugins import ViewerCreator
-from jdaviz.core.registries import tool_registry, viewer_registry
+from jdaviz.core.events import NewViewerMessage
+from jdaviz.core.registries import tool_registry
 from lcviz.events import EphemerisComponentChangedMessage
+from lcviz.viewers import TimeScatterView
 
 __all__ = ['ViewerCreator']
 
@@ -35,8 +37,11 @@ class ViewerCreator(ViewerCreator):
             ephem_plg = self.app._jdaviz_helper.plugins['Ephemeris']
             ephem_plg.create_phase_viewer(ephem_comp)
             return
-        if name == 'flux-vs-time':
+        if name in ('flux-vs-time', 'lcviz-time-viewer'):
             # allow passing label and map to the name for upstream support
-            name = 'lcviz-time-viewer'
+            viewer_id = self.app._jdaviz_helper._get_clone_viewer_reference('flux-vs-time')
+            self.app._on_new_viewer(NewViewerMessage(TimeScatterView, data=None, sender=self.app),
+                                    vid=viewer_id, name=viewer_id)
+            return
 
         super().vue_create_viewer(name)

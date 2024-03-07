@@ -1,7 +1,7 @@
 
 def test_reset_limits(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
-    tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
+    tv = helper.default_time_viewer._obj
 
     orig_xlims = (tv.state.x_min, tv.state.x_max)
     orig_ylims = (tv.state.y_min, tv.state.y_max)
