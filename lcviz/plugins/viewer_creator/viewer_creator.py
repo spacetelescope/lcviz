@@ -25,7 +25,8 @@ class ViewerCreator(ViewerCreator):
             phase_viewers = [{'name': f'lcviz-phase-viewer:{e}', 'label': f'flux-vs-phase:{e}'}
                               for e in self.app._jdaviz_helper.plugins['Ephemeris'].component.choices]  # noqa
         else:
-            phase_viewers = []
+            phase_viewers = [{'name': 'lcviz-phase-viewer:default',
+                              'label': 'flux-vs-phase:default'}]
 
         self.viewer_types = [v for v in self.viewer_types if v['name'].startswith('lcviz')
                              and not v['label'].startswith('flux-vs-phase')] + phase_viewers
