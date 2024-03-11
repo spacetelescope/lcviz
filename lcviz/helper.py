@@ -71,7 +71,7 @@ class LCviz(ConfigHelper):
                  'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'time-selector',
                  'flatten', 'frequency-analysis', 'ephemeris',
-                 'binning', 'lcviz-export-plot'],
+                 'binning', 'lcviz-export'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',
