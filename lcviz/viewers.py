@@ -253,23 +253,50 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
         super().apply_roi(roi, use_current=use_current)
 
+    def clone_viewer(self):
+        name = self.jdaviz_helper._get_clone_viewer_reference(self.reference)
 
-@viewer_registry("lcviz-phase-viewer", label="phase-vs-time")
+        self.jdaviz_app._on_new_viewer(NewViewerMessage(self.__class__,
+                                                        data=None,
+                                                        sender=self.jdaviz_app),
+                                       vid=name, name=name)
+
+        this_viewer_item = self.jdaviz_app._get_viewer_item(self.reference)
+        this_state = self.state.as_dict()
+        for data in self.jdaviz_app.data_collection:
+            data_id = self.jdaviz_app._data_id_from_label(data.label)
+            visible = this_viewer_item['selected_data_items'].get(data_id, 'hidden')
+            self.jdaviz_app.set_data_visibility(name, data.label, visible == 'visible')
+            # TODO: don't revert color when adding same data to a new viewer
+            # (same happens when creating a phase-viewer from ephemeris plugin)
+
+        new_viewer = self.jdaviz_app.get_viewer(name)
+        if hasattr(self, 'ephemeris_component'):
+            new_viewer._ephemeris_component = self._ephemeris_component
+        for k, v in this_state.items():
+            if k in ('layers',):
+                continue
+            setattr(new_viewer.state, k, v)
+
+        return new_viewer.user_api
+
+
+@viewer_registry("lcviz-phase-viewer", label="flux-vs-phase")
 class PhaseScatterView(TimeScatterView):
-    @property
-    def ephemeris_component(self):
-        return self.reference.split('[')[0].split(':')[-1]
+    def __init__(self, *args, **kwargs):
+        self._ephemeris_component = 'default'
+        super().__init__(*args, **kwargs)
 
     @property
     def ephemeris(self):
         ephem = self.jdaviz_helper.plugins.get('Ephemeris', None)
         if ephem is None:
             raise ValueError("must have ephemeris plugin loaded to access ephemeris")
-        return ephem.ephemerides.get(self.ephemeris_component)
+        return ephem.ephemerides.get(self._ephemeris_component)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
-        self.state.x_att = dc[0].components[component_labels.index(f'phase:{self.ephemeris_component}')]  # noqa
+        self.state.x_att = dc[0].components[component_labels.index(f'phase:{self._ephemeris_component}')]  # noqa
         self.figure.axes[0].label = 'phase'
         self.figure.axes[0].num_ticks = 5
 
@@ -278,7 +305,7 @@ class PhaseScatterView(TimeScatterView):
         if ephem is None:
             raise ValueError("must have ephemeris plugin loaded to convert")
 
-        return ephem.times_to_phases(times, ephem_component=self.ephemeris_component)
+        return ephem.times_to_phases(times, ephem_component=self._ephemeris_component)
 
     def _set_slice_indicator_value(self, value):
         # NOTE: on first call, this will initialize the indicator itself

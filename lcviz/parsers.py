@@ -3,13 +3,13 @@ from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
 
+from lcviz.viewers import PhaseScatterView, TimeScatterView
+
 __all__ = ["light_curve_parser"]
 
 
 @data_parser_registry("light_curve_parser")
 def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
-    time_viewer_reference_name = app._jdaviz_helper._default_time_viewer_reference_name
-
     # load a LightCurve or TargetPixelFile object:
     cls_with_translator = (
         lightkurve.LightCurve,
@@ -57,22 +57,28 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         # TODO: move this to an event listener on add_data so that we can also remove when empty?
         from jdaviz.core.events import NewViewerMessage
         from lcviz.viewers import CubeView
-        viewer_reference_name = 'image'
-        if viewer_reference_name not in app._viewer_store.keys():
-            app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
-                               vid='image', name='image')
         if show_in_viewer:
-            app.add_data_to_viewer(viewer_reference_name, new_data_label)
+            found_viewer = False
+            for viewer_id, viewer in app._viewer_store.items():
+                if isinstance(viewer, CubeView):
+                    app.add_data_to_viewer(viewer_id, new_data_label)
+                    found_viewer = True
+            if not found_viewer:
+                app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
+                                   vid='image', name='image')
+                app.add_data_to_viewer('image', new_data_label)
 
     else:
         if show_in_viewer:
-            app.add_data_to_viewer(time_viewer_reference_name, new_data_label)
+            for viewer_id, viewer in app._viewer_store.items():
+                if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
+                    app.add_data_to_viewer(viewer_id, new_data_label)
 
             # add to any known phase viewers
             ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
             if ephem_plugin is not None:
-                for viewer_id in ephem_plugin._obj.phase_viewer_ids:
-                    app.add_data_to_viewer(viewer_id, new_data_label)
+                for viewer in ephem_plugin._obj._get_phase_viewers():
+                    app.add_data_to_viewer(viewer.reference, new_data_label)
 
 
 def _data_with_reftime(app, light_curve):

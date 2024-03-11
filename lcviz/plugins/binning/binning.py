@@ -15,9 +15,9 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.events import EphemerisChangedMessage
-from lcviz.helper import _default_time_viewer_reference_name
 from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
+from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.components import EphemerisSelectMixin
 
 
@@ -68,7 +68,8 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
             return data.meta.get('Plugin', None) != self.__class__.__name__
         self.dataset.add_filter(not_from_binning_plugin)
 
-        self.hub.subscribe(self, ViewerAddedMessage, handler=self._set_results_viewer)
+        # TODO: viewer added also needs to repopulate marks
+        self.hub.subscribe(self, ViewerAddedMessage, handler=self._on_add_viewer)
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._set_results_viewer)
         self.hub.subscribe(self, EphemerisChangedMessage, handler=self._on_ephemeris_update)
 
@@ -95,15 +96,15 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
     @property
     def marks(self):
         marks = {}
-        for id, viewer in self.app._viewer_store.items():
+        for viewer in self.app._viewer_store.values():
             for mark in viewer.figure.marks:
                 if isinstance(mark, LivePreviewBinning):
-                    marks[id] = mark
+                    marks[viewer.reference] = mark
                     break
             else:
                 mark = LivePreviewBinning(viewer, visible=self.is_active)
                 viewer.figure.marks = viewer.figure.marks + [mark]
-                marks[id] = mark
+                marks[viewer.reference] = mark
         return marks
 
     def _clear_marks(self):
@@ -129,25 +130,31 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
         def viewer_filter(viewer):
             if self.ephemeris_selected in self.ephemeris._manual_options:
-                return viewer.reference == _default_time_viewer_reference_name
-            if 'flux-vs-phase:' not in viewer.reference:
+                return isinstance(viewer, TimeScatterView)
+            if not isinstance(viewer, PhaseScatterView):
                 # ephemeris selected, but no active phase viewers
                 return False
-            return viewer.reference.split('flux-vs-phase:')[1] == self.ephemeris_selected
+            return viewer._ephemeris_component == self.ephemeris_selected
 
         self.add_results.viewer.filters = [viewer_filter]
+
+    def _on_add_viewer(self, msg):
+        self._set_results_viewer()
+        self._live_update()
 
     @observe('is_active', 'show_live_preview')
     def _toggle_marks(self, event={}):
         visible = self.show_live_preview and self.is_active
 
-        for viewer_id, mark in self.marks.items():
+        for viewer_ref, mark in self.marks.items():
             if not visible:
                 this_visible = False
             elif self.ephemeris_selected == 'No ephemeris':
                 this_visible = True
             else:
-                this_visible = viewer_id.split(':')[-1] == self.ephemeris_selected
+                viewer = self.app.get_viewer(viewer_ref)
+                viewer_ephem = getattr(viewer, '_ephemeris_component', None)
+                this_visible = viewer_ephem == self.ephemeris_selected
 
             mark.visible = this_visible
 
@@ -260,10 +267,11 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
             if self.ephemeris_selected != 'No ephemeris':
                 # prevent phase axis from becoming a time axis:
-                viewer_id = self.ephemeris_plugin._obj.phase_viewer_id
-                pv = self.app.get_viewer(viewer_id)
+                ephemeris_plugin = self.app._jdaviz_helper.plugins['Ephemeris']
                 phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
-                pv.state.x_att = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+                phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+                for pv in ephemeris_plugin._obj._get_phase_viewers(self.ephemeris_selected):
+                    pv.state.x_att = phase_comp
                 # by resetting x_att, the preview marks may have dissappeared
                 self._live_update()
 
