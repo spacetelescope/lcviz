@@ -25,7 +25,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
-    tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
+    tv = helper.default_time_viewer._obj
 
     ephem = helper.plugins['Ephemeris']
     pv = ephem.create_phase_viewer()._obj

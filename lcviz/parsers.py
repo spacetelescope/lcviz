@@ -3,13 +3,13 @@ from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
 
+from lcviz.viewers import PhaseScatterView, TimeScatterView
+
 __all__ = ["light_curve_parser"]
 
 
 @data_parser_registry("light_curve_parser")
 def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
-    time_viewer_reference_name = app._jdaviz_helper._default_time_viewer_reference_name
-
     # load local FITS file from disk by its path:
     if isinstance(file_obj, str) and os.path.exists(file_obj):
         if data_label is None:
@@ -42,12 +42,11 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     app.add_data(data, new_data_label)
 
     if show_in_viewer:
-        app.add_data_to_viewer(time_viewer_reference_name, new_data_label)
-
-        # add to any known phase viewers
-        ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
-        if ephem_plugin is not None:
-            for viewer_id in ephem_plugin._obj.phase_viewer_ids:
+        # add to any known time/phase viewers
+        for viewer_id, viewer in app._viewer_store.items():
+            if isinstance(viewer, TimeScatterView):
+                app.add_data_to_viewer(viewer_id, new_data_label)
+            elif isinstance(viewer, PhaseScatterView):
                 app.add_data_to_viewer(viewer_id, new_data_label)
 
 

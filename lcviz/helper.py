@@ -7,10 +7,9 @@ from lightkurve import LightCurve
 from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from jdaviz.core.helpers import ConfigHelper
+from lcviz.viewers import TimeScatterView
 
 __all__ = ['LCviz']
-
-_default_time_viewer_reference_name = 'flux-vs-time'
 
 custom_components = {'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
 
@@ -22,11 +21,7 @@ for name, path in custom_components.items():
 
 
 def _get_range_subset_bounds(self, subset_state, *args, **kwargs):
-    # Instead of overriding the jdaviz version of this method on jdaviz.Application,
-    # we could put in jdaviz by (1) checking if helper has a
-    # _default_time_viewer_reference_name, (2) using the LCviz version if so, and (3)
-    # using the jdaviz version otherwise.
-    viewer = self.get_viewer(self._jdaviz_helper._default_time_viewer_reference_name)
+    viewer = self._jdaviz_helper.default_time_viewer._obj
     light_curve = viewer.data()[0]
     reference_time = light_curve.meta['reference_time']
     if viewer:
@@ -71,7 +66,7 @@ class LCviz(ConfigHelper):
                                  'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
-        'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-coords-info'],
+        'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-viewer-creator', 'lcviz-coords-info'],
         'tray': ['lcviz-metadata-viewer', 'flux-column',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'flatten', 'frequency-analysis', 'ephemeris',
@@ -86,7 +81,6 @@ class LCviz(ConfigHelper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._default_time_viewer_reference_name = _default_time_viewer_reference_name
 
         # override jdaviz behavior to support temporal subsets
         self.app._get_range_subset_bounds = (
@@ -151,6 +145,39 @@ class LCviz(ConfigHelper):
             Data is returned as type cls with subsets applied.
         """
         return super()._get_data(data_label=data_label, mask_subset=subset, cls=cls)
+
+    @property
+    def default_time_viewer(self):
+        tvs = [viewer for vid, viewer in self.app._viewer_store.items()
+               if isinstance(viewer, TimeScatterView)]
+        if not len(tvs):
+            raise ValueError("no time viewers exist")
+        return tvs[0].user_api
+
+    @property
+    def _tray_tools(self):
+        """
+        Access API objects for plugins in the app toolbar.
+
+        Returns
+        -------
+        plugins : dict
+            dict of plugin objects
+        """
+        # TODO: provide user-friendly labels, user API, and move upstream to be public
+        # for now this is just useful for dev-debugging access to toolbar entries
+        from ipywidgets.widgets import widget_serialization
+        return {item['name']: widget_serialization['from_json'](item['widget'], None)
+                for item in self.app.state.tool_items}
+
+    def _get_clone_viewer_reference(self, reference):
+        base_name = reference.split("[")[0]
+        name = base_name
+        ind = 0
+        while name in self.viewers.keys():
+            ind += 1
+            name = f"{base_name}[{ind}]"
+        return name
 
     def _phase_comp_lbl(self, component):
         return f'phase:{component}'

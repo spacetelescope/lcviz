@@ -21,7 +21,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
-    tv = helper.app.get_viewer(helper._default_time_viewer_reference_name)
+    tv = helper.default_time_viewer._obj
 
     b = helper.plugins['Binning']
     b._obj.plugin_opened = True
@@ -32,7 +32,7 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     with b.as_active():
         assert b.ephemeris == 'No ephemeris'
         assert len(_get_marks_from_viewer(tv)) == 1
-        assert len(_get_marks_from_viewer(pv)) == 0
+        assert len(_get_marks_from_viewer(pv)) == 1
         assert b._obj.ephemeris_dict == {}
 
         # update ephemeris will force re-phasing
