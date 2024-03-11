@@ -1,6 +1,7 @@
 from jdaviz.configs.cubeviz.plugins import Slice
 from jdaviz.core.registries import tray_registry
 
+from lcviz.events import EphemerisChangedMessage
 from lcviz.viewers import CubeView, PhaseScatterView
 
 __all__ = ['TimeSelector']
@@ -42,6 +43,9 @@ class TimeSelector(Slice):
         self.value_unit = 'd'
         self.allow_disable_snapping = True
 
+        self.session.hub.subscribe(self, EphemerisChangedMessage,
+                                   handler=self._on_ephemeris_changed)
+
     @property
     def slice_axis(self):
         # global display unit "axis" corresponding to the slice axis
@@ -68,3 +72,11 @@ class TimeSelector(Slice):
             self.value = self.value + (new_phase - prev_phase) * viewer.ephemeris.get('period', 1.0)
         else:
             super()._on_select_slice_message(msg)
+
+    def _on_ephemeris_changed(self, msg):
+        for viewer in self.slice_indicator_viewers:
+            if not isinstance(viewer, PhaseScatterView):
+                continue
+            if viewer._ephemeris_component != msg.ephemeris_label:
+                continue
+            viewer._set_slice_indicator_value(self.value)
