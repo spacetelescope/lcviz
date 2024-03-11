@@ -6,6 +6,7 @@ from .flatten.flatten import *  # noqa
 from .flux_column.flux_column import *  # noqa
 from .frequency_analysis.frequency_analysis import *  # noqa
 from .markers.markers import *  # noqa
+from .time_selector.time_selector import *  # noqa
 from .metadata_viewer.metadata_viewer import *  # noqa
 from .plot_options.plot_options import *  # noqa
 from .subset_plugin.subset_plugin import *  # noqa
