@@ -70,7 +70,7 @@ class LCviz(ConfigHelper):
         'tray': ['lcviz-metadata-viewer', 'flux-column',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'flatten', 'frequency-analysis', 'ephemeris',
-                 'binning', 'lcviz-export-plot'],
+                 'binning', 'lcviz-export'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
                                        'viewers': [{'name': 'flux-vs-time',

@@ -318,10 +318,10 @@ This plugin supports binning a light curve in time or phase-space.
   * :meth:`lightkurve.LightCurve.bin`
 
 
-.. _export-plot:
+.. _export:
 
-Export Plot
-===========
+Export
+======
 
 This plugin allows exporting the plot in a given viewer to various image formats.
 
@@ -329,7 +329,7 @@ This plugin allows exporting the plot in a given viewer to various image formats
 .. admonition:: User API Example
     :class: dropdown
 
-    See the :class:`~lcviz.plugins.export_plot.export_plot.ExportViewer` user API documentation for more details.
+    See the :class:`~lcviz.plugins.export.export.Export` user API documentation for more details.
 
     .. code-block:: python
 
@@ -340,11 +340,11 @@ This plugin allows exporting the plot in a given viewer to various image formats
       lcviz.load_data(lc)
       lcviz.show()
 
-      export = lcviz.plugins['Export Plot']
-      export.save_figure('test.png')
+      export = lcviz.plugins['Export']
+      export.export('test.png')
 
 
 .. seealso::
 
     :ref:`Jdaviz Export Plot <jdaviz:imviz-export-plot>`
-        Jdaviz documentation on the Export Plot plugin.
+        Jdaviz documentation on the Export plugin.
