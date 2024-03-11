@@ -7,7 +7,7 @@ from lcviz.viewers import TimeScatterView
 __all__ = ['ViewerCreator']
 
 
-@tool_registry('lcviz-viewer-creator')
+@tool_registry('g-viewer-creator', overwrite=True)  # overwrite requires upstream changes, we can do without if we just lose the tooltip
 class ViewerCreator(ViewerCreator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
