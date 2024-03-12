@@ -3,7 +3,6 @@ from .coords_info.coords_info import *  # noqa
 
 from .binning.binning import *  # noqa
 from .ephemeris.ephemeris import *  # noqa
-from .export_plot.export_plot import *  # noqa
 from .flatten.flatten import *  # noqa
 from .flux_column.flux_column import *  # noqa
 from .frequency_analysis.frequency_analysis import *  # noqa
