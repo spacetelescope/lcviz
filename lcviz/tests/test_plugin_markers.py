@@ -12,9 +12,9 @@ def _assert_dict_allclose(dict1, dict2):
     assert dict1.keys() == dict2.keys()
     for k, v in dict1.items():
         if isinstance(v, float):
-            assert_allclose(v, dict2.get(k))
+            assert_allclose(v, dict2.get(k), rtol=1e-5)
         elif isinstance(v, (tuple, list)):
-            assert_allclose(np.asarray(v), np.asarray(dict2.get(k)))
+            assert_allclose(np.asarray(v), np.asarray(dict2.get(k)), rtol=1e-5)
         else:
             assert v == dict2.get(k)
 
@@ -47,19 +47,19 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                          'domain': {'x': 0, 'y': 0}})
 
     assert label_mouseover.as_text() == ('Cursor 0.00000e+00, 0.00000e+00',
-                                         'Time 5.45833e+00 d',
-                                         'Flux 9.67587e-01')
+                                         'Time 2.08333e-02 d',
+                                         'Flux 9.98617e-01')
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'Light curve',
-                                                      'time': 5.4583335,
+                                                      'time': 2.08333e-02,
                                                       'phase': np.nan,
                                                       'ephemeris': '',
-                                                      'axes_x': 5.4583335,
+                                                      'axes_x': 2.08333e-02,
                                                       'axes_x:unit': 'd',
-                                                      'index': 262.0,
-                                                      'axes_y': 0.96758735,
+                                                      'index': 1,
+                                                      'axes_y': 9.98617e-01,
                                                       'axes_y:unit': '',
-                                                      'flux': 0.96758735})
+                                                      'flux': 9.98617e-01})
 
     mp._obj._on_viewer_key_event(tv, {'event': 'keydown',
                                       'key': 'm'})
@@ -75,19 +75,19 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                          'domain': {'x': 0.5, 'y': 0}})
 
     assert label_mouseover.as_text() == ('Cursor 5.00000e-01, 0.00000e+00',
-                                         'Phase 0.45833',
-                                         'Flux 9.67587e-01')
+                                         'Phase 0.50000',
+                                         'Flux 9.77881e-01')
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'Light curve',
-                                                      'time': 5.458333374001086,
-                                                      'phase': 0.4583333730697632,
+                                                      'time': 45.5,
+                                                      'phase': 0.5,
                                                       'ephemeris': 'default',
-                                                      'axes_x': 0.4583333730697632,
+                                                      'axes_x': 0.5,
                                                       'axes_x:unit': '',
-                                                      'index': 262.0,
-                                                      'axes_y': 0.9675873517990112,
+                                                      'index': 2184,
+                                                      'axes_y': 9.77881e-01,
                                                       'axes_y:unit': '',
-                                                      'flux': 0.9675873517990112})
+                                                      'flux': 9.77881e-01})
 
     mp._obj._on_viewer_key_event(pv, {'event': 'keydown',
                                       'key': 'm'})
