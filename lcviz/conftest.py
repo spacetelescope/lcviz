@@ -8,7 +8,12 @@ from lcviz import __version__, LCviz
 
 @pytest.fixture
 def helper():
-    return LCviz()
+    viz = LCviz()
+    tv = viz.app.get_viewer(viz._default_time_viewer_reference_name)
+    # Override defaults so it becomes instance attributes instead of class.
+    tv.state.x_limits_percentile = 95
+    tv.state.y_limits_percentile = 95
+    return viz
 
 
 @pytest.fixture
