@@ -26,24 +26,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Code style checks
-            os: ubuntu-latest
-            python: 3.x
-            toxenv: codestyle
-            allow_failure: false
-
-          - name: PEP 517
-            os: ubuntu-latest
-            python: 3.x
-            toxenv: pep517
-            allow_failure: false
-
-          - name: Security audit
-            os: ubuntu-latest
-            python: 3.x
-            toxenv: securityaudit
-            allow_failure: false
-
           # This also runs on cron but we want to make sure new changes
           # won't break this job at the PR stage.
           - name: Python 3.11 with latest dev versions of key dependencies, and remote data
