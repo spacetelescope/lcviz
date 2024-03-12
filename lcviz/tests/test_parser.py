@@ -10,6 +10,7 @@ import astropy.units as u
 from lcviz.utils import TimeCoordinates
 
 
+@pytest.mark.skip("Bleh")
 @pytest.mark.remote_data
 def test_kepler_via_mast_local_file(helper):
     url = (

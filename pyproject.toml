@@ -97,6 +97,7 @@ filterwarnings = [
     "ignore:numpy\\.ndarray size changed:RuntimeWarning",
     "ignore:zmq\\.eventloop\\.ioloop is deprecated in pyzmq:DeprecationWarning",
     "ignore:((.|\n)*)Sentinel is not a public part of the traitlets API((.|\n)*)",
+    "ignore:datetime\\.datetime\\.utcfromtimestamp:DeprecationWarning",
     "ignore::DeprecationWarning:glue",
     "ignore::DeprecationWarning:bqplot",
     "ignore::DeprecationWarning:bqplot_image_gl",
