@@ -1,9 +1,19 @@
+from astropy import units as u
 import numpy as np
 
-from jdaviz.core.marks import PluginLine, PluginScatter
+from jdaviz.core.marks import PluginLine, PluginScatter, SliceIndicatorMarks
 from lcviz.viewers import PhaseScatterView
 
 __all__ = ['LivePreviewTrend', 'LivePreviewFlattened', 'LivePreviewBinning']
+
+
+def _slice_indicator_get_slice_axis(self, data):
+    if hasattr(data, 'time'):
+        return data.time.value * u.d
+    return [] * u.dimensionless_unscaled
+
+
+SliceIndicatorMarks._get_slice_axis = _slice_indicator_get_slice_axis
 
 
 class WithoutPhaseSupport:

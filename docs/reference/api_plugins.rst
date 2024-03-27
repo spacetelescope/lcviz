@@ -29,3 +29,6 @@ Plugins API
 
 .. automodapi:: lcviz.plugins.subset_plugin.subset_plugin
   :no-inheritance-diagram:
+
+.. automodapi:: lcviz.plugins.time_selector.time_selector
+  :no-inheritance-diagram:
