@@ -337,8 +337,8 @@ class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
         # Hide axes by default
         self.state.show_axes = False
 
-        # TODO: refactor upstream so lcviz can inherit cubeviewer methods/setup with jdaviz-specific
-        # logic:
+        # TODO: refactor upstream so lcviz can inherit cubeviewer methods/setup without 
+        # jdaviz-specific logic:
         # * _default_spectrum_viewer_reference_name
         # * _default_flux_viewer_reference_name
         # * _default_uncert_viewer_reference_name

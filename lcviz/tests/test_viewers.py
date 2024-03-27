@@ -1,5 +1,4 @@
 import pytest
-from lightkurve import search_targetpixelfile
 
 
 def test_reset_limits(helper, light_curve_like_kepler_quarter):
@@ -33,6 +32,7 @@ def test_clone(helper, light_curve_like_kepler_quarter):
     assert helper._get_clone_viewer_reference(new_viewer._obj.reference) == 'flux-vs-time[2]'
 
     # TODO: replace with test fixture
+    from lightkurve import search_targetpixelfile
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
                                  cadence="long",
