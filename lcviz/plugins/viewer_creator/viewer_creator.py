@@ -1,8 +1,10 @@
+from glue.core.message import (DataCollectionAddMessage,
+                               DataCollectionDeleteMessage)
 from jdaviz.configs.default.plugins import ViewerCreator
 from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import tool_registry
 from lcviz.events import EphemerisComponentChangedMessage
-from lcviz.viewers import TimeScatterView
+from lcviz.viewers import TimeScatterView, CubeView
 
 __all__ = ['ViewerCreator']
 
@@ -12,8 +14,11 @@ class ViewerCreator(ViewerCreator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.hub.subscribe(self, EphemerisComponentChangedMessage,
-                           handler=self._rebuild_available_viewers)
+        for msg in (EphemerisComponentChangedMessage,
+                    DataCollectionAddMessage,
+                    DataCollectionDeleteMessage):
+            self.hub.subscribe(self, msg,
+                               handler=lambda x: self._rebuild_available_viewers())
         self._rebuild_available_viewers()
 
     def _rebuild_available_viewers(self, *args):
@@ -24,13 +29,18 @@ class ViewerCreator(ViewerCreator):
         if self.app._jdaviz_helper is not None:
             phase_viewers = [{'name': f'lcviz-phase-viewer:{e}', 'label': f'flux-vs-phase:{e}'}
                               for e in self.app._jdaviz_helper.plugins['Ephemeris'].component.choices]  # noqa
+            if self.app._jdaviz_helper._has_cube_data:
+                cube_viewers = [{'name': 'lcviz-cube-viewer', 'label': 'image'}]
+            else:
+                cube_viewers = []
         else:
             phase_viewers = [{'name': 'lcviz-phase-viewer:default',
                               'label': 'flux-vs-phase:default'}]
+            cube_viewers = []
 
         self.viewer_types = [v for v in self.viewer_types if v['name'].startswith('lcviz')
                              and not v['label'].startswith('flux-vs-phase')
-                             and not v['label'] == 'cube'] + phase_viewers
+                             and not v['label'] in ('cube', 'image')] + phase_viewers + cube_viewers
         self.send_state('viewer_types')
 
     def vue_create_viewer(self, name):
@@ -43,6 +53,11 @@ class ViewerCreator(ViewerCreator):
             # allow passing label and map to the name for upstream support
             viewer_id = self.app._jdaviz_helper._get_clone_viewer_reference('flux-vs-time')
             self.app._on_new_viewer(NewViewerMessage(TimeScatterView, data=None, sender=self.app),
+                                    vid=viewer_id, name=viewer_id)
+            return
+        if name in ('image', 'lcviz-cube-viewer'):
+            viewer_id = self.app._jdaviz_helper._get_clone_viewer_reference('image')
+            self.app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=self.app),
                                     vid=viewer_id, name=viewer_id)
             return
 
