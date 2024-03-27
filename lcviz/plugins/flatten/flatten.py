@@ -1,7 +1,6 @@
 import numpy as np
-from time import time
 
-from traitlets import Bool, Float, Unicode, observe
+from traitlets import Bool, Unicode, observe
 
 from jdaviz.core.custom_traitlets import FloatHandleEmpty, IntHandleEmpty
 from jdaviz.core.events import ViewerAddedMessage
@@ -10,7 +9,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin,
                                         AutoTextField,
                                         skip_if_no_updates_since_last_active,
-                                        with_spinner)
+                                        with_spinner, with_temp_disable)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
@@ -69,9 +68,6 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     flux_label_auto = Bool(True).tag(sync=True)
     flux_label_invalid_msg = Unicode('').tag(sync=True)
     flux_label_overwrite = Bool(False).tag(sync=True)
-
-    last_live_time = Float(0).tag(sync=True)
-    previews_temp_disable = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -217,16 +213,14 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
 
     @observe('dataset_selected', 'flux_column_selected',
              'window_length', 'polyorder', 'break_tolerance',
-             'niters', 'sigma', 'previews_temp_disable')
+             'niters', 'sigma', 'previews_temp_disabled')
     @skip_if_no_updates_since_last_active()
+    @with_temp_disable(0.3)
     def _live_update(self, event={}):
-        if self.previews_temp_disable:
-            return
         if self.dataset_selected == '' or self.flux_column_selected == '':
             self._clear_marks()
             return
 
-        start = time()
         try:
             output_lc, trend_lc = self.flatten(add_data=False)
         except Exception as e:
@@ -252,10 +246,6 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
             mark.update_ty(times.value, trend_lc.flux.value)
         for mark in flattened_marks.values():
             mark.update_ty(times.value, output_flux)
-
-        self.last_live_time = np.round(time() - start, 2)
-        if self.last_live_time > 0.3:
-            self.previews_temp_disable = True
 
     def vue_apply(self, *args, **kwargs):
         try:

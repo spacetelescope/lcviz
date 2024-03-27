@@ -15,7 +15,8 @@ from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
 
-from lcviz.state import ScatterViewerState
+#from lcviz.state import ScatterViewerState
+from glue.viewers.scatter.state import ScatterViewerState
 
 from lightkurve import LightCurve
 

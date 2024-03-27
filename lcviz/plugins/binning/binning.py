@@ -1,5 +1,3 @@
-import numpy as np
-from time import time
 from astropy.time import Time
 from traitlets import Bool, Float, observe
 from glue.config import data_translator
@@ -10,7 +8,7 @@ from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, AddResultsMixin,
                                         skip_if_no_updates_since_last_active,
-                                        with_spinner)
+                                        with_spinner, with_temp_disable)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
@@ -53,9 +51,6 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
     n_bins = IntHandleEmpty(100).tag(sync=True)
     bin_enabled = Bool(True).tag(sync=True)
-
-    last_live_time = Float(0).tag(sync=True)
-    previews_temp_disable = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -164,19 +159,15 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
     @observe('flux_column_selected', 'dataset_selected',
              'ephemeris_selected',
-             'n_bins', 'previews_temp_disable')
+             'n_bins', 'previews_temp_disabled')
     @skip_if_no_updates_since_last_active()
+    @with_temp_disable(timeout=0.3)
     def _live_update(self, event={}):
         self.bin_enabled = self.n_bins != '' and self.n_bins > 0
 
         if not self.show_live_preview or not self.is_active or not self.bin_enabled:
             self._clear_marks()
             return
-
-        if self.previews_temp_disable:
-            return
-
-        start = time()
 
         if event.get('name', '') not in ('is_active', 'show_live_preview'):
             # mark visibility hasn't been handled yet
@@ -213,10 +204,6 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
             else:
                 mark.times = []
                 mark.update_xy(times, lc.flux.value)
-
-        self.last_live_time = np.round(time() - start, 2)
-        if self.last_live_time > 0.3:
-            self.previews_temp_disable = True
 
     def _on_ephemeris_update(self, msg):
         if not self.show_live_preview or not self.is_active:
