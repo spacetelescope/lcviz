@@ -320,7 +320,7 @@ class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
                     ['jdaviz:boxzoom'],
                     ['jdaviz:panzoom'],
                     ['bqplot:rectangle'],
-                    ['jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     # TODO: can we vary this default_class based on Kepler vs TESS, etc?
     # see https://github.com/spacetelescope/lcviz/pull/81#discussion_r1469721009
