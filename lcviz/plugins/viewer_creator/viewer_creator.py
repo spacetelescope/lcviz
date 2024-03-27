@@ -40,7 +40,7 @@ class ViewerCreator(ViewerCreator):
 
         self.viewer_types = [v for v in self.viewer_types if v['name'].startswith('lcviz')
                              and not v['label'].startswith('flux-vs-phase')
-                             and not v['label'] == 'cube'] + phase_viewers + cube_viewers
+                             and not v['label'] in ('cube', 'image')] + phase_viewers + cube_viewers
         self.send_state('viewer_types')
 
     def vue_create_viewer(self, name):
