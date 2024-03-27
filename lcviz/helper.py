@@ -156,6 +156,13 @@ class LCviz(ConfigHelper):
         return tvs[0].user_api
 
     @property
+    def _has_cube_data(self):
+        for data in self.app.data_collection:
+            if data.ndim == 3:
+                return True
+        return False
+
+    @property
     def _tray_tools(self):
         """
         Access API objects for plugins in the app toolbar.
