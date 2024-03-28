@@ -111,7 +111,7 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
 def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
-    vc = helper._tray_tools['lcviz-viewer-creator']
+    vc = helper._tray_tools['g-viewer-creator']
 
     assert len(vc.viewer_types) == 2  # time viewer, phase viewer for default
     _ = ephem.create_phase_viewer()
