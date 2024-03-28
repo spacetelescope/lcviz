@@ -138,23 +138,12 @@
       hint="Label for flux column."
     ></plugin-auto-label>
 
-    <v-alert v-if="previews_temp_disable && (show_live_preview || show_trend_preview)" type='warning' style="margin-left: -12px; margin-right: -12px">
-      Live-updating is temporarily disabled (last update took {{last_live_time}}s)
-      <v-row justify='center'>
-        <j-tooltip tooltipcontent='hide live trend and flattened previews (can be re-enabled from the settings section in the plugin).' span_style="width: 100%">
-          <v-btn style='width: 100%' @click="() => {show_live_preview = false; show_trend_preview = false}">
-            disable previews
-          </v-btn>
-        </j-tooltip>
-      </v-row>
-      <v-row justify='center'>
-        <j-tooltip tooltipcontent='manually update live-previews based on current plugin inputs.' span_style="width: 100%">
-          <v-btn style='width: 100%' @click="previews_temp_disable = false">
-            update preview
-          </v-btn>
-        </j-tooltip>
-      </v-row>
-    </v-alert>
+    <plugin-previews-temp-disabled
+      :previews_temp_disabled.sync="previews_temp_disabled"
+      :previews_last_time="previews_last_time"
+      :show_live_preview="show_live_preview || show_trend_preview"
+      @disable_previews="() => {show_live_preview=false; show_trend_preview=false}"
+    />
 
     <v-row justify="end">
       <j-tooltip tooltipcontent="Flatten and select the new column as the adopted flux column">
