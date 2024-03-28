@@ -1,5 +1,5 @@
 from astropy.time import Time
-from traitlets import Bool, Float, observe
+from traitlets import Bool, observe
 from glue.config import data_translator
 
 from jdaviz.core.custom_traitlets import IntHandleEmpty
