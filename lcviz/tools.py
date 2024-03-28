@@ -9,7 +9,7 @@ ICON_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), 'data', 'ico
 
 # point to the lcviz-version of plot options instead of jdaviz's
 SidebarShortcutPlotOptions.plugin_name = 'lcviz-plot-options'
-SidebarShortcutExportPlot.plugin_name = 'lcviz-export-plot'
+SidebarShortcutExportPlot.plugin_name = 'lcviz-export'
 
 
 __all__ = ['ViewerClone']

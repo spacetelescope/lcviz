@@ -9,7 +9,7 @@ Plugins API
 .. automodapi:: lcviz.plugins.ephemeris.ephemeris
   :no-inheritance-diagram:
 
-.. automodapi:: lcviz.plugins.export_plot.export_plot
+.. automodapi:: lcviz.plugins.export.export
   :no-inheritance-diagram:
 
 .. automodapi:: lcviz.plugins.flatten.flatten
