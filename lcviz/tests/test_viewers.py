@@ -1,3 +1,5 @@
+import pytest
+
 
 def test_reset_limits(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
@@ -19,6 +21,7 @@ def test_reset_limits(helper, light_curve_like_kepler_quarter):
     assert tv.state.y_min == orig_ylims[0]
 
 
+@pytest.mark.remote_data
 def test_clone(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
 
@@ -27,3 +30,14 @@ def test_clone(helper, light_curve_like_kepler_quarter):
 
     new_viewer = def_viewer._obj.clone_viewer()
     assert helper._get_clone_viewer_reference(new_viewer._obj.reference) == 'flux-vs-time[2]'
+
+    # TODO: replace with test fixture
+    from lightkurve import search_targetpixelfile
+    tpf = search_targetpixelfile("KIC 001429092",
+                                 mission="Kepler",
+                                 cadence="long",
+                                 quarter=10).download()
+    helper.load_data(tpf)
+    im_viewer = helper.viewers['image']
+    assert helper._get_clone_viewer_reference(im_viewer._obj.reference) == 'image[1]'
+    im_viewer._obj.clone_viewer()
