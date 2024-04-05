@@ -179,7 +179,7 @@ visible when the plugin is opened.
         Jdaviz documentation on the Markers plugin.
 
 
-.. _time-indicator:
+.. _time-selector:
 
 Time Selector
 ==============
