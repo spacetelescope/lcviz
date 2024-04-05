@@ -1,4 +1,3 @@
-from echo import delay_callback
 import numpy as np
 
 from glue.viewers.scatter.state import ScatterViewerState
@@ -24,9 +23,10 @@ class ScatterViewerState(ScatterViewerState):
         if not np.all(np.isfinite([ax_min, ax_max])):  # pragma: no cover
             return
 
-        with delay_callback(self, f'{ax}_min', f'{ax}_max'):
-            setattr(self, f'{ax}_min', ax_min)
-            setattr(self, f'{ax}_max', ax_max)
+        lim_helper = getattr(self, f'{ax}_lim_helper')
+        lim_helper.lower = ax_min
+        lim_helper.upper = ax_max
+        lim_helper.update_values()
 
     def _reset_x_limits(self, *event):
         self._reset_att_limits('x')
@@ -50,11 +50,15 @@ class ScatterViewerState(ScatterViewerState):
             y_min = min(y_min, np.nanmin(y_data))
             y_max = max(y_max, np.nanmax(y_data))
 
-        with delay_callback(self, 'x_min', 'x_max', 'y_min', 'y_max'):
-            self.x_min = x_min
-            self.x_max = x_max
-            self.y_min = y_min
-            self.y_max = y_max
-            # We need to adjust the limits in here to avoid triggering all
-            # the update events then changing the limits again.
-            self._adjust_limits_aspect()
+        x_lim_helper = getattr(self, 'x_lim_helper')
+        x_lim_helper.lower = x_min
+        x_lim_helper.upper = x_max
+
+        y_lim_helper = getattr(self, 'y_lim_helper')
+        y_lim_helper.lower = y_min
+        y_lim_helper.upper = y_max
+
+        x_lim_helper.update_values()
+        y_lim_helper.update_values()
+
+        self._adjust_limits_aspect()

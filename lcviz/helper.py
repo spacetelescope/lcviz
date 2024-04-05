@@ -66,7 +66,7 @@ class LCviz(ConfigHelper):
                                  'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
-        'toolbar': ['g-data-tools', 'g-subset-tools', 'lcviz-viewer-creator', 'lcviz-coords-info'],
+        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
         'tray': ['lcviz-metadata-viewer', 'flux-column',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'time-selector',
@@ -93,11 +93,7 @@ class LCviz(ConfigHelper):
         )
 
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)
-        if hasattr(self.app, '_add_style'):
-            # will be guaranteed after jdaviz 3.9
-            self.app._add_style((__file__, 'lcviz_style.vue'))
-        else:
-            self.app.set_style_template_file((__file__, 'lcviz_style.vue'))
+        self.app._add_style((__file__, 'lcviz_style.vue'))
 
         # set the link to read the docs
         self.app.docs_link = "https://lcviz.readthedocs.io"

@@ -20,7 +20,9 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=5.2",
-    "jdaviz@git+https://github.com/spacetelescope/jdaviz",
+    # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
+    # to devdeps in tox.ini
+    "jdaviz==3.9.*",
     "lightkurve>=2.4.1",
 ]
 dynamic = [
@@ -97,6 +99,7 @@ filterwarnings = [
     "ignore:numpy\\.ndarray size changed:RuntimeWarning",
     "ignore:zmq\\.eventloop\\.ioloop is deprecated in pyzmq:DeprecationWarning",
     "ignore:((.|\n)*)Sentinel is not a public part of the traitlets API((.|\n)*)",
+    "ignore:datetime\\.datetime\\.utcfromtimestamp:DeprecationWarning",
     "ignore::DeprecationWarning:glue",
     "ignore::DeprecationWarning:bqplot",
     "ignore::DeprecationWarning:bqplot_image_gl",
