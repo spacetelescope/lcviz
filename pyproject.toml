@@ -22,7 +22,7 @@ dependencies = [
     "astropy>=5.2",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
-    "jdaviz==3.8.*",
+    "jdaviz==3.9.*",
     "lightkurve>=2.4.1",
 ]
 dynamic = [
