@@ -69,7 +69,8 @@ class LCviz(ConfigHelper):
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
         'tray': ['lcviz-metadata-viewer', 'flux-column',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
-                 'lcviz-markers', 'flatten', 'frequency-analysis', 'ephemeris',
+                 'lcviz-markers', 'time-selector',
+                 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'lcviz-export'],
         'viewer_area': [{'container': 'col',
                          'children': [{'container': 'row',
@@ -149,6 +150,13 @@ class LCviz(ConfigHelper):
         if not len(tvs):
             raise ValueError("no time viewers exist")
         return tvs[0].user_api
+
+    @property
+    def _has_cube_data(self):
+        for data in self.app.data_collection:
+            if data.ndim == 3:
+                return True
+        return False
 
     @property
     def _tray_tools(self):

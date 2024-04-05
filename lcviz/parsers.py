@@ -10,6 +10,13 @@ __all__ = ["light_curve_parser"]
 
 @data_parser_registry("light_curve_parser")
 def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
+    # load a LightCurve or TargetPixelFile object:
+    cls_with_translator = (
+        lightkurve.LightCurve,
+        lightkurve.targetpixelfile.KeplerTargetPixelFile,
+        lightkurve.targetpixelfile.TessTargetPixelFile
+    )
+
     # load local FITS file from disk by its path:
     if isinstance(file_obj, str) and os.path.exists(file_obj):
         if data_label is None:
@@ -18,8 +25,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         # read the light curve:
         light_curve = lightkurve.read(file_obj)
 
-    # load a LightCurve object:
-    elif isinstance(file_obj, lightkurve.LightCurve):
+    elif isinstance(file_obj, cls_with_translator):
         light_curve = file_obj
 
     # make a data label:
@@ -30,7 +36,12 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
 
     # handle flux_origin default
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
-    if flux_origin == 'flux' or (flux_origin is None and 'flux' in light_curve.columns):
+    if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
+        new_data_label += '[TPF]'
+    elif flux_origin is not None:
+        new_data_label += f'[{flux_origin}]'
+
+    if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(light_curve, 'columns', [])):  # noqa
         # then make a copy of this column so it won't be lost when changing with the flux_column
         # plugin
         light_curve['flux:orig'] = light_curve['flux']
@@ -41,13 +52,33 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     data = _data_with_reftime(app, light_curve)
     app.add_data(data, new_data_label)
 
-    if show_in_viewer:
-        # add to any known time/phase viewers
-        for viewer_id, viewer in app._viewer_store.items():
-            if isinstance(viewer, TimeScatterView):
-                app.add_data_to_viewer(viewer_id, new_data_label)
-            elif isinstance(viewer, PhaseScatterView):
-                app.add_data_to_viewer(viewer_id, new_data_label)
+    if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
+        # ensure an image/cube/TPF viewer exists
+        # TODO: move this to an event listener on add_data so that we can also remove when empty?
+        from jdaviz.core.events import NewViewerMessage
+        from lcviz.viewers import CubeView
+        if show_in_viewer:
+            found_viewer = False
+            for viewer_id, viewer in app._viewer_store.items():
+                if isinstance(viewer, CubeView):
+                    app.add_data_to_viewer(viewer_id, new_data_label)
+                    found_viewer = True
+            if not found_viewer:
+                app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
+                                   vid='image', name='image')
+                app.add_data_to_viewer('image', new_data_label)
+
+    else:
+        if show_in_viewer:
+            for viewer_id, viewer in app._viewer_store.items():
+                if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
+                    app.add_data_to_viewer(viewer_id, new_data_label)
+
+            # add to any known phase viewers
+            ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
+            if ephem_plugin is not None:
+                for viewer in ephem_plugin._obj._get_phase_viewers():
+                    app.add_data_to_viewer(viewer.reference, new_data_label)
 
 
 def _data_with_reftime(app, light_curve):

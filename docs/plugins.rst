@@ -179,6 +179,40 @@ visible when the plugin is opened.
         Jdaviz documentation on the Markers plugin.
 
 
+.. _time-selector:
+
+Time Selector
+==============
+
+The time selector plugin allows defining the time indicated in all light curve viewers
+(time and phase viewers) as well as the time at which all image cubes are displayed.
+
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.time_selector.time_selector.TimeSelector` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      ts = lcviz.plugins['Time Selector']
+      ts.open_in_tray()
+
+
+.. seealso::
+
+    :ref:`Jdaviz Slice Plugin <jdaviz:slice>`
+        Jdaviz documentation on the Slice plugin.
+
+
+
 .. _flatten:
 
 Flatten
