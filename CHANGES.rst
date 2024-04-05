@@ -1,6 +1,8 @@
 0.4.0 - unreleased
 ------------------
 
+* Support loading, viewing, and slicing through TPF data cubes. [#82]
+
 0.3.0 - (04-05-2024)
 --------------------
 
