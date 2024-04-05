@@ -2,6 +2,7 @@
 ------------------
 
 * Ability to create additional viewers. [#94]
+* Updates to use jdaviz 3.9. [#68]
 
 0.2.0 (02-26-2024)
 ------------------
