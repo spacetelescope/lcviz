@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
@@ -118,3 +119,40 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'value': 0,
                                                       'value:unit': '',
                                                       'ephemeris': ''})
+
+
+@pytest.mark.remote_data
+def test_tpf_markers(helper, light_curve_like_kepler_quarter):
+    helper.load_data(light_curve_like_kepler_quarter)
+
+    # TODO: replace with test fixture
+    from lightkurve import search_targetpixelfile
+    tpf = search_targetpixelfile("KIC 001429092",
+                                 mission="Kepler",
+                                 cadence="long",
+                                 quarter=10).download()
+    helper.load_data(tpf)
+
+    mp = helper.plugins['Markers']
+    label_mouseover = mp._obj.coords_info
+    mp.open_in_tray()
+
+    # test event in image (TPF) viewer
+    iv = helper.viewers['image']._obj
+    label_mouseover._viewer_mouse_event(iv,
+                                        {'event': 'mousemove',
+                                         'domain': {'x': 0, 'y': 0}})
+
+    assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.28035e+01 electron / s',  # noqa
+                                         'Time 47.00689',
+                                         '')
+
+    _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'KIC 1429092[TPF]',
+                                                      'time': 47.00688790508866,
+                                                      'pixel': (0.0, 0.0),
+                                                      'axes_x': 0,
+                                                      'axes_x:unit': 'pix',
+                                                      'axes_y': 0,
+                                                      'axes_y:unit': 'pix',
+                                                      'value': 12.803528785705566,
+                                                      'value:unit': 'electron / s'})
