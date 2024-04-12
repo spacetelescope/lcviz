@@ -59,7 +59,8 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'index': 262.0,
                                                       'axes_y': 0.96758735,
                                                       'axes_y:unit': '',
-                                                      'flux': 0.96758735})
+                                                      'value': 0.96758735,
+                                                      'value:unit': ''})
 
     mp._obj._on_viewer_key_event(tv, {'event': 'keydown',
                                       'key': 'm'})
@@ -87,7 +88,8 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'index': 262.0,
                                                       'axes_y': 0.9675873517990112,
                                                       'axes_y:unit': '',
-                                                      'flux': 0.9675873517990112})
+                                                      'value': 0.9675873517990112,
+                                                      'value:unit': ''})
 
     mp._obj._on_viewer_key_event(pv, {'event': 'keydown',
                                       'key': 'm'})
@@ -113,5 +115,6 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'data_label': '',
                                                       'time': np.nan,
                                                       'phase': 0.6,
-                                                      'flux': 0,
+                                                      'value': 0,
+                                                      'value:unit': '',
                                                       'ephemeris': ''})
