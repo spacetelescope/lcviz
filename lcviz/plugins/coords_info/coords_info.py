@@ -52,7 +52,8 @@ class CoordsInfo(CoordsInfo):
             self._dict['data_label'] = ''
             self._dict['time'] = x if not is_phase else np.nan
             self._dict['phase'] = x if is_phase else np.nan
-            self._dict['flux'] = y
+            self._dict['value'] = y
+            self._dict['value:unit'] = y_unit
             self._dict['ephemeris'] = ''
 
             self.row2_title = ''
@@ -139,7 +140,8 @@ class CoordsInfo(CoordsInfo):
         self.row3_text = f'{closest_y:10.5e} {y_unit}'
         self._dict['axes_y'] = closest_y
         self._dict['axes_y:unit'] = y_unit
-        self._dict['flux'] = closest_y
+        self._dict['value'] = closest_y
+        self._dict['value:unit'] = y_unit
 
         self.icon = closest_icon
 
