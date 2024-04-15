@@ -23,7 +23,7 @@ dependencies = [
     "glue-core<1.19.0",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
-    "jdaviz==3.9.*",
+    "jdaviz@git+https://github.com/spacetelescope/jdaviz",
     "lightkurve>=2.4.1",
 ]
 dynamic = [
