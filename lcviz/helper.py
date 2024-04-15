@@ -57,6 +57,23 @@ def _link_new_data(app, reference_data=None, data_to_be_linked=None):
     return
 
 
+def _get_display_unit(app, axis):
+    if app._jdaviz_helper is None or app._jdaviz_helper.plugins.get('Unit Conversion') is None:  # noqa
+        # fallback on native units (unit conversion is not enabled)
+        if axis == 'time':
+            return u.dimensionless_unscaled
+        elif axis == 'flux':
+            return app._jdaviz_helper.default_time_viewer._obj.data()[0].flux.unit
+        else:
+            raise ValueError(f"could not find units for axis='{axis}'")
+    try:
+        # TODO: need to implement and add unit conversion plugin for this to be able to work
+        return getattr(app._jdaviz_helper.plugins.get('Unit Conversion')._obj,
+                       f'{axis}_unit_selected')
+    except AttributeError:
+        raise ValueError(f"could not find display unit for axis='{axis}'")
+
+
 class LCviz(ConfigHelper):
     _default_configuration = {
         'settings': {'configuration': 'lcviz',
@@ -90,6 +107,10 @@ class LCviz(ConfigHelper):
 
         self.app._link_new_data = (
             lambda *args, **kwargs: _link_new_data(self.app, *args, **kwargs)
+        )
+
+        self.app._get_display_unit = (
+            lambda *args, **kwargs: _get_display_unit(self.app, *args, **kwargs)
         )
 
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)

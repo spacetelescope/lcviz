@@ -47,7 +47,7 @@ class TimeSelector(Slice):
                                    handler=self._on_ephemeris_changed)
 
     @property
-    def slice_axis(self):
+    def slice_display_unit_name(self):
         # global display unit "axis" corresponding to the slice axis
         return 'time'
 
