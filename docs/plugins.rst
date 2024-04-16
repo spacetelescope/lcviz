@@ -213,6 +213,47 @@ The time selector plugin allows defining the time indicated in all light curve v
 
 
 
+.. _stitch:
+
+Stitch
+======
+
+This plugin allows for combining multiple light curves into a single entry.  Note that this plugin
+is only available if there are at least two light curves loaded into a light curve viewer.
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.stitch.stitch.Stitch` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      lc1 = search_lightcurve("HAT-P-11", mission="Kepler",
+                              cadence="long", quarter=9).download()
+      lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
+                              cadence="long", quarter=10).download()
+      lcviz = LCviz()
+      lcviz.load_data(lc1, 'lc1')
+      lcviz.load_data(lc2, 'lc2')
+      # NOTE: this line is not technically considered public API - alternatively manually add
+      # the second light curve to the light curve viewer from the data menu
+      lcviz.app.add_data_to_viewer('flux-vs-time', 'lc1')
+      lcviz.show()
+
+      stitch = lcviz.plugins['Stitch']
+      stitch.open_in_tray()
+      stitch.dataset.select_all()
+      stitched_lc = stitch.stitch()
+      print(stitched_lc)
+
+.. seealso::
+
+    This plugin uses the following ``lightkurve`` implementations:
+
+    * :meth:`lightkurve.LightCurveCollection.stitch`
+
+
 .. _flatten:
 
 Flatten
