@@ -33,7 +33,17 @@
       :action_disabled="dataset_selected.length < 2"
       :action_spinner="spinner"
       @click:action="apply"
-    ></plugin-add-results>
+    >
+      <v-row>
+        <v-switch
+          v-model="remove_input_datasets"
+          label="Remove input datasets"
+          hint='Delete input datasets from the app'
+          persistent-hint
+        >
+        </v-switch>
+      </v-row>
+    </plugin-add-results>
 
     <v-row v-if="stitch_err">
       <span class="v-messages v-messages__message text--secondary">

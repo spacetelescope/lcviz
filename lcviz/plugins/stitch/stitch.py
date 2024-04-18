@@ -26,11 +26,14 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
       Datasets to stitch.
+    * ``remove_input_datasets``
+    * ``add_results`` (:class:`~jdaviz.core.template_mixin.AddResults`)
     * :meth:`stitch`
     """
     template_file = __file__, "stitch.vue"
     uses_active_status = Bool(False).tag(sync=False)
 
+    remove_input_datasets = Bool(False).tag(sync=True)
     stitch_err = Unicode().tag(sync=True)
 
     def __init__(self, *args, **kwargs):
@@ -44,7 +47,7 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
 
     @property
     def user_api(self):
-        expose = ['dataset', 'stitch', 'add_results']
+        expose = ['dataset', 'stitch', 'remove_input_datasets', 'add_results']
         return PluginUserApi(self, expose=expose)
 
     @observe('dataset_items')
@@ -79,6 +82,9 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
 
         if add_data:
             self.add_results.add_results_from_plugin(stitched_lc)
+            if self.remove_input_datasets:
+                for dataset in self.dataset.selected:
+                    self.app.vue_data_item_remove({'item_name': dataset})
         return stitched_lc
 
     def vue_apply(self, *args, **kwargs):
