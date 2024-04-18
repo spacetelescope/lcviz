@@ -20,7 +20,6 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=5.2",
-    "glue-core<1.19.0",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
     "jdaviz==3.9.*",
