@@ -53,6 +53,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'Light curve',
                                                       'time': 5.4583335,
+                                                      'time:unit': 'd',
                                                       'phase': np.nan,
                                                       'ephemeris': '',
                                                       'axes_x': 5.4583335,
@@ -82,6 +83,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'Light curve',
                                                       'time': 5.458333374001086,
+                                                      'time:unit': 'd',
                                                       'phase': 0.4583333730697632,
                                                       'ephemeris': 'default',
                                                       'axes_x': 0.4583333730697632,
@@ -115,6 +117,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'axes_y:unit': '',
                                                       'data_label': '',
                                                       'time': np.nan,
+                                                      'time:unit': '',
                                                       'phase': 0.6,
                                                       'value': 0,
                                                       'value:unit': '',
@@ -144,11 +147,12 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
                                          'domain': {'x': 0, 'y': 0}})
 
     assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.28035e+01 electron / s',  # noqa
-                                         'Time 47.00689',
+                                         'Time 47.00689 d',
                                          '')
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'KIC 1429092[TPF]',
                                                       'time': 47.00688790508866,
+                                                      'time:unit': 'd',
                                                       'pixel': (0.0, 0.0),
                                                       'axes_x': 0,
                                                       'axes_x:unit': 'pix',

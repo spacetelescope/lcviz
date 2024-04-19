@@ -21,6 +21,7 @@ class Markers(Markers):
     * :meth:`~jdaviz.core.template_mixin.TableMixin.export_table`
     """
     _default_table_values = {'time': np.nan,
+                             'time:unit': '',
                              'phase': np.nan,
                              'ephemeris': '',
                              'pixel': (np.nan, np.nan),
@@ -28,7 +29,7 @@ class Markers(Markers):
                              'value:unit': ''}
 
     def __init__(self, *args, **kwargs):
-        kwargs['headers'] = ['time', 'phase', 'ephemeris',
+        kwargs['headers'] = ['time', 'time:unit', 'phase', 'ephemeris',
                              'pixel', 'value', 'value:unit', 'viewer']
         super().__init__(*args, **kwargs)
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#markers"

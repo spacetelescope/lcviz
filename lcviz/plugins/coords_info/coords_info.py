@@ -51,6 +51,7 @@ class CoordsInfo(CoordsInfo):
 
             self._dict['data_label'] = ''
             self._dict['time'] = x if not is_phase else np.nan
+            self._dict['time:unit'] = x_unit
             self._dict['phase'] = x if is_phase else np.nan
             self._dict['value'] = y
             self._dict['value:unit'] = y_unit
@@ -124,11 +125,13 @@ class CoordsInfo(CoordsInfo):
             time_comp = closest_lyr.layer.components[component_labels.index('World 0')]
             times = closest_lyr.layer.get_data(time_comp)
             self._dict['time'] = float(times[closest_i])
+            self._dict['time:unit'] = str(viewer.time_unit)  # x_unit is phase
             self._dict['phase'] = closest_x
             self._dict['ephemeris'] = viewer.reference.split(':')[1]
         else:
             self.row2_text = f'{closest_x:10.5e} {x_unit}'
             self._dict['time'] = closest_x
+            self._dict['time:unit'] = x_unit
             self._dict['phase'] = np.nan
             self._dict['ephemeris'] = ''
 
@@ -192,9 +195,12 @@ class CoordsInfo(CoordsInfo):
             self._dict['data_label'] = ''
         else:
             time = viewer.slice_value
+            # TODO: store slice unit within image viewer to avoid this assumption?
+            time_unit = str(self.app._jdaviz_helper.default_time_viewer._obj.time_unit)
             self.row2_title = 'Time'
-            self.row2_text = f'{time:0.5f}'
+            self.row2_text = f'{time:0.5f} {time_unit}'
             self._dict['time'] = time
+            self._dict['time:unit'] = time_unit
 
         maxsize = int(np.ceil(np.log10(np.max(active_layer.layer.shape)))) + 3
         fmt = 'x={0:0' + str(maxsize) + '.1f} y={1:0' + str(maxsize) + '.1f}'
