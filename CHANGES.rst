@@ -12,6 +12,8 @@
 
 * Raise error when parser can't identify file_obj [#106]
 
+* Fixes compatibility with glue >= 1.19. [#109, #110]
+
 0.3.0 (04-05-2024)
 --------------------
 
