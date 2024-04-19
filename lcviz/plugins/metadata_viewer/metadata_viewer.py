@@ -1,7 +1,14 @@
+from astropy.io.fits.card import Undefined
+
 from jdaviz.configs.default.plugins import MetadataViewer
 from jdaviz.core.registries import tray_registry
 
 __all__ = ['MetadataViewer']
+
+
+# monkeypatch astropy.io.fits.card.Undefined to show an empty string
+# instead of '<astropy.io.fits.card.Undefined object at 0x29f5b94d0>'
+Undefined.__str__ = lambda x: ''
 
 
 @tray_registry('lcviz-metadata-viewer', label="Metadata")

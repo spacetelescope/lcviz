@@ -1,5 +1,8 @@
-0.4.0 - unreleased
+0.3.1 - unreleased
 ------------------
+
+* Support loading, viewing, and slicing through TPF data cubes. [#82]
+* Metdata plugin: show undefined entries as empty string instead of object repr. [#108]
 
 0.3.0 - (04-05-2024)
 --------------------
