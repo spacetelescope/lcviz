@@ -37,11 +37,11 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         new_data_label = light_curve.meta.get('OBJECT', 'Light curve')
 
     # handle flux_origin default
-    mission = light_curve.meta.get('MISSION', '')
+    mission = light_curve.meta.get('MISSION', '').lower()
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
     if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
         new_data_label += '[TPF]'
-    elif mission == 'Kepler':
+    elif mission == 'kepler':
         new_data_label += f' Q{light_curve.meta.get("QUARTER")}'
     elif mission == 'k2':
         new_data_label += f' C{light_curve.meta.get("CAMPAIGN")}'
