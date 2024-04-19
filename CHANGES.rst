@@ -1,18 +1,18 @@
-0.4.0 - unreleased
+0.4.0 (unreleased)
 ------------------
 
 * Support loading, viewing, and slicing through TPF data cubes. [#82]
 
 * Default data labels no longer include flux-origin, but do include quarter/campaign/sector. [#111]
 
-0.3.1 - unreleased
+0.3.1 (unreleased)
 ------------------
 
 * Metadata plugin: show undefined entries as empty string instead of object repr. [#108]
 
 * Raise error when parser can't identify file_obj [#106]
 
-0.3.0 - (04-05-2024)
+0.3.0 (04-05-2024)
 --------------------
 
 * Ability to create additional viewers. [#94]
