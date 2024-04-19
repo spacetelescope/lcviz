@@ -22,6 +22,7 @@ class UnitConverter:
     def to_unit(self, data, cid, values, original_units, target_units):
         # for some reason, glue is trying to request a change for cid='flux' from d to electron / s
         if target_units not in self.equivalent_units(data, cid, original_units):
+            raise ValueError(f"to_unit cannot convert units, cid={cid}, original_units={original_units}, target_units={target_units}, values={values}")  # noqa
             return values
         return (values * u.Unit(original_units)).to_value(u.Unit(target_units))
 
