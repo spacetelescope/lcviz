@@ -27,6 +27,8 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
 
     elif isinstance(file_obj, cls_with_translator):
         light_curve = file_obj
+    else:
+        raise NotImplementedError(f"could not parse light_curve with type {type(file_obj)}")
 
     # make a data label:
     if data_label is not None:
