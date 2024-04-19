@@ -4,12 +4,27 @@ import os
 
 from lightkurve import LightCurve
 
+from glue.config import settings as glue_settings
 from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
+from glue.core.units import unit_converter
 from jdaviz.core.helpers import ConfigHelper
 from lcviz.viewers import TimeScatterView
 
 __all__ = ['LCviz']
+
+
+@unit_converter('custom-lcviz')
+class UnitConverter:
+    def equivalent_units(self, data, cid, units):
+        return set(list(map(str, u.Unit(units).find_equivalent_units(
+                    include_prefix_units=True, equivalencies=u.spectral()))))
+
+    def to_unit(self, data, cid, values, original_units, target_units):
+        return (values * u.Unit(original_units)).to_value(u.Unit(target_units))
+
+
+glue_settings.UNIT_CONVERTER = 'custom-lcviz'
 
 custom_components = {'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
 
