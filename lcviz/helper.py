@@ -17,10 +17,12 @@ __all__ = ['LCviz']
 @unit_converter('custom-lcviz')
 class UnitConverter:
     def equivalent_units(self, data, cid, units):
-        return set(list(map(str, u.Unit(units).find_equivalent_units(
-                    include_prefix_units=True, equivalencies=u.spectral()))))
+        return set(list(map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True))))
 
     def to_unit(self, data, cid, values, original_units, target_units):
+        # for some reason, glue is trying to request a change for cid='flux' from d to electron / s
+        if target_units not in self.equivalent_units(data, cid, original_units):
+            return values
         return (values * u.Unit(original_units)).to_value(u.Unit(target_units))
 
 
