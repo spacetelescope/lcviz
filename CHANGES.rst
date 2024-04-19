@@ -1,13 +1,15 @@
 0.3.1 - unreleased
 ------------------
 
-* Support loading, viewing, and slicing through TPF data cubes. [#82]
-* Metdata plugin: show undefined entries as empty string instead of object repr. [#108]
+* Metadata plugin: show undefined entries as empty string instead of object repr. [#108]
+
+* Raise error when parser can't identify file_obj [#106]
 
 0.3.0 - (04-05-2024)
 --------------------
 
 * Ability to create additional viewers. [#94]
+
 * Updates to use jdaviz 3.9. [#68]
 
 0.2.0 (02-26-2024)
