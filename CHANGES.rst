@@ -3,6 +3,8 @@
 
 * Prevent duplicate sub-intervals (quarter/sector/campaign) in data labels. [#120]
 
+* Photometric extraction plugin. [#115]
+
 0.4.1 (unreleased)
 ------------------
 
@@ -16,7 +18,6 @@
 * Default data labels no longer include flux-origin, but do include quarter/campaign/sector. [#111]
 
 * Basic stitch plugin to combine light curves into a single entry. [#107]
-
 * Metadata plugin: show undefined entries as empty string instead of object repr. [#108]
 
 * Raise error when parser can't identify file_obj [#106]
