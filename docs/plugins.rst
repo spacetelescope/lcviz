@@ -18,6 +18,7 @@ This plugin allows viewing of any metadata associated with the selected data.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -52,6 +53,7 @@ This plugin allows choosing which column in the underlying data should be used a
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -86,6 +88,7 @@ This plugin gives access to per-viewer and per-layer plotting options.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -122,6 +125,7 @@ This plugin allows viewing and modifying defined subsets.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -159,6 +163,7 @@ visible when the plugin is opened.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -196,6 +201,7 @@ The time selector plugin allows defining the time indicated in all light curve v
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -229,6 +235,7 @@ is only available if there are at least two light curves loaded into a light cur
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc1 = search_lightcurve("HAT-P-11", mission="Kepler",
                               cadence="long", quarter=9).download()
       lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
@@ -271,6 +278,7 @@ can be disabled through the plugin settings.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download()
       lcviz = LCviz()
@@ -307,6 +315,7 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -346,6 +355,7 @@ for phase-folding.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -374,6 +384,7 @@ This plugin supports binning a light curve in time or phase-space.
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
@@ -409,6 +420,7 @@ This plugin allows exporting the plot in a given viewer to various image formats
     .. code-block:: python
 
       from lcviz import LCviz
+      from lightkurve import search_lightcurve
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
