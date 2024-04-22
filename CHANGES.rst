@@ -5,6 +5,8 @@
 
 * Default data labels no longer include flux-origin, but do include quarter/campaign/sector. [#111]
 
+* Basic stitch plugin to combine light curves into a single entry. [#107]
+
 0.3.1 (unreleased)
 ------------------
 
