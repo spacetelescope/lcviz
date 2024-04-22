@@ -218,6 +218,39 @@ The time selector plugin allows defining the time indicated in all light curve v
         Jdaviz documentation on the Slice plugin.
 
 
+.. _photometric-extraction:
+
+Photometric Extraction
+======================
+
+Note that this plugin is only available if TPF data is loaded into the app.
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.stitch.stitch.Stitch` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      from lightkurve import search_targetpixelfile
+      tpf = search_targetpixelfile("KIC 001429092",
+                                   mission="Kepler",
+                                   cadence="long",
+                                   quarter=10).download()
+      lcviz = LCviz()
+      lcviz.load_data(tpf)
+      lcviz.show()
+
+      ext = lcviz.plugins['Photometric Extraction']
+      ext.open_in_tray()
+
+
+.. seealso::
+
+    This plugin uses the following ``lightkurve`` implementations:
+
+    * :meth:`lightkurve.KeplerTargetPixelFile.extract_aperture_photometry`
 
 .. _stitch:
 

@@ -106,7 +106,7 @@ class LCviz(ConfigHelper):
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
         'tray': ['g-metadata-viewer', 'flux-column',
                  'plot-options', 'g-subset-tools',
-                 'g-markers', 'time-selector',
+                 'g-markers', 'time-selector', 'photometric-extraction',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'export', 'logger'],
         'viewer_area': [{'container': 'col'}]}
