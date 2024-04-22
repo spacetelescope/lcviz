@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
@@ -52,6 +53,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'Light curve',
                                                       'time': 5.4583335,
+                                                      'time:unit': 'd',
                                                       'phase': np.nan,
                                                       'ephemeris': '',
                                                       'axes_x': 5.4583335,
@@ -59,7 +61,8 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'index': 262.0,
                                                       'axes_y': 0.96758735,
                                                       'axes_y:unit': '',
-                                                      'flux': 0.96758735})
+                                                      'value': 0.96758735,
+                                                      'value:unit': ''})
 
     mp._obj._on_viewer_key_event(tv, {'event': 'keydown',
                                       'key': 'm'})
@@ -80,6 +83,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'Light curve',
                                                       'time': 5.458333374001086,
+                                                      'time:unit': 'd',
                                                       'phase': 0.4583333730697632,
                                                       'ephemeris': 'default',
                                                       'axes_x': 0.4583333730697632,
@@ -87,7 +91,8 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'index': 262.0,
                                                       'axes_y': 0.9675873517990112,
                                                       'axes_y:unit': '',
-                                                      'flux': 0.9675873517990112})
+                                                      'value': 0.9675873517990112,
+                                                      'value:unit': ''})
 
     mp._obj._on_viewer_key_event(pv, {'event': 'keydown',
                                       'key': 'm'})
@@ -112,6 +117,46 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'axes_y:unit': '',
                                                       'data_label': '',
                                                       'time': np.nan,
+                                                      'time:unit': '',
                                                       'phase': 0.6,
-                                                      'flux': 0,
+                                                      'value': 0,
+                                                      'value:unit': '',
                                                       'ephemeris': ''})
+
+
+@pytest.mark.remote_data
+def test_tpf_markers(helper, light_curve_like_kepler_quarter):
+    helper.load_data(light_curve_like_kepler_quarter)
+
+    # TODO: replace with test fixture
+    from lightkurve import search_targetpixelfile
+    tpf = search_targetpixelfile("KIC 001429092",
+                                 mission="Kepler",
+                                 cadence="long",
+                                 quarter=10).download()
+    helper.load_data(tpf)
+
+    mp = helper.plugins['Markers']
+    label_mouseover = mp._obj.coords_info
+    mp.open_in_tray()
+
+    # test event in image (TPF) viewer
+    iv = helper.viewers['image']._obj
+    label_mouseover._viewer_mouse_event(iv,
+                                        {'event': 'mousemove',
+                                         'domain': {'x': 0, 'y': 0}})
+
+    assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.28035e+01 electron / s',  # noqa
+                                         'Time 47.00689 d',
+                                         '')
+
+    _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'KIC 1429092[TPF]',
+                                                      'time': 47.00688790508866,
+                                                      'time:unit': 'd',
+                                                      'pixel': (0.0, 0.0),
+                                                      'axes_x': 0,
+                                                      'axes_x:unit': 'pix',
+                                                      'axes_y': 0,
+                                                      'axes_y:unit': 'pix',
+                                                      'value': 12.803528785705566,
+                                                      'value:unit': 'electron / s'})
