@@ -16,11 +16,12 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_stitch(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load_data(light_curve_like_kepler_quarter, 'lc1')
 
     assert "Stitch" not in helper.plugins.keys()
 
-    helper.load_data(light_curve_like_kepler_quarter.copy())
+    helper.load_data(light_curve_like_kepler_quarter.copy(), 'lc2')
+    helper.app.add_data_to_viewer('flux-vs-time', 'lc2')
     assert "Stitch" in helper.plugins.keys()
 
     stitch = helper.plugins['Stitch']
