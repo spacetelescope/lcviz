@@ -1,3 +1,5 @@
+import numpy as np
+
 from jdaviz.configs.default.plugins import PlotOptions
 from jdaviz.core.registries import tray_registry
 
@@ -30,6 +32,20 @@ class PlotOptions(PlotOptions):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#plot-options"
+
+    def _default_tpf_stretch(
+            self, vmin_percentile=5, vmax_percentile=99, tpf_viewer_reference='image'
+    ):
+        viewer = self.app.get_viewer(tpf_viewer_reference)
+        image = viewer.layers[0].get_image_data()
+        vmin, vmax = np.nanpercentile(
+            image, [vmin_percentile, vmax_percentile]
+        )
+
+        self.viewer_selected = tpf_viewer_reference
+        self.stretch_function_value = 'log'
+        self.stretch_vmin_value = vmin
+        self.stretch_vmax_value = vmax
 
     @property
     def user_api(self):

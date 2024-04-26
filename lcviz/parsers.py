@@ -4,6 +4,7 @@ from jdaviz.core.registries import data_parser_registry
 import lightkurve
 
 from lcviz.viewers import PhaseScatterView, TimeScatterView
+from lcviz.plugins.plot_options import PlotOptions
 
 __all__ = ["light_curve_parser"]
 
@@ -74,6 +75,11 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
                 app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
                                    vid='image', name='image')
                 app.add_data_to_viewer('image', new_data_label)
+
+        # set TPF viewer's stretch to custom defaults:
+        plot_options_plugin = PlotOptions(app=app)
+        if plot_options_plugin is not None:
+            plot_options_plugin._default_tpf_stretch()
 
     else:
         if show_in_viewer:
