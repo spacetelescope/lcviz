@@ -1,7 +1,7 @@
 0.4.0 (unreleased)
 ------------------
 
-* Support loading, viewing, and slicing through TPF data cubes. [#82]
+* Support loading, viewing, and slicing through TPF data cubes. [#82, #117]
 
 * Default data labels no longer include flux-origin, but do include quarter/campaign/sector. [#111]
 
