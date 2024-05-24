@@ -1,7 +1,7 @@
 0.4.0 (unreleased)
 ------------------
 
-* Updates to use jdaviz 3.10. [#105]
+* Updates to use jdaviz 3.10, which now requires python 3.10+. [#105]
 
 * Support loading, viewing, and slicing through TPF data cubes. [#82, #117]
 
