@@ -38,3 +38,6 @@ Plugins API
 
 .. automodapi:: lcviz.plugins.time_selector.time_selector
   :no-inheritance-diagram:
+
+.. automodapi:: lcviz.plugins.unit_conversion.unit_conversion
+  :no-inheritance-diagram:
