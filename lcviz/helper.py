@@ -78,7 +78,7 @@ def _get_display_unit(app, axis):
     if app._jdaviz_helper is None or app._jdaviz_helper.plugins.get('Unit Conversion') is None:  # noqa
         # fallback on native units (unit conversion is not enabled)
         if axis == 'time':
-            return u.dimensionless_unscaled
+            return u.d
         elif axis == 'flux':
             return app._jdaviz_helper.default_time_viewer._obj.data()[0].flux.unit
         else:
