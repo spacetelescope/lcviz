@@ -140,7 +140,10 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
         self.figure.axes[0].num_ticks = 5
 
     def _set_plot_y_axes(self, dc, component_labels, light_curve):
-        self.state.y_att = dc[0].components[component_labels.index('flux')]
+        try:
+            self.state.y_att = dc[0].components[component_labels.index('flux')]
+        except ValueError:
+            pass
 
         y_unit = light_curve.flux.unit
         y_unit_physical_type = str(y_unit.physical_type).title()
