@@ -8,7 +8,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
-from lcviz.utils import data_not_folded
+from lcviz.utils import data_not_folded, is_not_tpf
 
 __all__ = ['Stitch']
 
@@ -41,7 +41,8 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
 
         self.dataset.multiselect = True
         # do not support stitching data in phase-space
-        self.dataset.add_filter(data_not_folded)
+        # do not allow TPF as input
+        self.dataset.add_filter(data_not_folded, is_not_tpf)
 
         self.results_label_default = 'stitched'
 

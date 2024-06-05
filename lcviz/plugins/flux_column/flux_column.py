@@ -4,6 +4,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
+from lcviz.utils import is_not_tpf
 
 __all__ = ['FluxColumn']
 
@@ -27,6 +28,9 @@ class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # NOTE: may eventually want to add support for choosing the column for TPFs
+        self.dataset.add_filter(is_not_tpf)
 
     @property
     def user_api(self):

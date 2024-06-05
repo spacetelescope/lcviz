@@ -15,6 +15,7 @@ from lightkurve import periodogram, FoldedLightCurve
 
 from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
 from lcviz.viewers import PhaseScatterView
+from lcviz.utils import is_not_tpf
 
 __all__ = ['Ephemeris']
 
@@ -93,6 +94,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._ignore_ephem_change = False
         self._ephemerides = {}
         self._prev_wrap_at = _default_wrap_at
+
+        self.dataset.add_filter(is_not_tpf)
 
         self.component = EditableSelectPluginComponent(self,
                                                        name='ephemeris',
