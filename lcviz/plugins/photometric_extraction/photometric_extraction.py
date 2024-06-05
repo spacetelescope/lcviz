@@ -42,12 +42,20 @@ class PhotometricExtraction(PluginTemplateMixin, DatasetSelectMixin,
         def is_tpf(data):
             return len(data.shape) == 3
         self.dataset.add_filter(is_tpf)
+        self._set_relevant()
 
     @property
     def user_api(self):
         expose = ['show_live_preview', 'dataset',
                   'add_results', 'extract']
         return PluginUserApi(self, expose=expose)
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if len(self.dataset_items) < 1:
+            self.irrelevant_msg = 'Requires at least one TPF cube to be loaded'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def marks(self):

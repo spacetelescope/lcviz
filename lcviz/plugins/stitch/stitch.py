@@ -47,6 +47,7 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
         self.dataset.add_filter(data_not_folded, is_lc)
 
         self.results_label_default = 'stitched'
+        self._set_relevant()
 
         self._set_relevant()
 
