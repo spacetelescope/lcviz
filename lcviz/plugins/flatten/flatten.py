@@ -14,7 +14,7 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
-from lcviz.utils import data_not_folded
+from lcviz.utils import data_not_folded, is_not_tpf
 from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.parsers import _data_with_reftime
 
@@ -77,7 +77,8 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
                                         'flux_label_invalid_msg')
 
         # do not support flattening data in phase-space
-        self.dataset.add_filter(data_not_folded)
+        # do not allow TPF as input
+        self.dataset.add_filter(data_not_folded, is_not_tpf)
 
         # marks do not exist for the new viewer, so force another update to compute and draw
         # those marks
