@@ -4,12 +4,29 @@ import os
 
 from lightkurve import LightCurve
 
+from glue.config import settings as glue_settings
 from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
+from glue.core.units import unit_converter
 from jdaviz.core.helpers import ConfigHelper
 from lcviz.viewers import TimeScatterView
 
 __all__ = ['LCviz']
+
+
+@unit_converter('custom-lcviz')
+class UnitConverter:
+    def equivalent_units(self, data, cid, units):
+        return set(list(map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True))))
+
+    def to_unit(self, data, cid, values, original_units, target_units):
+        # for some reason, glue is trying to request a change for cid='flux' from d to electron / s
+        if target_units not in self.equivalent_units(data, cid, original_units):
+            return values
+        return (values * u.Unit(original_units)).to_value(u.Unit(target_units))
+
+
+glue_settings.UNIT_CONVERTER = 'custom-lcviz'
 
 custom_components = {'plugin-ephemeris-select': 'components/plugin_ephemeris_select.vue'}
 
@@ -57,6 +74,23 @@ def _link_new_data(app, reference_data=None, data_to_be_linked=None):
     return
 
 
+def _get_display_unit(app, axis):
+    if app._jdaviz_helper is None or app._jdaviz_helper.plugins.get('Unit Conversion') is None:  # noqa
+        # fallback on native units (unit conversion is not enabled)
+        if axis == 'time':
+            return u.d
+        elif axis == 'flux':
+            return app._jdaviz_helper.default_time_viewer._obj.data()[0].flux.unit
+        else:
+            raise ValueError(f"could not find units for axis='{axis}'")
+    try:
+        # TODO: need to implement and add unit conversion plugin for this to be able to work
+        return getattr(app._jdaviz_helper.plugins.get('Unit Conversion')._obj,
+                       f'{axis}_unit_selected')
+    except AttributeError:
+        raise ValueError(f"could not find display unit for axis='{axis}'")
+
+
 class LCviz(ConfigHelper):
     _default_configuration = {
         'settings': {'configuration': 'lcviz',
@@ -90,6 +124,10 @@ class LCviz(ConfigHelper):
 
         self.app._link_new_data = (
             lambda *args, **kwargs: _link_new_data(self.app, *args, **kwargs)
+        )
+
+        self.app._get_display_unit = (
+            lambda *args, **kwargs: _get_display_unit(self.app, *args, **kwargs)
         )
 
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)

@@ -103,6 +103,10 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         # calling data_collection_item.get_component(slice_component_label) must work
         return 'dt'
 
+    @property
+    def slice_display_unit_name(self):
+        return 'time'
+
     def data(self, cls=None):
         data = []
 
@@ -333,6 +337,10 @@ class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
     def slice_index(self):
         # index in viewer.slices corresponding to the slice axis
         return 0
+
+    @property
+    def slice_display_unit_name(self):
+        return 'time'
 
     def _initial_x_axis(self, *args):
         # Make sure that the x_att/y_att is correct on data load

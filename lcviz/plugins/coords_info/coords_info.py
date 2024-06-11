@@ -194,7 +194,11 @@ class CoordsInfo(CoordsInfo):
             self.icon = 'mdi-cursor-default'
             self._dict['data_label'] = ''
         else:
-            time = viewer.slice_value
+            try:
+                time = viewer.slice_value
+            except IndexError:
+                self._viewer_mouse_clear_event(viewer)
+                return
             # TODO: store slice unit within image viewer to avoid this assumption?
             time_unit = str(self.app._jdaviz_helper.default_time_viewer._obj.time_unit)
             self.row2_title = 'Time'

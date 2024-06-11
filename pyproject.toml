@@ -1,7 +1,7 @@
 [project]
 name = "lcviz"
 description = "A Jdaviz-based light curve analysis and visualization tool"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "JDADF Developers", email = "kconroy@stsci.edu" },
 ]
@@ -20,10 +20,9 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=5.2",
-    "glue-core<1.19.0",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
-    "jdaviz==3.9.*",
+    "jdaviz>=3.10.2,<3.11",
     "lightkurve>=2.4.1",
 ]
 dynamic = [
