@@ -9,9 +9,6 @@
 
 * Basic stitch plugin to combine light curves into a single entry. [#107]
 
-0.3.1 (unreleased)
-------------------
-
 * Metadata plugin: show undefined entries as empty string instead of object repr. [#108]
 
 * Raise error when parser can't identify file_obj [#106]
