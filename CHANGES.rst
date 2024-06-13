@@ -1,4 +1,10 @@
-0.4.0 (unreleased)
+0.5.0 (unreleased)
+------------------
+
+0.4.1 (unreleased)
+------------------
+
+0.4.0 (06-11-2024)
 ------------------
 
 * Updates to use jdaviz 3.10, which now requires python 3.10+. [#105]
