@@ -119,3 +119,14 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
     subset_state = subsets['Subset 1'][0]['subset_state']
 
     np.testing.assert_allclose([subset_state.lo, subset_state.hi], [1, 1.05])
+
+
+def test_data_label(helper, light_curve_like_kepler_quarter):
+    # add data without specifying data label:
+    helper.load_data(light_curve_like_kepler_quarter)
+    assert helper.app.data_collection[-1].label == 'Light curve [Q10]'
+
+    # specify label with a quarter, check that quarter isn't appended:
+    data_label = 'Cool target in Q10'
+    helper.load_data(light_curve_like_kepler_quarter, data_label=data_label)
+    assert helper.app.data_collection[-1].label == data_label

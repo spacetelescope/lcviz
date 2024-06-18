@@ -1,6 +1,8 @@
 0.5.0 (unreleased)
 ------------------
 
+* Prevent duplicate sub-intervals (quarter/sector/campaign) in data labels. [#120]
+
 0.4.1 (unreleased)
 ------------------
 
