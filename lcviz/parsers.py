@@ -37,28 +37,25 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
     else:
         raise NotImplementedError(f"could not parse light_curve with type {type(file_obj)}")
 
-    # make a data label:
-    if data_label is not None:
-        new_data_label = f'{data_label}'
-    else:
-        new_data_label = light_curve.meta.get('OBJECT', 'Light curve')
-
     # handle flux_origin default
     mission = light_curve.meta.get('MISSION', '').lower()
     flux_origin = light_curve.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
 
-    if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
-        new_data_label += '[TPF]'
-    elif mission in mission_sub_intervals:
-        # the sub-interval label is something like "Q9" for Kepler or
-        # "S9" for TESS. If it's already in the proposed data label, skip;
-        # otherwise, append it.
-        sub_interval_label = (
-            f'{mission_sub_intervals[mission]["prefix"]}'
-            f'{light_curve.meta.get(mission_sub_intervals[mission]["card"])}'
-        )
-        if sub_interval_label not in new_data_label:
-            new_data_label += f' [{sub_interval_label}]'
+    # make a data label:
+    if data_label is None:
+        data_label = light_curve.meta.get('OBJECT', 'Light curve')
+
+        if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
+            data_label += '[TPF]'
+        elif mission in mission_sub_intervals:
+            # the sub-interval label is something like "Q9" for Kepler or
+            # "S9" for TESS. If it's already in the proposed data label, skip;
+            # otherwise, append it.
+            sub_interval_label = (
+                f' [{mission_sub_intervals[mission]["prefix"]}'
+                f'{light_curve.meta.get(mission_sub_intervals[mission]["card"])}]'
+            )
+            data_label += sub_interval_label
 
     if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(light_curve, 'columns', [])):  # noqa
         # then make a copy of this column so it won't be lost when changing with the flux_column
@@ -69,7 +66,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         light_curve.meta['FLUX_ORIGIN'] = 'flux:orig'
 
     data = _data_with_reftime(app, light_curve)
-    app.add_data(data, new_data_label)
+    app.add_data(data, data_label)
 
     if isinstance(light_curve, lightkurve.targetpixelfile.TargetPixelFile):
         # ensure an image/cube/TPF viewer exists
@@ -80,12 +77,12 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
             found_viewer = False
             for viewer_id, viewer in app._viewer_store.items():
                 if isinstance(viewer, CubeView):
-                    app.add_data_to_viewer(viewer_id, new_data_label)
+                    app.add_data_to_viewer(viewer_id, data_label)
                     found_viewer = True
             if not found_viewer:
                 app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=app),
                                    vid='image', name='image')
-                app.add_data_to_viewer('image', new_data_label)
+                app.add_data_to_viewer('image', data_label)
 
         # set TPF viewer's stretch to custom defaults:
         plot_options_plugin = PlotOptions(app=app)
@@ -96,13 +93,13 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         if show_in_viewer:
             for viewer_id, viewer in app._viewer_store.items():
                 if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
-                    app.add_data_to_viewer(viewer_id, new_data_label)
+                    app.add_data_to_viewer(viewer_id, data_label)
 
             # add to any known phase viewers
             ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
             if ephem_plugin is not None:
                 for viewer in ephem_plugin._obj._get_phase_viewers():
-                    app.add_data_to_viewer(viewer.reference, new_data_label)
+                    app.add_data_to_viewer(viewer.reference, data_label)
 
 
 def _data_with_reftime(app, light_curve):

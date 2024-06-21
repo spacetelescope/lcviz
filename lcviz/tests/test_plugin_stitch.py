@@ -5,7 +5,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
     lcviz.load_data(lc1, 'lc1')
     lcviz.load_data(lc2, 'lc2')
-    lcviz.app.add_data_to_viewer('flux-vs-time', 'lc2 [Q10]')
+    lcviz.app.add_data_to_viewer('flux-vs-time', 'lc2')
     # lcviz.show()
 
     stitch = lcviz.plugins['Stitch']
@@ -21,7 +21,7 @@ def test_plugin_stitch(helper, light_curve_like_kepler_quarter):
     assert "Stitch" not in helper.plugins.keys()
 
     helper.load_data(light_curve_like_kepler_quarter.copy(), 'lc2')
-    helper.app.add_data_to_viewer('flux-vs-time', 'lc2 [Q10]')
+    helper.app.add_data_to_viewer('flux-vs-time', 'lc2')
     assert "Stitch" in helper.plugins.keys()
 
     stitch = helper.plugins['Stitch']

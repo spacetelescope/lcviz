@@ -126,7 +126,7 @@ def test_data_label(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     assert helper.app.data_collection[-1].label == 'Light curve [Q10]'
 
-    # specify label with a quarter, check that quarter isn't appended:
-    data_label = 'Cool target in Q10'
+    # specify label, check that quarter isn't appended:
+    data_label = 'Cool target'
     helper.load_data(light_curve_like_kepler_quarter, data_label=data_label)
     assert helper.app.data_collection[-1].label == data_label
