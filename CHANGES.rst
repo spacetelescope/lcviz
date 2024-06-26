@@ -6,6 +6,8 @@
 0.4.1 (unreleased)
 ------------------
 
+* Fixes CDIPS support by handling units stored as empty strings. [#122]
+
 0.4.0 (06-11-2024)
 ------------------
 
