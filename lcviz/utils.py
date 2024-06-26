@@ -281,7 +281,7 @@ class LightCurveHandler:
 
             if len(values) and isinstance(values[0], Time):
                 values = Time(values.base)
-            elif hasattr(component, 'units') and component.units != "None":
+            elif hasattr(component, 'units') and component.units not in ("None", ""):
                 values = u.Quantity(values, component.units)
 
             if component_id.label not in names:
