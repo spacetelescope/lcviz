@@ -282,7 +282,13 @@ class LightCurveHandler:
             if len(values) and isinstance(values[0], Time):
                 values = Time(values.base)
             elif hasattr(component, 'units') and component.units != "None":
-                values = u.Quantity(values, component.units)
+                try:
+                    values = u.Quantity(values, component.units)
+                except TypeError:
+                    if component.units != "":
+                        raise
+                    # values could have been an array of strings with units ""
+                    values = values
 
             if component_id.label not in names:
                 columns.append(values)
