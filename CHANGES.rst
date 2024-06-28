@@ -6,6 +6,8 @@
 0.4.1 (unreleased)
 ------------------
 
+* Fixes CDIPS support by handling columns filled with strings with empty units. [#122]
+
 0.4.0 (06-11-2024)
 ------------------
 
