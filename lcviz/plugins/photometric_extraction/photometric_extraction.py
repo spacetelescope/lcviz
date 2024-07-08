@@ -1,6 +1,7 @@
-from traitlets import Bool, observe
+from traitlets import Bool, Unicode, observe
 
 from jdaviz.core.registries import tray_registry
+from jdaviz.configs.cubeviz.plugins import SpectralExtraction
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, AddResultsMixin,
                                         skip_if_no_updates_since_last_active,
@@ -12,8 +13,7 @@ __all__ = ['PhotometricExtraction']
 
 
 @tray_registry('photometric-extraction', label="Photometric Extraction")
-class PhotometricExtraction(PluginTemplateMixin, DatasetSelectMixin,
-                            AddResultsMixin):
+class PhotometricExtraction(SpectralExtraction):
     """
     See the :ref:`Photometric Extraction Plugin Documentation <photometric-extraction>`
     for more details.
@@ -25,46 +25,36 @@ class PhotometricExtraction(PluginTemplateMixin, DatasetSelectMixin,
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
-      Dataset to bin.
+      Dataset to extract.
     * ``add_results`` (:class:`~jdaviz.core.template_mixin.AddResults`)
     * :meth:`extract`
     """
-    template_file = __file__, "photometric_extraction.vue"
-    uses_active_status = Bool(True).tag(sync=True)
-
-    show_live_preview = Bool(True).tag(sync=True)
-
-    apply_enabled = Bool(True).tag(sync=True)
+    resulting_product_name = Unicode("light curve").tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#photometric-extraction"
+        self.docs_description = "Extract light curve from target pixel file cube."  # noqa
+
 
         def is_tpf(data):
             return len(data.shape) == 3
-        self.dataset.add_filter(is_tpf)
-        self._set_relevant()
+        self.dataset.filters = [is_tpf]
+        self._set_relevant()  # move upstream?
 
     @property
     def user_api(self):
-        expose = ['show_live_preview', 'dataset',
-                  'add_results', 'extract']
+        expose = ['dataset', 'function', 'aperture',
+                  'background', 
+                  'add_results', 'extract',
+                  'aperture_method']
+
         return PluginUserApi(self, expose=expose)
 
     @observe('dataset_items')
     def _set_relevant(self, *args):
+        # NOTE: upstream will set disabled_msg to something similar, but mentioning
         if len(self.dataset_items) < 1:
             self.irrelevant_msg = 'Requires at least one TPF cube to be loaded'
         else:
             self.irrelevant_msg = ''
-
-    @property
-    def marks(self):
-        marks = {}
-        return marks
-
-    @with_spinner()
-    def extract(self, add_data=True):
-        raise NotImplementedError
-
-    def vue_apply(self, event={}):
-        self.extract(add_data=True)
