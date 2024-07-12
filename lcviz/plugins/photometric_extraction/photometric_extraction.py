@@ -1,4 +1,6 @@
-from traitlets import Bool, Unicode, observe
+from astropy import units as u
+from traitlets import Unicode, observe
+from lightkurve import LightCurve
 
 from jdaviz.core.registries import tray_registry
 from jdaviz.configs.cubeviz.plugins import SpectralExtraction
@@ -30,6 +32,7 @@ class PhotometricExtraction(SpectralExtraction):
     * :meth:`extract`
     """
     resulting_product_name = Unicode("light curve").tag(sync=True)
+    do_auto_extraction = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,3 +61,21 @@ class PhotometricExtraction(SpectralExtraction):
             self.irrelevant_msg = 'Requires at least one TPF cube to be loaded'
         else:
             self.irrelevant_msg = ''
+
+    @property
+    def slice_display_unit_name(self):
+        return 'time'
+
+    @property
+    def spatial_axes(self):
+        return (1, 2)
+
+    def _return_extracted(self, cube, wcs, collapsed_nddata):
+        lc = LightCurve(time=cube.get_object(LightCurve).time, flux=collapsed_nddata.data)
+        return lc
+
+    def _preview_x_from_extracted(self, extracted):
+        return extracted.time.value - self.dataset.selected_obj.meta.get('reference_time', 0.0 * u.d).value
+
+    def _preview_y_from_extracted(self, extracted):
+        return extracted.flux.value
