@@ -8,6 +8,8 @@
 
 * Fixes CDIPS support by handling columns filled with strings with empty units. [#122]
 
+* Removes filepath from FILENAME entry in metadata. [#124]
+
 0.4.0 (06-11-2024)
 ------------------
 
