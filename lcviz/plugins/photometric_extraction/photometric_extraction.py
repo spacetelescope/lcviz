@@ -1,5 +1,5 @@
 from astropy import units as u
-from traitlets import Unicode, observe
+from traitlets import Bool, Unicode, observe
 from lightkurve import LightCurve
 
 from jdaviz.core.registries import tray_registry
@@ -29,6 +29,8 @@ class PhotometricExtraction(SpectralExtraction):
     """
     resulting_product_name = Unicode("light curve").tag(sync=True)
     do_auto_extraction = False
+    wavelength_dependent_available = Bool(False).tag(sync=True)
+    bg_export_available = Bool(False).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
