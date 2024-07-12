@@ -4,10 +4,6 @@ from lightkurve import LightCurve
 
 from jdaviz.core.registries import tray_registry
 from jdaviz.configs.cubeviz.plugins import SpectralExtraction
-from jdaviz.core.template_mixin import (PluginTemplateMixin,
-                                        DatasetSelectMixin, AddResultsMixin,
-                                        skip_if_no_updates_since_last_active,
-                                        with_spinner, with_temp_disable)
 from jdaviz.core.user_api import PluginUserApi
 
 
@@ -36,9 +32,8 @@ class PhotometricExtraction(SpectralExtraction):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#photometric-extraction"
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#photometric-extraction"  # noqa
         self.docs_description = "Extract light curve from target pixel file cube."  # noqa
-
 
         def is_tpf(data):
             return len(data.shape) == 3
@@ -48,7 +43,7 @@ class PhotometricExtraction(SpectralExtraction):
     @property
     def user_api(self):
         expose = ['dataset', 'function', 'aperture',
-                  'background', 
+                  'background',
                   'add_results', 'extract',
                   'aperture_method']
 
@@ -75,7 +70,8 @@ class PhotometricExtraction(SpectralExtraction):
         return lc
 
     def _preview_x_from_extracted(self, extracted):
-        return extracted.time.value - self.dataset.selected_obj.meta.get('reference_time', 0.0 * u.d).value
+        return extracted.time.value - self.dataset.selected_obj.meta.get('reference_time',
+                                                                         0.0 * u.d).value
 
     def _preview_y_from_extracted(self, extracted):
         return extracted.flux.value
