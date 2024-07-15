@@ -57,6 +57,9 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
             light_curve['flux:orig_err'] = light_curve['flux_err']
         light_curve.meta['FLUX_ORIGIN'] = 'flux:orig'
 
+    if 'FILENAME' in light_curve.meta:
+        light_curve.meta['FILENAME'] = os.path.basename(light_curve.meta['FILENAME'])
+
     data = _data_with_reftime(app, light_curve)
     app.add_data(data, new_data_label)
 
