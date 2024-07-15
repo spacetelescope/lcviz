@@ -67,7 +67,6 @@
           label="Period derivative"
           v-model.number="dpdt"
           :step="dpdt_step"
-          type="number"
           hint="The first time-derivative of the period of the ephemeris."
           persistent-hint
           :rules="[() => dpdt!=='' || 'This field is required']"
@@ -81,7 +80,6 @@
           label="Wrapping phase"
           v-model.number="wrap_at"
           :step="0.1"
-          type="number"
           :hint="'Phased data will encompass the range '+wrap_at_range+'.'"
           persistent-hint
           :rules="[() => wrap_at!=='' || 'This field is required']"
@@ -110,8 +108,6 @@
         ></v-select>
       </v-row>
 
-
-
       <div style="display: grid"> <!-- overlay container -->
         <div style="grid-area: 1/1">
 
@@ -120,7 +116,7 @@
           </v-row>
           <v-row v-else>
             <j-tooltip :tooltipcontent="'adopt period into '+component_selected+' ephemeris.'">
-              <v-btn text color='primary '@click='adopt_period_at_max_power' style="padding: 0px">
+              <v-btn text color='primary' @click='adopt_period_at_max_power' style="padding: 0px">
                 period: {{period_at_max_power}}
               </v-btn>
             </j-tooltip>
@@ -144,7 +140,71 @@
         </div>
       </div>
 
+      <j-plugin-section-header>Query NASA Exoplanet Archive</j-plugin-section-header>
+      <v-row>
+        <v-text-field
+          ref="query_name"
+          type="string"
+          label="Object name"
+          v-model.number="query_name"
+          hint="Object name."
+          persistent-hint
+        ></v-text-field>
+      </v-row>
+      <v-row>
+        <v-text-field
+          ref="query_ra"
+          type="number"
+          label="RA (degrees)"
+          v-model.number="query_ra"
+          :step="ra_dec_step"
+          hint="Object right ascension."
+          persistent-hint
+        ></v-text-field>
+      </v-row>
+      <v-row>
+        <v-text-field
+          ref="query_dec"
+          type="number"
+          label="Dec (degrees)"
+          v-model.number="query_dec"
+          :step="ra_dec_step"
+          hint="Object declination."
+          persistent-hint
+        ></v-text-field>
+      </v-row>
 
+      <v-row justify="end">
+        <j-tooltip tooltipcontent="Query for this object.">
+          <plugin-action-button
+            :spinner="query_spinner"
+            :results_isolated_to_plugin="false"
+            @click="query_for_ephemeris">
+              Query
+          </plugin-action-button>
+        </j-tooltip>
+      </v-row>
+      <div v-if="query_result_names.length > 0">
+        <v-row>
+          <v-select
+            :menu-props="{ left: true }"
+            attach
+            :items="query_result_names"
+            v-model="query_result_selected"
+            label="Ephemeris from query result"
+            :hint="'Ephemeris parameters from ' + query_result_names.length + ' available query result(s)'"
+            persistent-hint
+          ></v-select>
+        </v-row>
+
+        <v-row v-if="query_result_selected !== ''">
+          <j-tooltip :tooltipcontent="'Adopt period into '+component_selected+' ephemeris.'">
+            <v-btn text color='primary' @click='adopt_from_catalog' style="padding: 0px">
+              period: {{period_from_catalog}}, t0: {{t0_from_catalog}}
+            </v-btn>
+          </j-tooltip>
+        </v-row>
+      </div>
     </div>
 
   </j-tray-plugin>

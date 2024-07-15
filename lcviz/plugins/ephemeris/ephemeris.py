@@ -1,5 +1,9 @@
 import numpy as np
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
+import astropy.units as u
+from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
+
 from traitlets import Bool, Float, List, Unicode, observe
 
 from glue.core.link_helpers import LinkSame
@@ -23,6 +27,8 @@ _default_t0 = 0.0
 _default_period = 1.0
 _default_dpdt = 0.0
 _default_wrap_at = 1.0
+
+_default_query_radius = 2  # [arcsec]
 
 
 @tray_registry('ephemeris', label="Ephemeris")
@@ -87,6 +93,18 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     period_at_max_power = Float().tag(sync=True)
 
+    # QUERIES
+    query_name = Unicode().tag(sync=True)
+    query_ra = FloatHandleEmpty().tag(sync=True)
+    query_dec = FloatHandleEmpty().tag(sync=True)
+    query_radius = FloatHandleEmpty(_default_query_radius).tag(sync=True)
+    query_result_names = List().tag(sync=True)
+    query_result_selected = Unicode().tag(sync=True)
+    ra_dec_step = Float(0.01).tag(sync=True)
+    period_from_catalog = FloatHandleEmpty().tag(sync=True)
+    t0_from_catalog = FloatHandleEmpty().tag(sync=True)
+    query_spinner = Bool().tag(sync=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -94,6 +112,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._ignore_ephem_change = False
         self._ephemerides = {}
         self._prev_wrap_at = _default_wrap_at
+        self._nasa_exoplanet_archive = None
 
         self.dataset.add_filter(is_not_tpf)
 
@@ -578,3 +597,66 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         phlc.sort("time")
 
         return phlc
+
+    @property
+    def nasa_exoplanet_archive(self):
+        if self._nasa_exoplanet_archive is None:
+            self._nasa_exoplanet_archive = NasaExoplanetArchive()
+
+        return self._nasa_exoplanet_archive
+
+    @observe('dataset_selected')
+    def _query_params_from_metadata(self, *args):
+        self.query_name = self.dataset.selected_obj.meta.get('OBJECT', '')
+        self.query_ra = self.dataset.selected_obj.meta.get('RA')
+        self.query_dec = self.dataset.selected_obj.meta.get('DEC')
+
+    def _query_for_ephemeris(self, *args):
+        if self.query_name:
+            self._query_result = self.nasa_exoplanet_archive.query_object(
+                self.query_name, table='pscomppars'
+            )
+
+        elif None not in (self.query_ra, self.query_dec):
+            coord = SkyCoord(ra=self.query_ra, dec=self.query_dec, unit=u.deg)
+            self._query_result = self.nasa_exoplanet_archive.query_region(
+                coord, self.query_radius * u.arcsec,
+                table='pscomppars'
+            )
+
+        else:
+            # no metadata found for RA, Dec, or object name
+            return None
+
+        if len(self._query_result):
+            self._query_result.add_index('pl_name')
+            self.query_result_names = sorted(list(self._query_result['pl_name']))
+
+    @observe('query_result_selected')
+    def _select_query_result(self, *args, selected_idx=None):
+        selected_query_result = self._query_result.loc[self.query_result_selected]
+        self.query_ra = selected_query_result['ra'].base.value
+        self.query_dec = selected_query_result['dec'].base.value
+        self.period_from_catalog = selected_query_result['pl_orbper'].base.to_value(u.day)
+        ref_time = self.app.data_collection[0].coords.reference_time.jd
+        self.t0_from_catalog = (
+            selected_query_result['pl_tranmid'].base.to_value(u.day) - ref_time
+        ) % self.period_from_catalog
+
+    def vue_query_for_ephemeris(self, *args):
+        self.query_spinner = True
+        self._query_for_ephemeris()
+        self.query_spinner = False
+
+    def adopt_from_catalog(self, *args):
+        if not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
+            self.period = self.period_from_catalog
+            self.t0 = self.t0_from_catalog
+
+            # reset the phase axis wrap to feature the primary transit:
+            self.wrap_at = 0.5
+            viewer = self._get_phase_viewers()[0]
+            viewer.reset_limits()
+
+    def vue_adopt_from_catalog(self, *args):
+        self.adopt_from_catalog()
