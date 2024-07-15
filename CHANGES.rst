@@ -4,6 +4,8 @@
 0.4.1 (unreleased)
 ------------------
 
+* Max pin numpy to to exclude 2.0 until full compatibility can be supported. [#126]
+
 * Fixes CDIPS support by handling columns filled with strings with empty units. [#122]
 
 0.4.0 (06-11-2024)
