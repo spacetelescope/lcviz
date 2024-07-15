@@ -3,8 +3,10 @@
 
 * Prevent duplicate sub-intervals (quarter/sector/campaign) in data labels. [#120]
 
-0.4.1 (unreleased)
+0.4.1 (07.15.2024)
 ------------------
+
+* Max pin numpy to to exclude 2.0 until full compatibility can be supported. [#126]
 
 * Fixes CDIPS support by handling columns filled with strings with empty units. [#122]
 
