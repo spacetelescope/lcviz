@@ -12,7 +12,8 @@ from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin, DatasetSelectMixin,
-                                        SelectPluginComponent, EditableSelectPluginComponent)
+                                        SelectPluginComponent, EditableSelectPluginComponent,
+                                        with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
 from lightkurve import periodogram, FoldedLightCurve
@@ -98,7 +99,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     query_ra = FloatHandleEmpty().tag(sync=True)
     query_dec = FloatHandleEmpty().tag(sync=True)
     query_radius = FloatHandleEmpty(_default_query_radius).tag(sync=True)
-    query_result_names = List().tag(sync=True)
+    query_result_items = List().tag(sync=True)
     query_result_selected = Unicode().tag(sync=True)
     ra_dec_step = Float(0.01).tag(sync=True)
     period_from_catalog = FloatHandleEmpty().tag(sync=True)
@@ -144,12 +145,16 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @property
     def user_api(self):
-        expose = ['component', 'period', 'dpdt', 't0', 'wrap_at',
-                  'ephemeris', 'ephemerides',
-                  'update_ephemeris', 'create_phase_viewer',
-                  'add_component', 'remove_component', 'rename_component',
-                  'times_to_phases', 'phases_to_times', 'get_data',
-                  'dataset', 'method', 'period_at_max_power', 'adopt_period_at_max_power']
+        expose = [
+            'component', 'period', 'dpdt', 't0', 'wrap_at',
+            'ephemeris', 'ephemerides',
+            'update_ephemeris', 'create_phase_viewer',
+            'add_component', 'remove_component', 'rename_component',
+            'times_to_phases', 'phases_to_times', 'get_data',
+            'dataset', 'method', 'period_at_max_power',
+            'adopt_period_at_max_power', 'query_for_ephemeris',
+            'query_result'
+        ]
         return PluginUserApi(self, expose=expose)
 
     def _phase_comp_lbl(self, component=None):
@@ -611,42 +616,61 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.query_ra = self.dataset.selected_obj.meta.get('RA')
         self.query_dec = self.dataset.selected_obj.meta.get('DEC')
 
-    def _query_for_ephemeris(self, *args):
+    def query_for_ephemeris(self):
+        query_result = None
+
         if self.query_name:
-            self._query_result = self.nasa_exoplanet_archive.query_object(
+            # first query by object name:
+            query_result = self.nasa_exoplanet_archive.query_object(
                 self.query_name, table='pscomppars'
             )
 
-        elif None not in (self.query_ra, self.query_dec):
+        if (
+            (query_result is None or len(query_result) == 0) and
+            (None not in (self.query_ra, self.query_dec))
+        ):
+            # next query by coordinates:
             coord = SkyCoord(ra=self.query_ra, dec=self.query_dec, unit=u.deg)
-            self._query_result = self.nasa_exoplanet_archive.query_region(
+            query_result = self.nasa_exoplanet_archive.query_region(
                 coord, self.query_radius * u.arcsec,
                 table='pscomppars'
             )
 
-        else:
+        if query_result is None or len(query_result) == 0:
             # no metadata found for RA, Dec, or object name
             return None
 
-        if len(self._query_result):
-            self._query_result.add_index('pl_name')
-            self.query_result_names = sorted(list(self._query_result['pl_name']))
+        else:
+            self.query_result = query_result
+            self.query_result.add_index('pl_name')
+            self.query_result_items = [
+                {
+                    'name': name,
+                    'period': period,
+                    'epoch': epoch if not np.isnan(epoch) else 0
+                }
+                for name, period, epoch in zip(
+                    sorted(list(self.query_result['pl_name'])),
+                    np.array(self.query_result['pl_orbper'].to_value(u.day)),
+                    np.array(self.query_result['pl_tranmid'].to_value(u.day))
+                )
+            ]
 
     @observe('query_result_selected')
-    def _select_query_result(self, *args, selected_idx=None):
-        selected_query_result = self._query_result.loc[self.query_result_selected]
-        self.query_ra = selected_query_result['ra'].base.value
-        self.query_dec = selected_query_result['dec'].base.value
+    def _select_query_result(self, *args):
+        selected_query_result = self.query_result.loc[self.query_result_selected]
         self.period_from_catalog = selected_query_result['pl_orbper'].base.to_value(u.day)
         ref_time = self.app.data_collection[0].coords.reference_time.jd
-        self.t0_from_catalog = (
-            selected_query_result['pl_tranmid'].base.to_value(u.day) - ref_time
-        ) % self.period_from_catalog
+        if np.isnan(selected_query_result['pl_tranmid'].base.to_value(u.day)):
+            self.t0_from_catalog = 0
+        else:
+            self.t0_from_catalog = (
+                selected_query_result['pl_tranmid'].base.to_value(u.day) - ref_time
+            ) % self.period_from_catalog
 
+    @with_spinner('query_spinner')
     def vue_query_for_ephemeris(self, *args):
-        self.query_spinner = True
-        self._query_for_ephemeris()
-        self.query_spinner = False
+        self.query_for_ephemeris()
 
     def adopt_from_catalog(self, *args):
         if not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
@@ -659,4 +683,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             viewer.reset_limits()
 
     def vue_adopt_from_catalog(self, *args):
+        self.adopt_from_catalog()
+
+    def vue_adopt_from_catalog_in_new_viewer(self, *args):
+        self.add_component(self.query_result_selected.replace(' ', ''))
+        self.create_phase_viewer()
         self.adopt_from_catalog()

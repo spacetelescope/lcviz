@@ -142,6 +142,17 @@
 
       <j-plugin-section-header>Query NASA Exoplanet Archive</j-plugin-section-header>
       <v-row>
+        <span class="v-messages v-messages__message text--secondary">
+          Query the
+          <a href="https://exoplanetarchive.ipac.caltech.edu/docs/pscp_about.html" target="_blank">
+          Planetary Systems Composite Data</a> table from
+          <a href="https://exoplanetarchive.ipac.caltech.edu/" target="_blank">
+          NASA Exoplanet Archive</a>. Queries first by name, then falls back on
+          coordinates if the object name is not recognized.
+        </span>
+      </v-row>
+
+      <v-row>
         <v-text-field
           ref="query_name"
           type="string"
@@ -173,6 +184,17 @@
           persistent-hint
         ></v-text-field>
       </v-row>
+      <v-row>
+        <v-text-field
+          ref="query_radius"
+          type="number"
+          label="Radius (arcseconds)"
+          v-model.number="query_radius"
+          :step="1"
+          hint="Radius around the query coordinate."
+          persistent-hint
+        ></v-text-field>
+      </v-row>
 
       <v-row justify="end">
         <j-tooltip tooltipcontent="Query for this object.">
@@ -184,24 +206,56 @@
           </plugin-action-button>
         </j-tooltip>
       </v-row>
-      <div v-if="query_result_names.length > 0">
+      <div v-if="query_result_items.length > 0">
         <v-row>
           <v-select
             :menu-props="{ left: true }"
             attach
-            :items="query_result_names"
+            :items="query_result_items"
+            :item-value="item => item.name"
             v-model="query_result_selected"
-            label="Ephemeris from query result"
-            :hint="'Ephemeris parameters from ' + query_result_names.length + ' available query result(s)'"
+            label="Ephemerides available"
+            :hint="'Ephemeris parameters from ' + query_result_items.length + ' available query result(s)'"
             persistent-hint
-          ></v-select>
+            dense
+          >
+
+          <template v-slot:selection="{ item }">
+            <span>
+              {{ item.name }}
+            </span>
+          </template>
+          <template v-slot:item="{ item }">
+            <span style="margin-top: 8px; margin-bottom: 0px">
+                {{ item.name }}
+              <v-row style="line-height: 1.0; margin: 0px; opacity: 0.85; font-size: 8pt">
+                Period: {{ item.period }} d, Epoch: {{ item.epoch }} d
+              </v-row>
+            </span>
+          </template>
+
+          </v-select>
         </v-row>
 
         <v-row v-if="query_result_selected !== ''">
-          <j-tooltip :tooltipcontent="'Adopt period into '+component_selected+' ephemeris.'">
-            <v-btn text color='primary' @click='adopt_from_catalog' style="padding: 0px">
-              period: {{period_from_catalog}}, t0: {{t0_from_catalog}}
-            </v-btn>
+          <span class="v-messages v-messages__message text--secondary">
+            Period: {{period_from_catalog}} d, Epoch: {{t0_from_catalog}} d
+          </span>
+          <j-tooltip :tooltipcontent="'Adopt period and epoch into '+component_selected+' ephemeris.'">
+            <v-row justify="end">
+            <v-col>
+              <div v-if="phase_viewer_exists">
+                <plugin-action-button
+                  @click="adopt_from_catalog">
+                    Adopt in this viewer
+                </plugin-action-button>
+              </div>
+              <plugin-action-button
+                @click="adopt_from_catalog_in_new_viewer">
+                  Adopt in a new viewer
+              </plugin-action-button>
+            </v-col>
+            </v-row>
           </j-tooltip>
         </v-row>
       </div>
