@@ -137,7 +137,6 @@ class LCviz(ConfigHelper):
 
         # set the link to read the docs
         self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
-        self.app.vdocs = 'v0.4.1'  # TODO: testing only
         self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
         for plugin in self.plugins.values():
             # NOTE that plugins that need to override upstream docs_link should do so in
