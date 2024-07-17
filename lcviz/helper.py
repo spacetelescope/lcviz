@@ -140,8 +140,9 @@ class LCviz(ConfigHelper):
         self.app.vdocs = 'v0.4.1'  # TODO: testing only
         self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
         for plugin in self.plugins.values():
-            # NOTE that plugins that need to override upstream docs_link should do so in an @observe('vdocs')
-            # rather than the init, since plugin instances have already been initialized
+            # NOTE that plugins that need to override upstream docs_link should do so in
+            # an @observe('vdocs') rather than the init, since plugin instances have
+            # already been initialized
             plugin._obj.vdocs = self.app.vdocs
 
     def load_data(self, data, data_label=None):

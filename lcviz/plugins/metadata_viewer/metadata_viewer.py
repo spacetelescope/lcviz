@@ -38,4 +38,4 @@ class MetadataViewer(MetadataViewer):
 
     @observe('vdocs')
     def _update_docs_link(self, *args):
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#metadata-viewer"
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#metadata-viewer"  # noqa
