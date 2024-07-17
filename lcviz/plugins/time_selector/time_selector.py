@@ -1,3 +1,5 @@
+from traitlets import observe
+
 from jdaviz.configs.cubeviz.plugins import Slice
 from jdaviz.core.registries import tray_registry
 
@@ -37,7 +39,6 @@ class TimeSelector(Slice):
 
         """
         super().__init__(*args, **kwargs)
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#time-selector"
         self.docs_description = "Select time to sync across all viewers (as an indicator in all time/phase viewers or to select the active slice in any image/cube viewers).  The slice can also be changed interactively in any time viewer by activating the slice tool."  # noqa
         self.value_label = 'Time'
         self.value_unit = 'd'
@@ -45,6 +46,10 @@ class TimeSelector(Slice):
 
         self.session.hub.subscribe(self, EphemerisChangedMessage,
                                    handler=self._on_ephemeris_changed)
+
+    @observe('vdocs')
+    def _update_docs_link(self, *args):
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#time-selector"
 
     @property
     def slice_display_unit_name(self):
