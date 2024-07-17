@@ -1,5 +1,6 @@
 import numpy as np
 
+from traitlets import observe
 from jdaviz.configs.default.plugins import PlotOptions
 from jdaviz.core.registries import tray_registry
 
@@ -31,6 +32,9 @@ class PlotOptions(PlotOptions):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    @observe('vdocs')
+    def _update_docs_link(self, *args):
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#plot-options"
 
     def _default_tpf_stretch(

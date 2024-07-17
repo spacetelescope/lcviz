@@ -1,4 +1,5 @@
 from astropy.io.fits.card import Undefined
+from traitlets import observe
 
 from jdaviz.configs.default.plugins import MetadataViewer
 from jdaviz.core.registries import tray_registry
@@ -34,4 +35,7 @@ class MetadataViewer(MetadataViewer):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    @observe('vdocs')
+    def _update_docs_link(self, *args):
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#metadata-viewer"  # noqa

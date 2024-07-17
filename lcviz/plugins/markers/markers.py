@@ -1,4 +1,5 @@
 import numpy as np
+from traitlets import observe
 
 from jdaviz.configs.default.plugins import Markers
 from jdaviz.core.registries import tray_registry
@@ -32,6 +33,9 @@ class Markers(Markers):
         kwargs['headers'] = ['time', 'time:unit', 'phase', 'ephemeris',
                              'pixel', 'value', 'value:unit', 'viewer']
         super().__init__(*args, **kwargs)
+
+    @observe('vdocs')
+    def _update_docs_link(self, *args):
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#markers"
 
     @property
