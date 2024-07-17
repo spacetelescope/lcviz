@@ -9,6 +9,8 @@ from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.units import unit_converter
 from jdaviz.core.helpers import ConfigHelper
+
+from lcviz import __version__
 from lcviz.viewers import TimeScatterView
 
 __all__ = ['LCviz']
@@ -134,7 +136,13 @@ class LCviz(ConfigHelper):
         self.app._add_style((__file__, 'lcviz_style.vue'))
 
         # set the link to read the docs
-        self.app.docs_link = "https://lcviz.readthedocs.io"
+        self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
+        self.app.vdocs = 'v0.4.1'  # TODO: testing only
+        self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
+        for plugin in self.plugins.values():
+            # NOTE that plugins that need to override upstream docs_link should do so in an @observe('vdocs')
+            # rather than the init, since plugin instances have already been initialized
+            plugin._obj.vdocs = self.app.vdocs
 
     def load_data(self, data, data_label=None):
         """
