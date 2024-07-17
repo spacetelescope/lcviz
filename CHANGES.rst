@@ -1,3 +1,8 @@
+0.4.2 (unreleased)
+------------------
+
+* Fix all docs links to point to correct version of read the docs. [#128]
+
 0.4.1 (07.15.2024)
 ------------------
 
