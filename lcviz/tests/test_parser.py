@@ -124,7 +124,8 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
 def test_data_label(helper, light_curve_like_kepler_quarter):
     # add data without specifying data label:
     helper.load_data(light_curve_like_kepler_quarter)
-    assert helper.app.data_collection[-1].label == 'Light curve [Q10]'
+    object_name = helper.app.data_collection[-1].meta['OBJECT']
+    assert helper.app.data_collection[-1].label == f'{object_name} [Q10]'
 
     # specify label, check that quarter isn't appended:
     data_label = 'Cool target'

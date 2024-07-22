@@ -39,6 +39,7 @@ def light_curve_like_kepler_quarter(seed=42):
     lc['flux_alt_err'] = flux_err
     lc.meta['MISSION'] = 'KEPLER'
     lc.meta['QUARTER'] = 10
+    lc.meta['OBJECT'] = 'HAT-P-11'
 
     return lc
 

@@ -15,6 +15,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin, DatasetSelectMixin,
                                         SelectPluginComponent, EditableSelectPluginComponent,
                                         with_spinner)
 from jdaviz.core.user_api import PluginUserApi
+from jdaviz.core.events import SnackbarMessage
 
 from lightkurve import periodogram, FoldedLightCurve
 
@@ -137,6 +138,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                                             selected='method_selected',
                                             manual_options=['Lomb-Scargle', 'Box Least Squares'])
 
+        self.query_result = SelectPluginComponent(self,
+                                                  items='query_result_items',
+                                                  selected='query_result_selected')
+
         # TODO: could optimize by only updating for the new data entry only
         # (would require some refactoring and probably wouldn't have significant gains)
         self.hub.subscribe(self, DataCollectionAddMessage, handler=self._update_all_phase_arrays)
@@ -153,7 +158,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             'times_to_phases', 'phases_to_times', 'get_data',
             'dataset', 'method', 'period_at_max_power',
             'adopt_period_at_max_power', 'query_for_ephemeris',
-            'query_result'
+            'query_result', 'adopt_from_catalog', 'adopt_from_catalog_in_new_viewer'
         ]
         return PluginUserApi(self, expose=expose)
 
@@ -641,24 +646,25 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             return None
 
         else:
-            self.query_result = query_result
-            self.query_result.add_index('pl_name')
+            query_result.sort('pl_name')
+            self.astroquery_result = query_result
+            self.astroquery_result.add_index('pl_name')
             self.query_result_items = [
                 {
-                    'name': name,
+                    'label': name,  # required key for SelectPluginComponent
                     'period': period,
                     'epoch': epoch if not np.isnan(epoch) else 0
                 }
                 for name, period, epoch in zip(
-                    sorted(list(self.query_result['pl_name'])),
-                    np.array(self.query_result['pl_orbper'].to_value(u.day)),
-                    np.array(self.query_result['pl_tranmid'].to_value(u.day))
+                    list(self.astroquery_result['pl_name']),
+                    np.array(self.astroquery_result['pl_orbper'].to_value(u.day)),
+                    np.array(self.astroquery_result['pl_tranmid'].to_value(u.day))
                 )
             ]
 
     @observe('query_result_selected')
     def _select_query_result(self, *args):
-        selected_query_result = self.query_result.loc[self.query_result_selected]
+        selected_query_result = self.astroquery_result.loc[self.query_result_selected]
         self.period_from_catalog = selected_query_result['pl_orbper'].base.to_value(u.day)
         ref_time = self.app.data_collection[0].coords.reference_time.jd
         if np.isnan(selected_query_result['pl_tranmid'].base.to_value(u.day)):
@@ -673,19 +679,38 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.query_for_ephemeris()
 
     def adopt_from_catalog(self, *args):
-        if not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
-            self.period = self.period_from_catalog
-            self.t0 = self.t0_from_catalog
+        if len(self._get_phase_viewers()):
+            # if a phase viewer is available, adopt the ephemeris in the phase viewer:
+            if not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
+                self.period = self.period_from_catalog
+                self.t0 = self.t0_from_catalog
 
-            # reset the phase axis wrap to feature the primary transit:
-            self.wrap_at = 0.5
-            viewer = self._get_phase_viewers()[0]
-            viewer.reset_limits()
+                # reset the phase axis wrap to feature the primary transit:
+                self.wrap_at = 0.5
+                viewer = self._get_phase_viewers()[0]
+                viewer.reset_limits()
+        else:
+            # otherwise, adopt the ephemeris in a new phase viewer:
+            self.adopt_from_catalog_in_new_viewer()
 
     def vue_adopt_from_catalog(self, *args):
         self.adopt_from_catalog()
 
+    def adopt_from_catalog_in_new_viewer(self, *args):
+        new_component_label = self.query_result_selected.replace(' ', '')
+        if len(self._get_phase_viewers(new_component_label)):
+            # warn the user that an ephemeris component already exists with this label,
+            # a second won't be added:
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"Ephemeris component {new_component_label} already exists, skipping",
+                    sender=self, color="warning"
+                )
+            )
+        else:
+            self.add_component(new_component_label)
+            self.create_phase_viewer()
+            self.adopt_from_catalog()
+
     def vue_adopt_from_catalog_in_new_viewer(self, *args):
-        self.add_component(self.query_result_selected.replace(' ', ''))
-        self.create_phase_viewer()
-        self.adopt_from_catalog()
+        self.adopt_from_catalog_in_new_viewer()

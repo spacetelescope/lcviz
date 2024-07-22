@@ -212,7 +212,7 @@
             :menu-props="{ left: true }"
             attach
             :items="query_result_items"
-            :item-value="item => item.name"
+            :item-value="item => item.label"
             v-model="query_result_selected"
             label="Ephemerides available"
             :hint="'Ephemeris parameters from ' + query_result_items.length + ' available query result(s)'"
@@ -222,12 +222,12 @@
 
           <template v-slot:selection="{ item }">
             <span>
-              {{ item.name }}
+              {{ item.label }}
             </span>
           </template>
           <template v-slot:item="{ item }">
             <span style="margin-top: 8px; margin-bottom: 0px">
-                {{ item.name }}
+                {{ item.label }}
               <v-row style="line-height: 1.0; margin: 0px; opacity: 0.85; font-size: 8pt">
                 Period: {{ item.period }} d, Epoch: {{ item.epoch }} d
               </v-row>
