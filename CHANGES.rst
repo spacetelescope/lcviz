@@ -1,4 +1,8 @@
-0.4.2 (unreleased)
+0.4.3 (unreleased)
+------------------
+
+
+0.4.2 (07.23.2024)
 ------------------
 
 * Fix all docs links to point to correct version of read the docs. [#128]
