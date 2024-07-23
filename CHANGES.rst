@@ -8,6 +8,8 @@
 
 * Fix all docs links to point to correct version of read the docs. [#128]
 
+* Update jdaviz requirement to 3.10.3 to include upstream bug fixes. [#130]
+
 0.4.1 (07.15.2024)
 ------------------
 
