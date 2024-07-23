@@ -245,7 +245,8 @@
             <v-row justify="end">
             <v-col>
               <plugin-action-button
-                @click="adopt_from_catalog_in_new_viewer">
+                @click="adopt_from_catalog_in_new_viewer"
+                :disabled="component_items.map(item => item.label).includes(query_result_selected.replace(/\s/g, ''))">
                   Create new component
               </plugin-action-button>
             </v-col>

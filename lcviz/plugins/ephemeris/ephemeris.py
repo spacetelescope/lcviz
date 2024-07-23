@@ -695,9 +695,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             # otherwise, adopt the ephemeris in a new phase viewer:
             self.adopt_from_catalog_in_new_viewer()
 
-    def vue_adopt_from_catalog(self, *args):
-        self.adopt_from_catalog()
-
     def adopt_from_catalog_in_new_viewer(self, *args):
         new_component_label = self.query_result_selected.replace(' ', '')
         if new_component_label in self.component.choices:
