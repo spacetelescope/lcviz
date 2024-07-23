@@ -700,12 +700,12 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     def adopt_from_catalog_in_new_viewer(self, *args):
         new_component_label = self.query_result_selected.replace(' ', '')
-        if len(self._get_phase_viewers(new_component_label)):
+        if new_component_label in self.component.choices:
             # warn the user that an ephemeris component already exists with this label,
             # a second won't be added:
             self.hub.broadcast(
                 SnackbarMessage(
-                    f"Ephemeris component {new_component_label} already exists, skipping",
+                    f"Ephemeris component {new_component_label} already exists, skipping.",
                     sender=self, color="warning"
                 )
             )

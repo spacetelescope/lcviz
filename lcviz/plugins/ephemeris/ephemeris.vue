@@ -244,15 +244,9 @@
           <j-tooltip :tooltipcontent="'Adopt period and epoch into '+component_selected+' ephemeris.'">
             <v-row justify="end">
             <v-col>
-              <div v-if="phase_viewer_exists">
-                <plugin-action-button
-                  @click="adopt_from_catalog">
-                    Adopt in this viewer
-                </plugin-action-button>
-              </div>
               <plugin-action-button
                 @click="adopt_from_catalog_in_new_viewer">
-                  Adopt in a new viewer
+                  Create new component
               </plugin-action-button>
             </v-col>
             </v-row>
