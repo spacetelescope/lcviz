@@ -627,7 +627,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if self.query_name:
             # first query by object name:
             query_result = self.nasa_exoplanet_archive.query_object(
-                self.query_name, table='pscomppars'
+                object_name=self.query_name,
+                table='pscomppars'
             )
 
         if (
@@ -637,8 +638,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             # next query by coordinates:
             coord = SkyCoord(ra=self.query_ra, dec=self.query_dec, unit=u.deg)
             query_result = self.nasa_exoplanet_archive.query_region(
-                coord, self.query_radius * u.arcsec,
-                table='pscomppars'
+                table='pscomppars',
+                coordinates=coord,
+                radius=self.query_radius * u.arcsec,
             )
 
         if query_result is None or len(query_result) == 0:

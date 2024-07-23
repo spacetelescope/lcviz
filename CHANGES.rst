@@ -3,6 +3,8 @@
 
 * Prevent duplicate sub-intervals (quarter/sector/campaign) in data labels. [#120]
 
+* Add feature to query the NASA Exoplanet Archive for exoplanet ephemerides. [#127]
+
 0.4.3 (unreleased)
 ------------------
 
