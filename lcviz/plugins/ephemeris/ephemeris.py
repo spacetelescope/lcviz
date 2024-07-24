@@ -158,7 +158,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             'times_to_phases', 'phases_to_times', 'get_data',
             'dataset', 'method', 'period_at_max_power',
             'adopt_period_at_max_power', 'query_for_ephemeris',
-            'query_result', 'adopt_from_catalog', 'adopt_from_catalog_in_new_viewer'
+            'query_result', 'adopt_from_catalog', 'create_ephemeris_from_query'
         ]
         return PluginUserApi(self, expose=expose)
 
@@ -680,36 +680,38 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def vue_query_for_ephemeris(self, *args):
         self.query_for_ephemeris()
 
-    def adopt_from_catalog(self, *args):
-        if len(self._get_phase_viewers()):
-            # if a phase viewer is available, adopt the ephemeris in the phase viewer:
-            if not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
-                self.period = self.period_from_catalog
-                self.t0 = self.t0_from_catalog
-
-                # reset the phase axis wrap to feature the primary transit:
-                self.wrap_at = 0.5
-                viewer = self._get_phase_viewers()[0]
-                viewer.reset_limits()
-        else:
-            # otherwise, adopt the ephemeris in a new phase viewer:
-            self.adopt_from_catalog_in_new_viewer()
-
-    def adopt_from_catalog_in_new_viewer(self, *args):
+    def create_ephemeris_from_query(self, *args):
         new_component_label = self.query_result_selected.replace(' ', '')
         if new_component_label in self.component.choices:
             # warn the user that an ephemeris component already exists with this label,
             # a second won't be added:
             self.hub.broadcast(
                 SnackbarMessage(
-                    f"Ephemeris component {new_component_label} already exists, skipping.",
+                    f"Ephemeris component {new_component_label} already exists, "
+                    f"this ephemeris component will not be added.",
                     sender=self, color="warning"
                 )
             )
-        else:
+        elif not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
             self.add_component(new_component_label)
             self.create_phase_viewer()
-            self.adopt_from_catalog()
 
-    def vue_adopt_from_catalog_in_new_viewer(self, *args):
-        self.adopt_from_catalog_in_new_viewer()
+            self.period = self.period_from_catalog
+            self.t0 = self.t0_from_catalog
+
+            # reset the phase axis wrap to feature the primary transit:
+            self.wrap_at = 0.5
+            viewer = self._get_phase_viewers()[0]
+            viewer.reset_limits()
+        else:
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"Catalog period ({self.period_from_catalog}) or "
+                    f"epoch ({self.t0_from_catalog}) is NaN, this ephemeris "
+                    f"component will not be added.",
+                    sender=self, color="warning"
+                )
+            )
+
+    def vue_create_ephemeris_from_query(self, *args):
+        self.create_ephemeris_from_query()

@@ -245,7 +245,7 @@
             <v-row justify="end">
             <v-col>
               <plugin-action-button
-                @click="adopt_from_catalog_in_new_viewer"
+                @click="create_ephemeris_from_query"
                 :disabled="component_items.map(item => item.label).includes(query_result_selected.replace(/\s/g, ''))">
                   Create new component
               </plugin-action-button>

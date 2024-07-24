@@ -150,12 +150,11 @@ def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()
-    # this should be HAT-P-11 b:
     planet = ephem.query_result.choices[0]
     assert planet == 'HAT-P-11 b'
 
     ephem.query_result = planet
-    ephem.adopt_from_catalog()
+    ephem.create_ephemeris_from_query()
 
     compare_against_literature_ephemeris(helper, ephem)
 
@@ -168,11 +167,10 @@ def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()
-    # this should be HAT-P-11 b:
     planet = ephem.query_result.choices[0]
     assert planet == 'HAT-P-11 b'
 
     ephem.query_result = planet
-    ephem.adopt_from_catalog()
+    ephem.create_ephemeris_from_query()
 
     compare_against_literature_ephemeris(helper, ephem)
