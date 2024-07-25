@@ -67,6 +67,19 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
       Dataset to use for determining the period.
     * ``method`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Method/algorithm to determine the period.
+    * :meth:`query_for_ephemeris`
+      Query the `NASA Exoplanet Archive <https://exoplanetarchive.ipac.caltech.edu/>`_'s
+      `Planetary System Composite Parameters
+      <https://exoplanetarchive.ipac.caltech.edu/docs/pscp_about.html>`_
+      table for the planet-hosting star identified
+      by the observation's header key "OBJECT", or if that fails,
+      by the observation's header keys for RA and Dec.
+    * ``query_result`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
+      The name of a planet from a NASA Exoplanet Archive query, used for
+      adopting literature values for the orbital period and mid-transit time.
+    * :meth:`create_ephemeris_from_query`
+      Create an ephemeris component with the period and epoch from
+      the planet selected from the NASA Exoplanet Archive query in ``query_result``.
     """
     template_file = __file__, "ephemeris.vue"
 
