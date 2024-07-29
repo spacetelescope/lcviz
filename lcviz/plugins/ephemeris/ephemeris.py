@@ -1,5 +1,9 @@
 import numpy as np
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
+import astropy.units as u
+from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
+
 from traitlets import Bool, Float, List, Unicode, observe
 
 from glue.core.link_helpers import LinkSame
@@ -8,8 +12,10 @@ from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin, DatasetSelectMixin,
-                                        SelectPluginComponent, EditableSelectPluginComponent)
+                                        SelectPluginComponent, EditableSelectPluginComponent,
+                                        with_spinner)
 from jdaviz.core.user_api import PluginUserApi
+from jdaviz.core.events import SnackbarMessage
 
 from lightkurve import periodogram, FoldedLightCurve
 
@@ -23,6 +29,8 @@ _default_t0 = 0.0
 _default_period = 1.0
 _default_dpdt = 0.0
 _default_wrap_at = 1.0
+
+_default_query_radius = 2  # [arcsec]
 
 
 @tray_registry('ephemeris', label="Ephemeris")
@@ -59,6 +67,19 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
       Dataset to use for determining the period.
     * ``method`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
       Method/algorithm to determine the period.
+    * :meth:`query_for_ephemeris`
+      Query the `NASA Exoplanet Archive <https://exoplanetarchive.ipac.caltech.edu/>`_'s
+      `Planetary System Composite Parameters
+      <https://exoplanetarchive.ipac.caltech.edu/docs/pscp_about.html>`_
+      table for the planet-hosting star identified
+      by the observation's header key "OBJECT", or if that fails,
+      by the observation's header keys for RA and Dec.
+    * ``query_result`` (:class:`~jdaviz.core.template_mixin.SelectPluginComponent`):
+      The name of a planet from a NASA Exoplanet Archive query, used for
+      adopting literature values for the orbital period and mid-transit time.
+    * :meth:`create_ephemeris_from_query`
+      Create an ephemeris component with the period and epoch from
+      the planet selected from the NASA Exoplanet Archive query in ``query_result``.
     """
     template_file = __file__, "ephemeris.vue"
 
@@ -87,6 +108,18 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     period_at_max_power = Float().tag(sync=True)
 
+    # QUERIES
+    query_name = Unicode().tag(sync=True)
+    query_ra = FloatHandleEmpty().tag(sync=True)
+    query_dec = FloatHandleEmpty().tag(sync=True)
+    query_radius = FloatHandleEmpty(_default_query_radius).tag(sync=True)
+    query_result_items = List().tag(sync=True)
+    query_result_selected = Unicode().tag(sync=True)
+    ra_dec_step = Float(0.01).tag(sync=True)
+    period_from_catalog = FloatHandleEmpty().tag(sync=True)
+    t0_from_catalog = FloatHandleEmpty().tag(sync=True)
+    query_spinner = Bool().tag(sync=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -94,6 +127,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._ignore_ephem_change = False
         self._ephemerides = {}
         self._prev_wrap_at = _default_wrap_at
+        self._nasa_exoplanet_archive = None
 
         self.dataset.add_filter(is_not_tpf)
 
@@ -117,6 +151,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                                             selected='method_selected',
                                             manual_options=['Lomb-Scargle', 'Box Least Squares'])
 
+        self.query_result = SelectPluginComponent(self,
+                                                  items='query_result_items',
+                                                  selected='query_result_selected')
+
         # TODO: could optimize by only updating for the new data entry only
         # (would require some refactoring and probably wouldn't have significant gains)
         self.hub.subscribe(self, DataCollectionAddMessage, handler=self._update_all_phase_arrays)
@@ -125,12 +163,16 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @property
     def user_api(self):
-        expose = ['component', 'period', 'dpdt', 't0', 'wrap_at',
-                  'ephemeris', 'ephemerides',
-                  'update_ephemeris', 'create_phase_viewer',
-                  'add_component', 'remove_component', 'rename_component',
-                  'times_to_phases', 'phases_to_times', 'get_data',
-                  'dataset', 'method', 'period_at_max_power', 'adopt_period_at_max_power']
+        expose = [
+            'component', 'period', 'dpdt', 't0', 'wrap_at',
+            'ephemeris', 'ephemerides',
+            'update_ephemeris', 'create_phase_viewer',
+            'add_component', 'remove_component', 'rename_component',
+            'times_to_phases', 'phases_to_times', 'get_data',
+            'dataset', 'method', 'period_at_max_power',
+            'adopt_period_at_max_power', 'query_for_ephemeris',
+            'query_result', 'create_ephemeris_from_query'
+        ]
         return PluginUserApi(self, expose=expose)
 
     def _phase_comp_lbl(self, component=None):
@@ -578,3 +620,111 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         phlc.sort("time")
 
         return phlc
+
+    @property
+    def nasa_exoplanet_archive(self):
+        if self._nasa_exoplanet_archive is None:
+            self._nasa_exoplanet_archive = NasaExoplanetArchive()
+
+        return self._nasa_exoplanet_archive
+
+    @observe('dataset_selected')
+    def _query_params_from_metadata(self, *args):
+        self.query_name = self.dataset.selected_obj.meta.get('OBJECT', '')
+        self.query_ra = self.dataset.selected_obj.meta.get('RA')
+        self.query_dec = self.dataset.selected_obj.meta.get('DEC')
+
+    def query_for_ephemeris(self):
+        query_result = None
+
+        if self.query_name:
+            # first query by object name:
+            query_result = self.nasa_exoplanet_archive.query_object(
+                object_name=self.query_name,
+                table='pscomppars'
+            )
+
+        if (
+            (query_result is None or len(query_result) == 0) and
+            (None not in (self.query_ra, self.query_dec))
+        ):
+            # next query by coordinates:
+            coord = SkyCoord(ra=self.query_ra, dec=self.query_dec, unit=u.deg)
+            query_result = self.nasa_exoplanet_archive.query_region(
+                table='pscomppars',
+                coordinates=coord,
+                radius=self.query_radius * u.arcsec,
+            )
+
+        if query_result is None or len(query_result) == 0:
+            # no metadata found for RA, Dec, or object name
+            return None
+
+        else:
+            query_result.sort('pl_name')
+            self.astroquery_result = query_result
+            self.astroquery_result.add_index('pl_name')
+            self.query_result_items = [
+                {
+                    'label': name,  # required key for SelectPluginComponent
+                    'period': period,
+                    'epoch': epoch if not np.isnan(epoch) else 0
+                }
+                for name, period, epoch in zip(
+                    list(self.astroquery_result['pl_name']),
+                    np.array(self.astroquery_result['pl_orbper'].to_value(u.day)),
+                    np.array(self.astroquery_result['pl_tranmid'].to_value(u.day))
+                )
+            ]
+
+    @observe('query_result_selected')
+    def _select_query_result(self, *args):
+        selected_query_result = self.astroquery_result.loc[self.query_result_selected]
+        self.period_from_catalog = selected_query_result['pl_orbper'].base.to_value(u.day)
+        ref_time = self.app.data_collection[0].coords.reference_time.jd
+        if np.isnan(selected_query_result['pl_tranmid'].base.to_value(u.day)):
+            self.t0_from_catalog = 0
+        else:
+            self.t0_from_catalog = (
+                selected_query_result['pl_tranmid'].base.to_value(u.day) - ref_time
+            ) % self.period_from_catalog
+
+    @with_spinner('query_spinner')
+    def vue_query_for_ephemeris(self, *args):
+        self.query_for_ephemeris()
+
+    def create_ephemeris_from_query(self, *args):
+        new_component_label = self.query_result_selected.replace(' ', '')
+        if new_component_label in self.component.choices:
+            # warn the user that an ephemeris component already exists with this label,
+            # a second won't be added:
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"Ephemeris component {new_component_label} already exists, "
+                    f"this ephemeris component will not be added.",
+                    sender=self, color="warning"
+                )
+            )
+        elif not np.any(np.isnan([self.period_from_catalog, self.t0_from_catalog])):
+            self.add_component(new_component_label)
+            self.create_phase_viewer()
+
+            self.period = self.period_from_catalog
+            self.t0 = self.t0_from_catalog
+
+            # reset the phase axis wrap to feature the primary transit:
+            self.wrap_at = 0.5
+            viewer = self._get_phase_viewers()[0]
+            viewer.reset_limits()
+        else:
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"Catalog period ({self.period_from_catalog}) or "
+                    f"epoch ({self.t0_from_catalog}) is NaN, this ephemeris "
+                    f"component will not be added.",
+                    sender=self, color="warning"
+                )
+            )
+
+    def vue_create_ephemeris_from_query(self, *args):
+        self.create_ephemeris_from_query()

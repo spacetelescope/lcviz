@@ -132,3 +132,45 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
 
     ephem.add_component('new')
     assert len(vc.viewer_types) == 3
+
+
+def compare_against_literature_ephemeris(helper, ephem):
+    # compare against best/recent parameters:
+    period_yee_2018 = 4.88780244
+    assert abs(1 - period_yee_2018 / ephem.period) < 1e-3
+
+    epoch_kokori_2022 = 2455109.335119
+    ref_time = helper.app.data_collection[0].coords.reference_time.jd
+    expected_t0 = (epoch_kokori_2022 - ref_time) % period_yee_2018
+    assert abs(1 - expected_t0 / ephem.t0) < 1e-3
+
+
+def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
+    helper.load_data(light_curve_like_kepler_quarter)
+    ephem = helper.plugins['Ephemeris']
+
+    ephem.query_for_ephemeris()
+    planet = ephem.query_result.choices[0]
+    assert planet == 'HAT-P-11 b'
+
+    ephem.query_result = planet
+    ephem.create_ephemeris_from_query()
+
+    compare_against_literature_ephemeris(helper, ephem)
+
+
+def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
+    # test that the query successfully falls back on the RA/Dec:
+    light_curve_like_kepler_quarter.meta['OBJECT'] = ''
+
+    helper.load_data(light_curve_like_kepler_quarter)
+    ephem = helper.plugins['Ephemeris']
+
+    ephem.query_for_ephemeris()
+    planet = ephem.query_result.choices[0]
+    assert planet == 'HAT-P-11 b'
+
+    ephem.query_result = planet
+    ephem.create_ephemeris_from_query()
+
+    compare_against_literature_ephemeris(helper, ephem)
