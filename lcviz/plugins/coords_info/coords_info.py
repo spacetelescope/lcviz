@@ -2,10 +2,12 @@ import numpy as np
 
 from glue.core.subset_group import GroupedSubset
 from jdaviz.configs.imviz.plugins.coords_info import CoordsInfo
-from jdaviz.core.events import ViewerRenamedMessage
+from jdaviz.core.events import ViewerRenamedMessage, SnackbarMessage
 from jdaviz.core.registries import tool_registry
 
 from lcviz.viewers import TimeScatterView, PhaseScatterView, CubeView
+
+from datetime import datetime as dt
 
 __all__ = ['CoordsInfo']
 
@@ -16,6 +18,7 @@ class CoordsInfo(CoordsInfo):
     _viewer_classes_with_marker = (TimeScatterView, PhaseScatterView)
 
     def __init__(self, *args, **kwargs):
+        self.first = True
         super().__init__(*args, **kwargs)
 
         # TODO: move to jdaviz if/once viewer renaming supported
@@ -89,10 +92,25 @@ class CoordsInfo(CoordsInfo):
             if self.dataset.selected != 'auto' and self.dataset.selected != lyr.layer.label:
                 continue
 
+            if self.first:
+                start = dt.now()
             scatter = lyr.scatter_mark
             lyr_x, lyr_y = scatter.x, scatter.y
             if not len(lyr_x):
+                self.hub.broadcast(
+                    SnackbarMessage(
+                        f"not len(lyr_x) for {lyr.layer.label}",
+                        sender=self, color="warning"
+                    )
+                )
                 continue
+            if self.first:
+                self.hub.broadcast(
+                    SnackbarMessage(
+                        f"lyr.scatter_mark retrieveal {(dt.now() - start).total_seconds()}s",
+                        sender=self, color="warning"
+                    )
+                )
 
             # NOTE: unlike specviz which determines the closest point in x per-layer,
             # this determines the closest point in x/y per-layer in pixel-space
@@ -145,8 +163,17 @@ class CoordsInfo(CoordsInfo):
 
         self.icon = closest_icon
 
+        if self.first:
+            start = dt.now()
         self.marks[viewer._reference_id].update_xy([closest_x], [closest_y])  # noqa
         self.marks[viewer._reference_id].visible = True
+        if self.first:
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"marks update_xy took {(dt.now() - start).total_seconds()}s",
+                    sender=self, color="warning"
+                )
+            )
 
     def _image_viewer_update(self, viewer, x, y):
         # Extract first dataset from visible layers and use this for coordinates - the choice
@@ -239,7 +266,27 @@ class CoordsInfo(CoordsInfo):
         if not len(viewer.state.layers):
             return
 
-        if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
-            self._lc_viewer_update(viewer, x, y)
-        elif isinstance(viewer, CubeView):
-            self._image_viewer_update(viewer, x, y)
+        if self.first:
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"coords_info first update_display call",
+                    sender=self, color="warning"
+                )
+            )
+            start = dt.now()
+        try:
+            if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
+                self._lc_viewer_update(viewer, x, y)
+            elif isinstance(viewer, CubeView):
+                self._image_viewer_update(viewer, x, y)
+        except Exception as e:
+            self._viewer_mouse_clear_event(viewer)
+        if self.first:
+            end = dt.now()
+            self.hub.broadcast(
+                SnackbarMessage(
+                    f"coords_info first update_display took {(end - start).total_seconds()}s",
+                    sender=self, color="warning"
+                )
+            )
+            self.first = False
