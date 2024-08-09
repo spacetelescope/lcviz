@@ -89,10 +89,7 @@ class CoordsInfo(CoordsInfo):
             if self.dataset.selected != 'auto' and self.dataset.selected != lyr.layer.label:
                 continue
 
-            # glue-jupyter 1.18 changed from lyr.scatter to lyr.scatter_mark
-            # TODO: once glue-jupyter is pinned to 1.18 or later, update this to:
-            # scatter = lyr.scatter_mark
-            scatter = getattr(lyr, 'scatter_mark', getattr(lyr, 'scatter', None))
+            scatter = lyr.scatter_mark
             lyr_x, lyr_y = scatter.x, scatter.y
             if not len(lyr_x):
                 continue
