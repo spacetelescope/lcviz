@@ -149,6 +149,7 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         if getattr(layer_state.layer, 'meta', {}).get('Plugin', None) == 'Binning':
             # increased size of binned results, by default
             layer_state.size = 5
+        layer_state.points_mode = 'markers'
 
     def set_plot_axes(self):
         # set which components should be plotted
