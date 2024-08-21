@@ -150,6 +150,8 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
             # increased size of binned results, by default
             layer_state.size = 5
         layer_state.points_mode = 'markers'
+        from jdaviz.core.events import SnackbarMessage
+        self.hub.broadcast(SnackbarMessage("Layer changed to markers mode", sender=self, color='warning'))
 
     def set_plot_axes(self):
         # set which components should be plotted
