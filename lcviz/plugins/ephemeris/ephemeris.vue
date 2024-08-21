@@ -1,5 +1,8 @@
 <template>
   <j-tray-plugin
+    :config="config"
+    plugin_key="Ephemeris"
+    :api_hints_enabled.sync="api_hints_enabled"
     description='Find and refine ephemerides for phase-folding.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
     :popout_button="popout_button">
@@ -10,13 +13,28 @@
       :items="component_items"
       :selected.sync="component_selected"
       label="Component"
+      api_hint="plg.component ="
+      api_hint_add="plg.add_component"
+      api_hint_rename="plg.rename_component"
+      api_hint_remove="plg.remove_component"
+      :api_hints_enabled="api_hints_enabled"
       hint="Select an ephemeris component."
       >
     </plugin-editable-select>
 
     <v-row justify="end">
-      <v-btn color="primary" text @click="create_phase_viewer" :disabled="phase_viewer_exists || component_selected.length == 0">
-        Show Phase Viewer
+      <v-btn
+        color="primary" 
+        text
+        :class="api_hints_enabled ? 'api-hint' : null"
+        @click="create_phase_viewer"
+        :disabled="phase_viewer_exists || component_selected.length == 0"
+      >
+        {{ api_hints_enabled ? 
+          'plg.create_phase_viewer()'
+          :
+          'Show Phase Viewer'
+        }}
       </v-btn>
     </v-row>
 
@@ -27,7 +45,8 @@
         <v-text-field
           ref="t0"
           type="number"
-          label="Zeropoint (t0)"
+          :label="api_hints_enabled ? 'plg.t0 =' : 'Zeropoint (t0)'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="t0"
           :step="t0_step"
           type="number"
@@ -41,7 +60,8 @@
         <v-text-field
           ref="period"
           type="number"
-          label="Period"
+          :label="api_hints_enabled ? 'plg.period =' : 'Period'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="period"
           :step="period_step"
           hint="The period of the ephemeris, defined at t0."
@@ -64,7 +84,8 @@
         <v-text-field
           ref="dpdt"
           type="number"
-          label="Period derivative"
+          :label="api_hints_enabled ? 'plg.dpdt =' : 'Period derivative'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="dpdt"
           :step="dpdt_step"
           hint="The first time-derivative of the period of the ephemeris."
@@ -77,7 +98,8 @@
         <v-text-field
           ref="wrap_at"
           type="number"
-          label="Wrapping phase"
+          :label="api_hints_enabled ? 'plg.wrap_at =' : 'Wrapping phase'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="wrap_at"
           :step="0.1"
           :hint="'Phased data will encompass the range '+wrap_at_range+'.'"
@@ -93,6 +115,8 @@
         :selected.sync="dataset_selected"
         :show_if_single_entry="false"
         label="Data"
+        api_hint="plg.dataset ="
+        :api_hints_enabled="api_hints_enabled"
         hint="Select the light curve as input."
       />
 
@@ -102,7 +126,8 @@
           attach
           :items="method_items.map(i => i.label)"
           v-model="method_selected"
-          label="Algorithm/Method"
+          :label="api_hints_enabled ? 'plg.method =' : 'Algorithm/Method'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           hint="Method to determine period."
           persistent-hint
         ></v-select>
@@ -116,8 +141,19 @@
           </v-row>
           <v-row v-else>
             <j-tooltip :tooltipcontent="'adopt period into '+component_selected+' ephemeris.'">
-              <v-btn text color='primary' @click='adopt_period_at_max_power' style="padding: 0px">
-                period: {{period_at_max_power}}
+              <v-btn
+                text
+                color='primary'
+                :class="api_hints_enabled ? 'api-hint' : null"
+                @click='adopt_period_at_max_power'
+                style="padding: 0px"
+              >
+                {{ api_hints_enabled ? 
+                  'plg.adopt_period_at_max_power()'
+                  :
+                  'period: '+period_at_max_power
+                }}
+                
               </v-btn>
             </j-tooltip>
           </v-row>
@@ -201,8 +237,13 @@
           <plugin-action-button
             :spinner="query_spinner"
             :results_isolated_to_plugin="false"
+            :api_hints_enabled="api_hints_enabled"
             @click="query_for_ephemeris">
-              Query
+              {{ api_hints_enabled ? 
+                'plg.query_for_ephemeris()'
+                :
+                'Query'
+              }} 
           </plugin-action-button>
         </j-tooltip>
       </v-row>
@@ -214,7 +255,8 @@
             :items="query_result_items"
             :item-value="item => item.label"
             v-model="query_result_selected"
-            label="Ephemerides available"
+            :label="api_hints_enabled ? 'plg.query_result =' : 'Ephemerides available'"
+            :class="api_hints_enabled ? 'api-hint' : null"
             :hint="'Ephemeris parameters from ' + query_result_items.length + ' available query result(s)'"
             persistent-hint
             dense
@@ -246,8 +288,13 @@
             <v-col>
               <plugin-action-button
                 @click="create_ephemeris_from_query"
+                :class="api_hints_enabled ? 'api-hint' : null"
                 :disabled="component_items.map(item => item.label).includes(query_result_selected.replace(/\s/g, ''))">
-                  Create new component
+                  {{ api_hints_enabled ?
+                    'plg.create_ephemeris_from_query()'
+                    :
+                    'Create new component'
+                   }}  
               </plugin-action-button>
             </v-col>
             </v-row>
