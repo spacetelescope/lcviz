@@ -27,6 +27,9 @@ Plugins API
 .. automodapi:: lcviz.plugins.metadata_viewer.metadata_viewer
   :no-inheritance-diagram:
 
+.. automodapi:: lcviz.plugins.photometric_extraction.photometric_extraction
+  :no-inheritance-diagram:
+
 .. automodapi:: lcviz.plugins.plot_options.plot_options
   :no-inheritance-diagram:
 
