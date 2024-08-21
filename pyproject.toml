@@ -22,7 +22,7 @@ dependencies = [
     "astropy>=5.2",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
-    "jdaviz>=3.10.3,<3.11",
+    "jdaviz@git+https://github.com/spacetelescope/jdaviz",
     "lightkurve>=2.4.1",
     "numpy<2",
 ]
