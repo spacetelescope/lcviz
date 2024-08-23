@@ -170,8 +170,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             'add_component', 'remove_component', 'rename_component',
             'times_to_phases', 'phases_to_times', 'get_data',
             'dataset', 'method', 'period_at_max_power',
-            'adopt_period_at_max_power', 'query_for_ephemeris',
-            'query_result', 'create_ephemeris_from_query'
+            'adopt_period_at_max_power',
+            'query_name', 'query_ra', 'query_dec', 'query_radius',
+            'query_for_ephemeris', 'query_result', 'create_ephemeris_from_query'
         ]
         return PluginUserApi(self, expose=expose)
 

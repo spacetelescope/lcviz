@@ -192,7 +192,8 @@
         <v-text-field
           ref="query_name"
           type="string"
-          label="Object name"
+          :label="api_hints_enabled ? 'plg.query_name =' : 'Object name'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="query_name"
           hint="Object name."
           persistent-hint
@@ -202,7 +203,8 @@
         <v-text-field
           ref="query_ra"
           type="number"
-          label="RA (degrees)"
+          :label="api_hints_enabled ? 'plg.query_ra =' : 'RA (degrees)'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="query_ra"
           :step="ra_dec_step"
           hint="Object right ascension."
@@ -213,7 +215,8 @@
         <v-text-field
           ref="query_dec"
           type="number"
-          label="Dec (degrees)"
+          :label="api_hints_enabled ? 'plg.query_dec =' : 'Dec (degrees)'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="query_dec"
           :step="ra_dec_step"
           hint="Object declination."
@@ -224,7 +227,8 @@
         <v-text-field
           ref="query_radius"
           type="number"
-          label="Radius (arcseconds)"
+          :label="api_hints_enabled ? 'plg.query_radius =' : 'Radius (arcseconds)'"
+          :class="api_hints_enabled ? 'api-hint' : null"
           v-model.number="query_radius"
           :step="1"
           hint="Radius around the query coordinate."
