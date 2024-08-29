@@ -1,6 +1,8 @@
 0.4.3 (unreleased)
 ------------------
 
+* bumps lightkurve to 2.5.0 to include upstream bug fixes. [#132]
+
 
 0.4.2 (07.23.2024)
 ------------------
