@@ -3,6 +3,8 @@
 
 * bumps lightkurve to 2.5.0 to include upstream bug fixes. [#132]
 
+* Improve scatter viewer and mouseover performance. [#137]
+
 
 0.4.2 (07.23.2024)
 ------------------
