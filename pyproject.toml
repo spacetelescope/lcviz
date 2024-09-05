@@ -24,6 +24,8 @@ dependencies = [
     # to devdeps in tox.ini
     "jdaviz>=3.10.3,<3.11",
     "lightkurve>=2.5.0",
+    # NOTE: glue-jupyter is also pinned by jdaviz.
+    "glue-jupyter>=0.22.2",
     "numpy<2",
 ]
 dynamic = [
