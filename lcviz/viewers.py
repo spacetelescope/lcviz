@@ -127,7 +127,8 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
     def _set_plot_x_axes(self, dc, component_labels, light_curve=None, reference_time=None):
         self.state.x_att = dc[0].components[component_labels.index('dt')]
 
-        x_unit = self.time_unit
+        x_unit = self.time_unit  # TODO: use get display unit instead?  Or at least update self.time_unit
+        reference_time = light_curve.meta.get('reference_time', None)
 
         if light_curve is not None and reference_time is None:
             reference_time = light_curve.meta.get('reference_time', None)
