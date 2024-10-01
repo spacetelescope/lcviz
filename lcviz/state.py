@@ -35,6 +35,7 @@ class ScatterViewerState(ScatterViewerState):
         self._reset_att_limits('y')
 
     def reset_limits(self, *event):
+        # TODO: this is not working correctly when units are changed (probably the same for _reset_att_limits)
         x_min, x_max = np.inf, -np.inf
         y_min, y_max = np.inf, -np.inf
 
