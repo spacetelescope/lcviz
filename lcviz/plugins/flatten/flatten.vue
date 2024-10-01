@@ -1,5 +1,8 @@
 <template>
   <j-tray-plugin
+    :config="config"
+    plugin_key="Flatten"
+    :api_hints_enabled.sync="api_hints_enabled"
     description='Remove long-term trends.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flatten'"
     :uses_active_status="uses_active_status"
@@ -15,23 +18,27 @@
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-row>
-              <v-switch
-                v-model="show_live_preview"
+              <plugin-switch
+                :value.sync="show_live_preview"
+                api_hint="plg.show_live_preview ="
+                :api_hints_enabled="api_hints_enabled"
                 label="Show flattened preview"
                 hint="Whether to show live-preview of the unnormalized flattened light curve."
                 persistent-hint
-              ></v-switch>
+              />
             </v-row>
             <v-row v-if="show_live_preview && !unnormalize">
               <v-alert type="warning">Live preview is unnormalized, but flattening will normalize.</v-alert>
             </v-row>
             <v-row>
-              <v-switch
-                v-model="show_trend_preview"
+              <plugin-switch
+                :value.sync="show_trend_preview"
+                api_hint="plg.show_trend_preview ="
+                :api_hints_enabled="api_hints_enabled"
                 label="Show trend preview"
                 hint="Whether to show live-preview of the trend used for flattening."
                 persistent-hint
-              ></v-switch>
+              />
             </v-row>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -43,12 +50,15 @@
       :selected.sync="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
+      api_hint="plg.dataset ="
+      :api_hints_enabled="api_hints_enabled"
       hint="Select the light curve as input."
     />
 
     <v-row>
       <v-text-field
-        label="Window length"
+        :label="api_hints_enabled ? 'plg.window_length =' : 'Window length'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
         :step="1"
         v-model.number="window_length"
@@ -62,7 +72,8 @@
 
     <v-row>
       <v-text-field
-        label="Order"
+        :label="api_hints_enabled ? 'plg.polyorder =' : 'Order'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
         :step="1"
         v-model.number="polyorder"
@@ -77,7 +88,8 @@
 
     <v-row>
       <v-text-field
-        label="Break tolerance"
+        :label="api_hints_enabled ? 'plg.break_tolerance =' : 'Break tolerance'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
         :step="1"
         v-model.number="break_tolerance"
@@ -91,7 +103,8 @@
 
     <v-row>
       <v-text-field
-        label="Iterations"
+        :label="api_hints_enabled ? 'plg.niters =' : 'Iterations'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
         :step="1"
         v-model.number="niters"
@@ -105,7 +118,8 @@
 
     <v-row>
       <v-text-field
-        label="Sigma"
+        :label="api_hints_enabled ? 'plg.sigma =' : 'Sigma'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
         :step="0.5"
         v-model.number="sigma"
@@ -118,12 +132,14 @@
     </v-row>
 
     <v-row>
-      <v-switch
-        v-model="unnormalize"
+      <plugin-switch
+        :value.sync="unnormalize"
         label="Un-normalize"
+        api_hint="plg.unnormalize ="
+        :api_hints_enabled="api_hints_enabled"
         hint="Whether to multiply the flattened light curve by the median of the trend."
         persistent-hint
-      ></v-switch>
+      />
     </v-row>
 
     <v-row v-if="show_live_preview && !unnormalize">
@@ -136,6 +152,8 @@
       :auto.sync="flux_label_auto"
       :invalid_msg="flux_label_invalid_msg"
       hint="Label for flux column."
+      api_hint="plg.flux_label ="
+      :api_hints_enabled="api_hints_enabled"
     ></plugin-auto-label>
 
     <plugin-previews-temp-disabled
@@ -151,8 +169,13 @@
           :spinner="spinner"
           :disabled="flux_label_invalid_msg.length > 0"
           :results_isolated_to_plugin="false"
+          :class="api_hints_enabled ? 'api-hint' : null"
           @click="apply">
-            Flatten{{flux_label_overwrite ? ' (Overwrite)' : ''}}
+            {{ api_hints_enabled ?
+              'plg.flatten(add_data=True)'
+              :
+              'Flatten'+(flux_label_overwrite ? ' (Overwrite)' : '') 
+             }}
         </plugin-action-button>
       </j-tooltip>
     </v-row>

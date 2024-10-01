@@ -1,5 +1,8 @@
 <template>
   <j-tray-plugin
+    :config="config"
+    plugin_key="Flux Column"
+    :api_hints_enabled.sync="api_hints_enabled"
     description='Choose which column to use as flux across lcviz.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flux-column'"
     :uses_active_status="uses_active_status"
@@ -12,6 +15,8 @@
       :selected.sync="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
+      api_hint='plg.dataset ='
+      :api_hints_enabled="api_hints_enabled"
       hint="Select the light curve to modify."
     />
 
@@ -21,7 +26,8 @@
         attach
         :items="flux_column_items.map(i => i.label)"
         v-model="flux_column_selected"
-        label="Flux Column"
+        :label="api_hints_enabled ? 'plg.flux_column =' : 'Flux Column'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         hint="Select the column to adopt as flux."
         persistent-hint
       ></v-select>

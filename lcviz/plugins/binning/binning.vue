@@ -1,5 +1,8 @@
 <template>
   <j-tray-plugin
+    :config="config"
+    plugin_key="Binning"
+    :api_hints_enabled.sync="api_hints_enabled"
     description='Bin in time or phase-space.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#binning'"
     :uses_active_status="uses_active_status"
@@ -15,12 +18,14 @@
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-row>
-              <v-switch
-                v-model="show_live_preview"
+              <plugin-switch
+                :value.sync="show_live_preview"
                 label="Show live preview"
+                api_hint="plg.show_live_preview ="
+                :api_hints_enabled="api_hints_enabled"
                 hint="Whether to show live preview of binning options."
                 persistent-hint
-              ></v-switch>
+              />
             </v-row>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -32,6 +37,8 @@
       :selected.sync="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
+      api_hint="plg.dataset ="
+      :api_hints_enabled="api_hints_enabled"
       hint="Select the light curve as input."
     />
 
@@ -45,7 +52,8 @@
 
     <v-row>
       <v-text-field
-        label="N Bins"
+        :label="api_hints_enabled ? 'plg.n_bins =' : 'N Bins'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
         v-model.number="n_bins"
         :step="10"
@@ -76,6 +84,9 @@
       action_tooltip="Bin data"
       :action_disabled="!bin_enabled"
       :action_spinner="spinner"
+      add_results_api_hint = 'plg.add_results'
+      action_api_hint='plg.bin(add_data=True)'
+      :api_hints_enabled="api_hints_enabled"
       @click:action="apply"
     ></plugin-add-results>
 

@@ -39,6 +39,7 @@ class TimeSelector(Slice):
 
         """
         super().__init__(*args, **kwargs)
+        self.plugin_key = "Time Selector"
         self.docs_description = "Select time to sync across all viewers (as an indicator in all time/phase viewers or to select the active slice in any image/cube viewers).  The slice can also be changed interactively in any time viewer by activating the slice tool."  # noqa
         self.value_label = 'Time'
         self.value_unit = 'd'
