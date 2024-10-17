@@ -59,6 +59,20 @@ class PhotometricExtraction(SpectralExtraction):
         else:
             self.irrelevant_msg = ''
 
+    def _on_global_display_unit_changed(self, msg=None):
+        if msg is None:
+            self.flux_units = str(self.app._get_display_unit('flux'))
+            self.time_units = str(self.app._get_display_unit('time'))
+        elif msg.axis == 'flux':
+            self.flux_units = str(msg.unit)
+        elif msg.axis == 'time':
+            self.time_units = str(msg.unit)
+        else:
+            # ignore
+            return
+        # update results_units based on flux_units, sb_units, and currently selected function
+        self._update_results_units()
+
     @property
     def slice_display_unit_name(self):
         return 'time'
