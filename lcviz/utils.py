@@ -357,7 +357,7 @@ class TPFHandler:
             data[cid] = component_data
             if hasattr(component_data, 'unit'):
                 try:
-                    data.get_component(cid).units = str(component_data.unit)
+                    data.get_component(cid).units = str(component_data.unit/u.pix**2)
                 except KeyError:  # pragma: no cover
                     continue
 
