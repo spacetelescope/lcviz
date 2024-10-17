@@ -7,7 +7,7 @@
 
 * Add feature to query the NASA Exoplanet Archive for exoplanet ephemerides. [#127]
 
-0.4.3 (unreleased)
+0.4.3 (09.05.2024)
 ------------------
 
 * bumps lightkurve to 2.5.0 to include upstream bug fixes. [#132]
