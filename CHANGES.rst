@@ -1,7 +1,7 @@
 0.5.0 (unreleased)
 ------------------
 
-* Update jdaviz requirement to 4.0 to include upstream improvements. [#121]
+* Update jdaviz requirement to 4.0 to include upstream improvements including API hints. [#121, #133]
 
 * Prevent duplicate sub-intervals (quarter/sector/campaign) in data labels. [#120]
 

@@ -1,5 +1,8 @@
 <template>
   <j-tray-plugin
+    :config="config"
+    plugin_key="Frequency Analysis"
+    :api_hints_enabled.sync="api_hints_enabled"
     description='Frequency/period analysis.'
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
     :popout_button="popout_button">
@@ -9,6 +12,8 @@
       :selected.sync="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
+      api_hint="plg.dataset ="
+      :api_hints_enabled="api_hints_enabled"
       hint="Select the light curve as input."
     />
 
@@ -18,7 +23,8 @@
         attach
         :items="method_items.map(i => i.label)"
         v-model="method_selected"
-        label="Algorithm/Method"
+        :label="api_hints_enabled ? 'plg.method =' : 'Algorithm/Method'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         :hint="'Method to determine power at each '+xunit_selected+'.'"
         persistent-hint
       ></v-select>
@@ -30,19 +36,22 @@
         attach
         :items="xunit_items.map(i => i.label)"
         v-model="xunit_selected"
-        label="X Units"
+        :label="api_hints_enabled ? 'plg.xunit =' : 'X Units'"
+        :class="api_hints_enabled ? 'api-hint' : null"
         hint="Whether to plot in frequency or period-space."
         persistent-hint
       ></v-select>
     </v-row>
 
     <v-row>
-      <v-switch
-        v-model="auto_range"
+      <plugin-switch
+        :value.sync="auto_range"
         :label="'Auto '+xunit_selected+' range'"
+        api_hint="plg.auto_range ="
+        :api_hints_enabled="api_hints_enabled"
         :hint="'Whether to automatically or manually set the range on sampled '+xunit_selected+'s.'"
         persistent-hint
-      ></v-switch>
+      />
     </v-row>
 
     <v-row>
@@ -50,7 +59,8 @@
         v-if="!auto_range"
         ref="min"
         type="number"
-        :label="'Minimum '+xunit_selected"
+        :label="api_hints_enabled ? 'plg.minimum =' : 'Minimum '+xunit_selected"
+        :class="api_hints_enabled ? 'api-hint' : null"
         v-model.number="minimum"
         :step="minimum_step"
         type="number"
@@ -65,7 +75,8 @@
         v-if="!auto_range"
         ref="max"
         type="number"
-        :label="'Maximum '+xunit_selected"
+        :label="api_hints_enabled ? 'plg.maximum =' : 'Maximum '+xunit_selected"
+        :class="api_hints_enabled ? 'api-hint' : null"
         v-model.number="maximum"
         :step="maximum_step"
         type="number"
@@ -75,6 +86,11 @@
       ></v-text-field>
     </v-row>
 
+    <v-row v-if="api_hints_enabled">
+        <span class="api-hint">
+          plg.periodogram
+        </span>
+    </v-row>
 
     <div style="display: grid"> <!-- overlay container -->
       <div style="grid-area: 1/1">
