@@ -28,7 +28,7 @@ except ImportError:
 # Configuration for intersphinx
 intersphinx_mapping = {
     'jdaviz': ('https://jdaviz.readthedocs.io/en/latest/', None),
-    'lightkurve': ('https://docs.lightkurve.org', None)
+    'lightkurve': ('https://lightkurve.github.io/lightkurve/', None)
 #     'python': ('https://docs.python.org/3/',
 #                (None, 'http://data.astropy.org/intersphinx/python3.inv')),
 #     'numpy': ('https://numpy.org/doc/stable/',
