@@ -37,10 +37,6 @@ class PlotOptions(PlotOptions):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @observe('vdocs')
-    def _update_docs_link(self, *args):
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#plot-options"
-
         def not_spatial_subset_in_scatter_viewer(lyr):
             # note: have to check the classname instead of isinstance to avoid circular import
             if np.any([isinstance(viewer, CubeView)
@@ -51,6 +47,10 @@ class PlotOptions(PlotOptions):
             return get_subset_type(lyr) != 'spatial'
 
         self.layer.add_filter(not_spatial_subset_in_scatter_viewer)
+
+    @observe('vdocs')
+    def _update_docs_link(self, *args):
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#plot-options"
 
     def _default_tpf_stretch(
             self, vmin_percentile=5, vmax_percentile=99, tpf_viewer_reference='image'
