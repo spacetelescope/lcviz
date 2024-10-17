@@ -40,11 +40,16 @@ class PhotometricExtraction(SpectralExtraction):
         def is_tpf(data):
             return len(data.shape) == 3
         self.dataset.filters = [is_tpf]
+
+        # only allow for Sum
+        self.function._manual_options = ['Sum']
+        self.function.items = [{"label": "Sum"}]
+
         self._set_relevant()  # move upstream?
 
     @property
     def user_api(self):
-        expose = ['dataset', 'function', 'aperture',
+        expose = ['dataset', 'aperture',
                   'background',
                   'add_results', 'extract',
                   'aperture_method']
