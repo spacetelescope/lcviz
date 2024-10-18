@@ -40,4 +40,5 @@ Reference/API
 
    installation.rst
    plugins.rst
+   plugin_api.rst
    reference/api.rst
