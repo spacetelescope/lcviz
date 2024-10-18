@@ -19,6 +19,11 @@ notebook), built on top of `Jdaviz <https://jdaviz.readthedocs.io>`_ and `lightk
     lcviz.load_data(lc)
     lcviz.show()
 
+
+.. figure:: images/launch_screenshot.png
+    :alt: Screenshot of lcviz
+
+
 It aims to provide tools for the analysis of periodic and semi-periodic variability from
 stationary sources (exoplanets, eclipsing binaries, ellipsoidal variables, pulsating stars,
 rotating stars, etc) in high-cadence photometric data sets, specifically - but not limited to - Kepler, K2, and TESS.
