@@ -27,11 +27,6 @@
     :alt: Powered by lightkurve Badge
 
 
-Early Development Software Warning
-----------------------------------
-LCviz is still very early on in development and is not currently recommended for use. 
-
-
 License
 -------
 

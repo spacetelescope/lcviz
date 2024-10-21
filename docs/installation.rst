@@ -4,22 +4,16 @@
 Installation
 ============
 
-.. note::
-
-    ``lcviz`` is undergoing constant development. We encourage users to always update
-    to the latest version. In general, it is good practice to install the development
-    version following the instructions below as full released versions may lag behind.
-
 User Installation
 -----------------
 
 Create Your Local Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some of Jdaviz's dependencies require non-Python packages to work
+Some dependencies require non-Python packages to work
 (particularly the front-end stack that is part of the Jupyter ecosystem).
 We recommend using `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_
-to easily manage a compatible Python environment for ``jdaviz``; it should work
+to easily manage a compatible Python environment for ``lcviz``; it should work
 with most modern shells, except CSH/TCSH.
 
 You may want to consider installing ``lcviz`` in a new virtual or conda environment
@@ -33,13 +27,7 @@ to avoid version conflicts with other packages you may have installed, for examp
 Pip Install
 ^^^^^^^^^^^
 
-As noted above, we typically recommend installing the latest development version:
-
-.. code-block:: bash
-
-    pip install git+https://github.com/spacetelescope/lcviz --upgrade
-
-A normal install will also work by installing the latest release version:
+To install the latest stable release:
 
 .. code-block:: bash
 
@@ -47,9 +35,6 @@ A normal install will also work by installing the latest release version:
 
 Common Issues
 ^^^^^^^^^^^^^
-
-If you encounter problems while following these installation instructions,
-please consult :ref:`known installation issues <known_issues_installation>`.
 
 Note that ``lcviz`` requires Python 3.10 or newer. If your ``pip`` corresponds to an older version of
 Python, it will raise an error that it cannot find a valid package.
@@ -63,7 +48,6 @@ instead of ``pip``:
     conda install bottleneck
     conda install -c conda-forge notebook
     conda install -c conda-forge jupyterlab
-    conda install -c conda-forge voila
 
 You might also want to enable the ``ipywidgets`` notebook extension, as follows:
 
@@ -83,7 +67,7 @@ and ``username`` is your GitHub username. This is a one-setup setup:
 .. code-block:: bash
 
     git clone git@github.com:username/lcviz.git
-    cd jdaviz
+    cd lcviz
     git remote add upstream git@github.com:spacetelescope/lcviz.git
     git fetch upstream main
     git fetch upstream --tags
