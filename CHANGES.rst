@@ -1,4 +1,8 @@
-1.0.0 (unreleased)
+1.1.0 (unreleased)
+------------------
+
+
+1.0.0 (12-02-2024)
 ------------------
 
 * Update jdaviz requirement to 4.0 to include upstream improvements including API hints. [#121, #133]
@@ -7,7 +11,7 @@
 
 * Add feature to query the NASA Exoplanet Archive for exoplanet ephemerides. [#127]
 
-0.4.3 (09.05.2024)
+0.4.3 (09-05-2024)
 ------------------
 
 * bumps lightkurve to 2.5.0 to include upstream bug fixes. [#132]
@@ -15,14 +19,14 @@
 * Improve scatter viewer and mouseover performance. [#137, #139]
 
 
-0.4.2 (07.23.2024)
+0.4.2 (07-23-2024)
 ------------------
 
 * Fix all docs links to point to correct version of read the docs. [#128]
 
 * Update jdaviz requirement to 3.10.3 to include upstream bug fixes. [#130]
 
-0.4.1 (07.15.2024)
+0.4.1 (07-15-2024)
 ------------------
 
 * Max pin numpy to to exclude 2.0 until full compatibility can be supported. [#126]
