@@ -113,6 +113,7 @@ filterwarnings = [
     "ignore::UserWarning:traittypes",
     "ignore::DeprecationWarning:asteval",
     "ignore::FutureWarning:asteval",
+    "ignore:pkg_resources is deprecated as an API:DeprecationWarning:mpl_scatter_density",
 ]
 
 [tool.coverage.run]
