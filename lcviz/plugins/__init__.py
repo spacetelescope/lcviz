@@ -13,3 +13,4 @@ from .metadata_viewer.metadata_viewer import *  # noqa
 from .plot_options.plot_options import *  # noqa
 from .stitch.stitch import *  # noqa
 from .subset_plugin.subset_plugin import *  # noqa
+from .unit_conversion.unit_conversion import *  # noqa
