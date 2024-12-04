@@ -3,7 +3,7 @@
     :config="config"
     plugin_key="Frequency Analysis"
     :api_hints_enabled.sync="api_hints_enabled"
-    description='Frequency/period analysis.'
+    :description="docs_description"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
     :popout_button="popout_button">
 
