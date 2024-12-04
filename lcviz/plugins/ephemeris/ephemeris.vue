@@ -120,18 +120,14 @@
         hint="Select the light curve as input."
       />
 
-      <v-row>
-        <v-select
-          :menu-props="{ left: true }"
-          attach
-          :items="method_items.map(i => i.label)"
-          v-model="method_selected"
-          :label="api_hints_enabled ? 'plg.method =' : 'Algorithm/Method'"
-          :class="api_hints_enabled ? 'api-hint' : null"
-          hint="Method to determine period."
-          persistent-hint
-        ></v-select>
-      </v-row>
+      <plugin-select
+        :items="method_items.map(i => i.label)"
+        :selected.sync="method_selected"
+        label="Algorithm/Method"
+        api_hint="plg.method ="
+        :api_hints_enabled="api_hints_enabled"
+        hint="Method to determine period."
+      />
 
       <div style="display: grid"> <!-- overlay container -->
         <div style="grid-area: 1/1">
@@ -267,13 +263,21 @@
           >
 
           <template v-slot:selection="{ item }">
-            <span>
+            <span v-if="api_hints_enabled" class="api-hint">
+              '{{ item.label }}'
+            </span>
+            <span v-else>
               {{ item.label }}
             </span>
           </template>
           <template v-slot:item="{ item }">
             <span style="margin-top: 8px; margin-bottom: 0px">
+              <span v-if="api_hints_enabled" class="api-hint">
+                '{{ item.label }}'
+              </span>
+              <span v-else>
                 {{ item.label }}
+              </span>
               <v-row style="line-height: 1.0; margin: 0px; opacity: 0.85; font-size: 8pt">
                 Period: {{ item.period }} d, Epoch: {{ item.epoch }} d
               </v-row>

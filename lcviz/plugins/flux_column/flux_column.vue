@@ -20,18 +20,14 @@
       hint="Select the light curve to modify."
     />
 
-    <v-row>
-      <v-select
-        :menu-props="{ left: true }"
-        attach
-        :items="flux_column_items.map(i => i.label)"
-        v-model="flux_column_selected"
-        :label="api_hints_enabled ? 'plg.flux_column =' : 'Flux Column'"
-        :class="api_hints_enabled ? 'api-hint' : null"
-        hint="Select the column to adopt as flux."
-        persistent-hint
-      ></v-select>
-    </v-row>
+    <plugin-select
+      :items="flux_column_items.map(i => i.label)"
+      :selected.sync="flux_column_selected"
+      label="Flux Column"
+      api_hint="plg.flux_column ="
+      :api_hints_enabled="api_hints_enabled"
+      hint="Select the column to adopt as flux."
+    />
 
   </j-tray-plugin>
 </template>
