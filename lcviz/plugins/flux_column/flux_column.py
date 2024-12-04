@@ -29,6 +29,9 @@ class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # description displayed under plugin title in tray
+        self._plugin_description = 'Choose flux column.'
+
         # NOTE: may eventually want to add support for choosing the column for TPFs
         self.dataset.add_filter(is_not_tpf)
 

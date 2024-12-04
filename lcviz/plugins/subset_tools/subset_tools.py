@@ -22,6 +22,8 @@ class SubsetTools(SubsetTools):
         super().__init__(*args, **kwargs)
         self.can_freeze = True
 
+        self._plugin_description = 'Tools for selecting and interacting with subsets.'
+
     @observe('vdocs')
     def _update_docs_link(self, *args):
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#subset-tools"  # noqa
