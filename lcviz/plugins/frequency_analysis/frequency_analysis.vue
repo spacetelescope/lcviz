@@ -3,7 +3,7 @@
     :config="config"
     plugin_key="Frequency Analysis"
     :api_hints_enabled.sync="api_hints_enabled"
-    description='Frequency/period analysis.'
+    :description="docs_description"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
     :popout_button="popout_button">
 
@@ -17,31 +17,23 @@
       hint="Select the light curve as input."
     />
 
-    <v-row>
-      <v-select
-        :menu-props="{ left: true }"
-        attach
-        :items="method_items.map(i => i.label)"
-        v-model="method_selected"
-        :label="api_hints_enabled ? 'plg.method =' : 'Algorithm/Method'"
-        :class="api_hints_enabled ? 'api-hint' : null"
-        :hint="'Method to determine power at each '+xunit_selected+'.'"
-        persistent-hint
-      ></v-select>
-    </v-row>
+    <plugin-select
+      :items="method_items.map(i => i.label)"
+      :selected.sync="method_selected"
+      label="Algorithm/Method"
+      api_hint="plg.method ="
+      :api_hints_enabled="api_hints_enabled"
+      :hint="'Method to determine power at each '+xunit_selected+'.'"
+    />
 
-    <v-row>
-      <v-select
-        :menu-props="{ left: true }"
-        attach
-        :items="xunit_items.map(i => i.label)"
-        v-model="xunit_selected"
-        :label="api_hints_enabled ? 'plg.xunit =' : 'X Units'"
-        :class="api_hints_enabled ? 'api-hint' : null"
-        hint="Whether to plot in frequency or period-space."
-        persistent-hint
-      ></v-select>
-    </v-row>
+    <plugin-select
+      :items="xunit_items.map(i => i.label)"
+      :selected.sync="xunit_selected"
+      label="X Units"
+      api_hint="plg.xunit ="
+      :api_hints_enabled="api_hints_enabled"
+      hint="Whether to plot in frequency or period-space."
+    />
 
     <v-row>
       <plugin-switch
@@ -119,8 +111,6 @@
         ></v-progress-circular>
       </div>
     </div>
-
-  </div>
 
   </j-tray-plugin>
 </template>
