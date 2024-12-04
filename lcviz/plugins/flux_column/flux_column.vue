@@ -3,7 +3,7 @@
     :config="config"
     plugin_key="Flux Column"
     :api_hints_enabled.sync="api_hints_enabled"
-    description='Choose which column to use as flux across lcviz.'
+    :description="docs_description || 'Choose which column to use as flux across lcviz.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flux-column'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"

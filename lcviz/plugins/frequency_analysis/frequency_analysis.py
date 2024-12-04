@@ -57,7 +57,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self._plugin_description = 'Frequency/period analysis.'
         self._ignore_auto_update = False
 
         # do not support data only in phase-space

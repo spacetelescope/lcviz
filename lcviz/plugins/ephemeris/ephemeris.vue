@@ -3,7 +3,7 @@
     :config="config"
     plugin_key="Ephemeris"
     :api_hints_enabled.sync="api_hints_enabled"
-    description='Find and refine ephemerides for phase-folding.'
+    :description="docs_description || 'Find and refine ephemerides for phase-folding.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
     :popout_button="popout_button">
 
