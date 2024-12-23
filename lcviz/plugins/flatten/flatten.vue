@@ -3,7 +3,7 @@
     :config="config"
     plugin_key="Flatten"
     :api_hints_enabled.sync="api_hints_enabled"
-    description='Remove long-term trends.'
+    :description="docs_description || 'Flatten input light curve to remove long-term trends.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flatten'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
