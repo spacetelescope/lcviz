@@ -103,7 +103,7 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
-        'tray': ['lcviz-metadata-viewer', 'flux-column',
+        'tray': ['lcviz-metadata-viewer', 'flux-column', 'lcviz-unit-conversion',
                  'lcviz-plot-options', 'lcviz-subset-plugin',
                  'lcviz-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
