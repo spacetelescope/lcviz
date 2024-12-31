@@ -175,6 +175,7 @@ class LCviz(ConfigHelper):
                                   parser_reference='tess_dvt_parser',
                                   data_label=data_label,
                                   extname=extname)
+                return
 
         super().load_data(
             data=data,

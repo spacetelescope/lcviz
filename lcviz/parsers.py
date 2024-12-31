@@ -14,6 +14,7 @@ mission_sub_intervals = {
     'kepler': {'prefix': 'Q', 'card': 'QUARTER'},
     'k2': {'prefix': 'C', 'card': 'CAMPAIGN'},
     'tess': {'prefix': 'S', 'card': 'SECTOR'},
+    'tess dvt': {'prefix': '', 'card': 'EXTNAME'}
 }
 
 
@@ -35,8 +36,9 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
                                    flux=data['LC_INIT'],
                                    flux_err=data['LC_INIT_ERR'])
         lc.meta = hdulist[0].header
-        lc.meta['MISSION'] = 'TESS'
+        lc.meta['MISSION'] = 'TESS DVT'
         lc.meta['FLUX_ORIGIN'] = "LC_INIT"
+        lc.meta['EXTNAME'] = header['EXTNAME']
 
         if extname is not None and header['EXTNAME'] != extname:
             show_ext_in_viewer = False
