@@ -46,7 +46,7 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
         light_curve_parser(app, lc, data_label=data_label,
                            show_in_viewer=show_ext_in_viewer, **kwargs)
 
-        # add to any known phase viewers
+        # add ephemeris information from the DVT extension
         if ephem_plugin is not None and show_ext_in_viewer:
             ephem_plugin.period = header['TPERIOD']
             ephem_plugin.t0 = header['TEPOCH']
