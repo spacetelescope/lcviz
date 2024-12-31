@@ -1,4 +1,7 @@
 import os
+
+from astropy.io import fits
+from astropy.table import Table, vstack
 from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
@@ -13,6 +16,21 @@ mission_sub_intervals = {
     'k2': {'prefix': 'C', 'card': 'CAMPAIGN'},
     'tess': {'prefix': 'S', 'card': 'SECTOR'},
 }
+
+def dvt_to_lightkurve(filename):
+    '''
+    Read a TESS DVT file and create a lightkurve object
+    '''
+    hdulist = fits.open(filename)
+    # Concatenate the different TCE (threshold crossing events) into one time series?
+    # Right now I'm loading them as different data collection items
+    as_tables = [Table(hdulist[i].data) for i in range(1, len(hdulist)-1)]
+    concatenated = vstack(as_tables)
+    lc = lightkurve.LightCurve(data=concatenated,
+                               flux=concatenated['LC_INIT'],
+                               flux_err=concatenated['LC_INIT_ERR'])
+    lc.meta = hdulist[0].header
+    return lc
 
 
 @data_parser_registry("light_curve_parser")
@@ -30,7 +48,11 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
             data_label = os.path.splitext(os.path.basename(file_obj))[0]
 
         # read the light curve:
-        light_curve = lightkurve.read(file_obj)
+        if file_obj[-9:] == "_dvt.fits":
+            # custom parsing for TESS DVT files
+            light_curve = dvt_to_lightkurve(file_obj)
+        else:
+            light_curve = lightkurve.read(file_obj)
 
     elif isinstance(file_obj, cls_with_translator):
         light_curve = file_obj
