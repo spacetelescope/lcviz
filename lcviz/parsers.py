@@ -1,7 +1,6 @@
 import os
 
 from astropy.io import fits
-from astropy.table import Table, vstack
 from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
@@ -17,20 +16,40 @@ mission_sub_intervals = {
     'tess': {'prefix': 'S', 'card': 'SECTOR'},
 }
 
-def dvt_to_lightkurve(filename):
+
+@data_parser_registry("tess_dvt_parser")
+def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
     '''
     Read a TESS DVT file and create a lightkurve object
     '''
-    hdulist = fits.open(filename)
-    # Concatenate the different TCE (threshold crossing events) into one time series?
-    # Right now I'm loading them as different data collection items
-    as_tables = [Table(hdulist[i].data) for i in range(1, len(hdulist)-1)]
-    concatenated = vstack(as_tables)
-    lc = lightkurve.LightCurve(data=concatenated,
-                               flux=concatenated['LC_INIT'],
-                               flux_err=concatenated['LC_INIT_ERR'])
-    lc.meta = hdulist[0].header
-    return lc
+    hdulist = fits.open(file_obj)
+    ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
+    extname = kwargs.pop('extname')
+
+    # Loop through the TCEs in the file. If we only want one (specified by
+    # `extname` keyword) then only load that one into the viewers and ephemeris.
+    for i in range(1, len(hdulist)-1):
+        data = hdulist[i].data
+        header = hdulist[i].header
+        lc = lightkurve.LightCurve(data=data,
+                                   flux=data['LC_INIT'],
+                                   flux_err=data['LC_INIT_ERR'])
+        lc.meta = hdulist[0].header
+        lc.meta['MISSION'] = 'TESS'
+        lc.meta['FLUX_ORIGIN'] = "LC_INIT"
+
+        if extname is not None and header['EXTNAME'] != extname:
+            show_ext_in_viewer = False
+        else:
+            show_ext_in_viewer = show_in_viewer
+
+        light_curve_parser(app, lc, data_label=data_label,
+                           show_in_viewer=show_ext_in_viewer, **kwargs)
+
+        # add to any known phase viewers
+        if ephem_plugin is not None and show_ext_in_viewer:
+            ephem_plugin.period = header['TPERIOD']
+            ephem_plugin.t0 = header['TEPOCH']
 
 
 @data_parser_registry("light_curve_parser")
@@ -47,12 +66,7 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         if data_label is None:
             data_label = os.path.splitext(os.path.basename(file_obj))[0]
 
-        # read the light curve:
-        if file_obj[-9:] == "_dvt.fits":
-            # custom parsing for TESS DVT files
-            light_curve = dvt_to_lightkurve(file_obj)
-        else:
-            light_curve = lightkurve.read(file_obj)
+        light_curve = lightkurve.read(file_obj)
 
     elif isinstance(file_obj, cls_with_translator):
         light_curve = file_obj
