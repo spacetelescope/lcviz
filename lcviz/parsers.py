@@ -1,9 +1,11 @@
 import os
 
 from astropy.io import fits
+from astropy.table import Table
 from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
+import numpy as np
 
 from lcviz.viewers import PhaseScatterView, TimeScatterView
 from lcviz.plugins.plot_options import PlotOptions
@@ -30,9 +32,17 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
     # Loop through the TCEs in the file. If we only want one (specified by
     # `extname` keyword) then only load that one into the viewers and ephemeris.
     for i in range(1, len(hdulist)-1):
-        data = hdulist[i].data
+        data = Table(hdulist[i].data)
+        # We don't want these columns
+        data.remove_column('PHASE')
+        data.remove_column('CADENCENO')
+        # Remove rows that have NaN data
+        data = data[~np.isnan(data['LC_INIT'])]
         header = hdulist[i].header
+        time_offset = int(header['TUNIT1'] .split('- ')[1].split(',')[0])
+        data['TIME'] += time_offset
         lc = lightkurve.LightCurve(data=data,
+                                   time=data['TIME'],
                                    flux=data['LC_INIT'],
                                    flux_err=data['LC_INIT_ERR'])
         lc.meta = hdulist[0].header
@@ -51,7 +61,7 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
         # add ephemeris information from the DVT extension
         if ephem_plugin is not None and show_ext_in_viewer:
             ephem_plugin.period = header['TPERIOD']
-            ephem_plugin.t0 = header['TEPOCH']
+            ephem_plugin.t0 = header['TEPOCH'] + time_offset
 
 
 @data_parser_registry("light_curve_parser")
