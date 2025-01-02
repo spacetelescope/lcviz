@@ -1,5 +1,6 @@
 from astropy import units as u
 from functools import cached_property
+import numpy as np
 
 from ipyvuetify import VuetifyTemplate
 from glue.core import HubListener
@@ -222,7 +223,14 @@ class FluxColumnSelect(SelectPluginComponent):
         # manipulate the arrays in the data-collection directly, and modify FLUX_ORIGIN so that
         # exporting back to a lightkurve object works as expected
         self.app._jdaviz_helper._set_data_component(dc_item, 'flux', dc_item[self.selected])
-        self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err', dc_item[self.selected+"_err"])  # noqa
+        if self.selected+"_err" in [c.label for c in dc_item.components]:
+            self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err',
+                                                        dc_item[self.selected+"_err"])  # noqa
+        else:
+            nan_errs = np.empty(dc_item['flux'].shape)
+            nan_errs[:] = np.nan
+            self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err', nan_errs)
+
         dc_item.meta['FLUX_ORIGIN'] = self.selected
 
         self.hub.broadcast(FluxColumnChangedMessage(dataset=self.dataset.selected,
