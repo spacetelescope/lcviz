@@ -223,7 +223,7 @@ class FluxColumnSelect(SelectPluginComponent):
         # manipulate the arrays in the data-collection directly, and modify FLUX_ORIGIN so that
         # exporting back to a lightkurve object works as expected
         self.app._jdaviz_helper._set_data_component(dc_item, 'flux', dc_item[self.selected])
-        if self.selected+"_err" in [c.label for c in dc_item.components]:
+        if self.selected+"_err" in dc_item.component_ids():
             self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err',
                                                         dc_item[self.selected+"_err"])  # noqa
         else:
