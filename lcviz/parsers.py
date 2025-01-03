@@ -33,7 +33,8 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
     # `extname` keyword) then only load that one into the viewers and ephemeris.
     for i in range(1, len(hdulist)-1):
         data = Table(hdulist[i].data)
-        # We don't want these columns
+        # don't load some columns with names that may 
+        # conflict with components generated later by lcviz
         data.remove_column('PHASE')
         data.remove_column('CADENCENO')
         # Remove rows that have NaN data
