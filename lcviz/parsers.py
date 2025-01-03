@@ -33,7 +33,7 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
     # `extname` keyword) then only load that one into the viewers and ephemeris.
     for i in range(1, len(hdulist)-1):
         data = Table(hdulist[i].data)
-        # don't load some columns with names that may 
+        # don't load some columns with names that may
         # conflict with components generated later by lcviz
         data.remove_column('PHASE')
         data.remove_column('CADENCENO')
@@ -62,7 +62,8 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
         # add ephemeris information from the DVT extension
         if ephem_plugin is not None and show_ext_in_viewer:
             ephem_plugin.period = header['TPERIOD']
-            ephem_plugin.t0 = header['TEPOCH'] + time_offset
+            ephem_plugin.t0 = header['TEPOCH'] + time_offset - app.data_collection[0].coords.reference_time.jd  # noqa
+
 
 
 @data_parser_registry("light_curve_parser")
