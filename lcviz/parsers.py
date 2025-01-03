@@ -65,7 +65,6 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
             ephem_plugin.t0 = header['TEPOCH'] + time_offset - app.data_collection[0].coords.reference_time.jd  # noqa
 
 
-
 @data_parser_registry("light_curve_parser")
 def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
     # load a LightCurve or TargetPixelFile object:
