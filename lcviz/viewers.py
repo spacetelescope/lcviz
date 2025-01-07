@@ -42,10 +42,13 @@ class CloneViewerMixin:
                                                         sender=self.jdaviz_app),
                                        vid=name, name=name)
 
-        this_viewer_item = self.jdaviz_app._get_viewer_item(self.reference)
-        for data_id, visible in this_viewer_item['selected_data_items'].items():
-            data_label = data_label = self.jdaviz_app._get_data_item_by_id(data_id)['name']
-            self.jdaviz_app.set_data_visibility(name, data_label, visible == 'visible')
+        nv = self.jdaviz_helper.viewers.get(name)
+
+        visible_layers = self.data_menu.data_labels_visible
+        for layer in self.data_menu.data_labels_loaded:
+            visible = layer in visible_layers
+            nv.data_menu.add_data(layer)
+            nv.data_menu.set_layer_visibility(layer, visible)
             # TODO: don't revert color when adding same data to a new viewer
             # (same happens when creating a phase-viewer from ephemeris plugin)
 
