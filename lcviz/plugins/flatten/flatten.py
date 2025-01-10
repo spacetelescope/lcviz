@@ -71,7 +71,7 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self._plugin_description = 'Flatten input light curve.'
         self.flux_label = AutoTextField(self, 'flux_label_label',
                                         'flux_label_default', 'flux_label_auto',
                                         'flux_label_invalid_msg')

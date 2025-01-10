@@ -55,6 +55,7 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._plugin_description = 'Bin input light curve.'
 
         self._set_results_viewer()
 
