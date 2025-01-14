@@ -1,7 +1,11 @@
 import os
+
+from astropy.io import fits
+from astropy.table import Table
 from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
+import numpy as np
 
 from lcviz.viewers import PhaseScatterView, TimeScatterView
 from lcviz.plugins.plot_options import PlotOptions
@@ -12,7 +16,53 @@ mission_sub_intervals = {
     'kepler': {'prefix': 'Q', 'card': 'QUARTER'},
     'k2': {'prefix': 'C', 'card': 'CAMPAIGN'},
     'tess': {'prefix': 'S', 'card': 'SECTOR'},
+    'tess dvt': {'prefix': '', 'card': 'EXTNAME'}
 }
+
+
+@data_parser_registry("tess_dvt_parser")
+def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwargs):
+    '''
+    Read a TESS DVT file and create a lightkurve object
+    '''
+    hdulist = fits.open(file_obj)
+    ephem_plugin = app._jdaviz_helper.plugins.get('Ephemeris', None)
+    extname = kwargs.pop('extname')
+
+    # Loop through the TCEs in the file. If we only want one (specified by
+    # `extname` keyword) then only load that one into the viewers and ephemeris.
+    for hdu in hdulist[1:]:
+        data = Table(hdu.data)
+        # don't load some columns with names that may
+        # conflict with components generated later by lcviz
+        data.remove_column('PHASE')
+        data.remove_column('CADENCENO')
+        # Remove rows that have NaN data
+        data = data[~np.isnan(data['LC_INIT'])]
+        header = hdu.header
+        time_offset = int(header['TUNIT1'] .split('- ')[1].split(',')[0])
+        data['TIME'] += time_offset
+        lc = lightkurve.LightCurve(data=data,
+                                   time=data['TIME'],
+                                   flux=data['LC_INIT'],
+                                   flux_err=data['LC_INIT_ERR'])
+        lc.meta = hdulist[0].header
+        lc.meta['MISSION'] = 'TESS DVT'
+        lc.meta['FLUX_ORIGIN'] = "LC_INIT"
+        lc.meta['EXTNAME'] = header['EXTNAME']
+
+        if extname is not None and header['EXTNAME'] != extname:
+            show_ext_in_viewer = False
+        else:
+            show_ext_in_viewer = show_in_viewer
+
+        light_curve_parser(app, lc, data_label=data_label,
+                           show_in_viewer=show_ext_in_viewer, **kwargs)
+
+        # add ephemeris information from the DVT extension
+        if ephem_plugin is not None and show_ext_in_viewer:
+            ephem_plugin.period = header['TPERIOD']
+            ephem_plugin.t0 = header['TEPOCH'] + time_offset - app.data_collection[0].coords.reference_time.jd  # noqa
 
 
 @data_parser_registry("light_curve_parser")
@@ -29,7 +79,6 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
         if data_label is None:
             data_label = os.path.splitext(os.path.basename(file_obj))[0]
 
-        # read the light curve:
         light_curve = lightkurve.read(file_obj)
 
     elif isinstance(file_obj, cls_with_translator):

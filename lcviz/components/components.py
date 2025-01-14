@@ -222,7 +222,15 @@ class FluxColumnSelect(SelectPluginComponent):
         # manipulate the arrays in the data-collection directly, and modify FLUX_ORIGIN so that
         # exporting back to a lightkurve object works as expected
         self.app._jdaviz_helper._set_data_component(dc_item, 'flux', dc_item[self.selected])
-        self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err', dc_item[self.selected+"_err"])  # noqa
+        if self.selected+"_err" in dc_item.component_ids():
+            if "flux_err" in dc_item.component_ids():
+                self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err',
+                                                            dc_item[self.selected + "_err"])
+            else:
+                dc_item.add_component(dc_item[self.selected + "_err"], 'flux_err')
+        else:
+            dc_item.remove_component(dc_item.find_component_id('flux_err'))
+
         dc_item.meta['FLUX_ORIGIN'] = self.selected
 
         self.hub.broadcast(FluxColumnChangedMessage(dataset=self.dataset.selected,

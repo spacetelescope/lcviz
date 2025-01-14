@@ -1,3 +1,4 @@
+from astropy.io.fits import getheader
 import astropy.units as u
 import ipyvue
 import os
@@ -144,7 +145,7 @@ class LCviz(ConfigHelper):
             # already been initialized
             plugin._obj.vdocs = self.app.vdocs
 
-    def load_data(self, data, data_label=None):
+    def load_data(self, data, data_label=None, extname=None):
         """
         Load data into LCviz.
 
@@ -161,7 +162,21 @@ class LCviz(ConfigHelper):
             automatically determined from filename or randomly generated.
             The final label shown in LCviz may have additional information
             appended for clarity.
+        extname : str or `None`
+            Used for DVT parsing if only a single TCE from a multi-TCE file should be
+            loaded. Formatted as 'TCE_1', 'TCE_2', etc.
         """
+        # Determine if we're loading a DVT file, which has a separate parser
+        if isinstance(data, str):
+            header = getheader(data)
+            if (header['TELESCOP'] == 'TESS' and 'CREATOR' in header and
+                    'DvTimeSeriesExporter' in header['CREATOR']):
+                super().load_data(data=data,
+                                  parser_reference='tess_dvt_parser',
+                                  data_label=data_label,
+                                  extname=extname)
+                return
+
         super().load_data(
             data=data,
             parser_reference='light_curve_parser',

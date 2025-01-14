@@ -1,6 +1,8 @@
 1.1.0 (unreleased)
 ------------------
 
+* Add support for loading TESS DVT files. [#164]
+
 
 1.0.0 (12-02-2024)
 ------------------
