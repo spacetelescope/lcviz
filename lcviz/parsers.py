@@ -31,15 +31,15 @@ def tess_dvt_parser(app, file_obj, data_label=None, show_in_viewer=True, **kwarg
 
     # Loop through the TCEs in the file. If we only want one (specified by
     # `extname` keyword) then only load that one into the viewers and ephemeris.
-    for i in range(1, len(hdulist)-1):
-        data = Table(hdulist[i].data)
+    for hdu in hdulist[1:]:
+        data = Table(hdu.data)
         # don't load some columns with names that may
         # conflict with components generated later by lcviz
         data.remove_column('PHASE')
         data.remove_column('CADENCENO')
         # Remove rows that have NaN data
         data = data[~np.isnan(data['LC_INIT'])]
-        header = hdulist[i].header
+        header = hdu.header
         time_offset = int(header['TUNIT1'] .split('- ')[1].split(',')[0])
         data['TIME'] += time_offset
         lc = lightkurve.LightCurve(data=data,
