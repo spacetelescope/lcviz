@@ -151,6 +151,13 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
             layer_state.size = 5
         layer_state.points_mode = 'markers'
 
+    def _layer_included_in_legend(self, layer, subset_type):
+        print("***", layer.layer.label, subset_type)
+        if subset_type == 'spatial':
+            # do not show spatial subsets in time or phase viewers
+            return False
+        return super()._layer_included_in_legend(layer, subset_type)
+
     def set_plot_axes(self):
         # set which components should be plotted
         dc = self.jdaviz_app.data_collection
@@ -360,6 +367,13 @@ class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
         for layer in self.state.layers:
             if hasattr(layer, 'attribute') and layer.attribute != flux_comp:
                 layer.attribute = flux_comp
+
+    def _layer_included_in_legend(self, layer, subset_type):
+        print("***", layer.layer.label, subset_type)
+        if subset_type == 'spectral':  # NOTE: spectral here means xrange (i.e. not spatial)
+            # ONLY show spatial subsets in image/cube viewer
+            return False
+        return super()._layer_included_in_legend(layer, subset_type)
 
     def data(self, cls=None):
         # TODO: generalize upstream in jdaviz.
