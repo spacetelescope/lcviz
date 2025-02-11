@@ -122,6 +122,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._plugin_description = 'Ephemerides for phase-folding.'
 
         self._default_initialized = False
         self._ignore_ephem_change = False
@@ -351,14 +352,17 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._check_if_phase_viewer_exists()
 
         # set default data visibility
-        time_viewer_item = self.app._get_viewer_item(self.app._jdaviz_helper.default_time_viewer._obj.reference)  # noqa
+        tvdm = self.app._jdaviz_helper.default_time_viewer.data_menu
+        visible_layers = tvdm.data_labels_visible
+        loaded_layers = pv.data_menu.data_labels_loaded
         for data in dc:
             if data.ndim > 1:
                 # skip image/cube entries
                 continue
-            data_id = self.app._data_id_from_label(data.label)
-            visible = time_viewer_item['selected_data_items'].get(data_id, 'hidden')
-            self.app.set_data_visibility(phase_viewer_id, data.label, visible == 'visible')
+            visible = data.label in visible_layers
+            if data.label not in loaded_layers:
+                pv.data_menu.add_data(data.label)
+            pv.data_menu.set_layer_visibility(data.label, visible)
 
         # set x_att
         phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
