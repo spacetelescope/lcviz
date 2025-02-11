@@ -161,16 +161,17 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         self._set_plot_x_axes(dc, component_labels, light_curve)
         self._set_plot_y_axes(dc, component_labels, light_curve)
 
-    def _set_plot_x_axes(self, dc, component_labels, light_curve):
+    def _set_plot_x_axes(self, dc, component_labels, light_curve=None, reference_time=None):
         self.state.x_att = dc[0].components[component_labels.index('dt')]
 
         x_unit = self.time_unit
-        reference_time = light_curve.meta.get('reference_time', None)
 
-        if reference_time is not None:
-            xlabel = f'{str(x_unit.physical_type).title()} from {reference_time.iso} ({x_unit})'
-        else:
-            xlabel = f'{str(x_unit.physical_type).title()} ({x_unit})'
+        if light_curve is not None and reference_time is None:
+            reference_time = light_curve.meta.get('reference_time', None)
+        elif reference_time is None:
+            reference_time = dc[0].coords.reference_time
+
+        xlabel = f'{str(x_unit.physical_type).title()} from {reference_time.iso} ({x_unit})'
 
         self.figure.axes[0].label = xlabel
         self.figure.axes[0].num_ticks = 5
