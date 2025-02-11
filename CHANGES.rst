@@ -3,6 +3,8 @@
 
 * Add support for loading TESS DVT files. [#164]
 
+* Update jdaviz requirement to 4.1 to include upstream improvements, including plugin descriptions and redesigned data menu [#158]
+
 
 1.0.0 (12-02-2024)
 ------------------
