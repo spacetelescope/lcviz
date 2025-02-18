@@ -44,7 +44,7 @@ jobs:
         cd ..
         python -m venv testenv
         testenv/bin/pip install pytest pytest-astropy pytest-tornasync lcviz/dist/*.whl
-        testenv/bin/python -c "import lcviz; lcviz.test(remote_data=True)"
+        testenv/bin/pytest -p no:warnings --astropy-header --remote-data --pyargs lcviz
 
     # NOTE: Do not run this part for PR testing.
     - name: Publish distribution 📦 to PyPI
