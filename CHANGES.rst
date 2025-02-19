@@ -3,6 +3,8 @@
 
 * Add support for loading TESS DVT files. [#164]
 
+* Removed ``lcviz.test()``. Use ``pytest --pyargs lcviz <options>"`` instead
+  to test your copy of ``lcviz``. [#172]
 
 1.0.0 (12-02-2024)
 ------------------
