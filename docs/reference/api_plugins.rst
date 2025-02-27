@@ -33,7 +33,7 @@ Plugins API
 .. automodapi:: lcviz.plugins.stitch.stitch
   :no-inheritance-diagram:
 
-.. automodapi:: lcviz.plugins.subset_plugin.subset_plugin
+.. automodapi:: lcviz.plugins.subset_tools.subset_tools
   :no-inheritance-diagram:
 
 .. automodapi:: lcviz.plugins.time_selector.time_selector
