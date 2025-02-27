@@ -120,7 +120,7 @@ This plugin allows viewing and modifying defined subsets.
 .. admonition:: User API Example
     :class: dropdown
 
-    See the :class:`~lcviz.plugins.subset_plugin.subset_plugin.SubsetPlugin` user API documentation for more details.
+    See the :class:`~lcviz.plugins.subset_tools.subset_tools.SubsetTools` user API documentation for more details.
 
     .. code-block:: python
 
