@@ -7,7 +7,7 @@
 ******************
 
 ``lcviz`` is a light curve visualization and analysis tool within the Jupyter environment (lab or 
-notebook), built on top of `Jdaviz <https://jdaviz.readthedocs.io>`_ and `lightkurve <https://docs.lightkurve.org>`_::
+notebook), built on top of `Jdaviz <https://jdaviz.readthedocs.io>`_ and `lightkurve <https://lightkurve.github.io/lightkurve/>`_::
 
     from lcviz import LCviz
     from lightkurve import search_lightcurve
