@@ -156,6 +156,7 @@ def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
     ephem.query_result = planet
     ephem.create_ephemeris_from_query()
 
+    # FAILING
     compare_against_literature_ephemeris(helper, ephem)
 
 
@@ -173,4 +174,5 @@ def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
     ephem.query_result = planet
     ephem.create_ephemeris_from_query()
 
+    # FAILING
     compare_against_literature_ephemeris(helper, ephem)
