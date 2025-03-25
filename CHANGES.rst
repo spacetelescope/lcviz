@@ -6,7 +6,7 @@
 * Removed ``lcviz.test()``. Use ``pytest --pyargs lcviz <options>"`` instead
   to test your copy of ``lcviz``. [#172]
 
-* Update jdaviz requirement to 4.1 to include upstream improvements, including plugin descriptions and redesigned data menu [#158]
+* Update jdaviz requirement to 4.2 to include upstream improvements, including plugin descriptions and redesigned data menu [#158, #165]
 
 
 1.0.0 (12-02-2024)
