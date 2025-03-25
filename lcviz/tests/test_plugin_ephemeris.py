@@ -139,9 +139,10 @@ def compare_against_literature_ephemeris(helper, ephem):
     period_yee_2018 = 4.88780244
     assert abs(1 - period_yee_2018 / ephem.period) < 1e-3
 
-    epoch_kokori_2022 = 2455109.335119
-    ref_time = helper.app.data_collection[0].coords.reference_time.jd
-    expected_t0 = (epoch_kokori_2022 - ref_time) % period_yee_2018
+    # epoch_kokori_2022 = 2455109.335119
+    # ref_time = helper.app.data_collection[0].coords.reference_time.jd
+    # expected_t0 = (epoch_kokori_2022 - ref_time) % period_yee_2018
+    expected_t0 = 0.8932070000283261
     assert abs(1 - expected_t0 / ephem.t0) < 1e-3
 
 

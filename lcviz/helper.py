@@ -105,7 +105,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
         'tray': ['lcviz-metadata-viewer', 'flux-column',
-                 'lcviz-plot-options', 'lcviz-subset-plugin',
+                 'lcviz-plot-options', 'lcviz-subset-tools',
                  'lcviz-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'lcviz-export'],

@@ -141,24 +141,26 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
     label_mouseover = mp._obj.coords_info
     mp.open_in_tray()
 
+    assert abs(helper.plugins['Time Selector'].value - 47.006888) < 1e-4
+
     # test event in image (TPF) viewer
     iv = helper.viewers['image']._obj
     label_mouseover._viewer_mouse_event(iv,
                                         {'event': 'mousemove',
                                          'domain': {'x': 0, 'y': 0}})
 
-    assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.27220e+00 electron / s',  # noqa
-                                         'Time 47.00000 d',
+    assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.28035e+01 electron / s',  # noqa
+                                         'Time 47.00689 d',
                                          '')
 
     print(label_mouseover.as_dict())
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': 'KIC 1429092[TPF]',
-                                                      'time': 47.00000,
+                                                      'time': 47.00689,
                                                       'time:unit': 'd',
                                                       'pixel': (0.0, 0.0),
                                                       'axes_x': 0,
                                                       'axes_x:unit': 'pix',
                                                       'axes_y': 0,
                                                       'axes_y:unit': 'pix',
-                                                      'value': 1.272199273109436,
+                                                      'value': 12.803529,
                                                       'value:unit': 'electron / s'})

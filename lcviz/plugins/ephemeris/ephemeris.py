@@ -122,6 +122,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._plugin_description = 'Ephemerides for phase-folding.'
 
         self._default_initialized = False
         self._ignore_ephem_change = False
