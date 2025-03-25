@@ -26,6 +26,8 @@ def test_plugin_stitch(helper, light_curve_like_kepler_quarter):
 
     stitch = helper.plugins['Stitch']
     stitch.dataset.select_all()
+    stitch.remove_input_datasets = True
     stitched_lc = stitch.stitch()
 
     assert len(stitched_lc) == 2 * len(light_curve_like_kepler_quarter)
+    assert len(helper.app.data_collection) == 1

@@ -85,7 +85,7 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
             self.add_results.add_results_from_plugin(stitched_lc)
             if self.remove_input_datasets:
                 for dataset in self.dataset.selected:
-                    self.app.vue_data_item_remove({'item_name': dataset})
+                    self.app.data_item_remove(dataset)
         return stitched_lc
 
     def vue_apply(self, *args, **kwargs):
