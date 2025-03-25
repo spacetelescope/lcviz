@@ -28,7 +28,7 @@ This plugin allows viewing of any metadata associated with the selected data.
       metadata = lcviz.plugins['Metadata']
       print(f"dataset choices: {metadata.dataset.choices}")
       metadata.dataset = metadata.dataset.choices[0]
-      print(metadata.metadata)
+      print(metadata.meta)
       
 
 .. seealso::
