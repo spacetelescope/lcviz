@@ -8,6 +8,7 @@
 
 * Update jdaviz requirement to 4.1 to include upstream improvements, including plugin descriptions and redesigned data menu [#158]
 
+* Add missing API hint for lcviz.plugins['Binning'].ephemeris. [#178]
 
 1.0.0 (12-02-2024)
 ------------------
