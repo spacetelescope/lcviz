@@ -17,7 +17,10 @@
     >
     <template slot="selection" slot-scope="data">
       <div class="single-line">
-        <span>
+        <span v-if="api_hints_enabled" class="api-hint">
+          '{{selected}}'
+        </span>
+        <span v-else>
           {{ data.item.label }}
         </span>
       </div>
