@@ -47,6 +47,8 @@
       :selected.sync="ephemeris_selected"
       :show_if_single_entry="false"
       label="Ephemeris"
+      api_hint="plg.ephemeris ="
+      :api_hints_enabled="api_hints_enabled"
       hint="Select the phase-folding as input."
     />
 
