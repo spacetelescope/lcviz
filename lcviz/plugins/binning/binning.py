@@ -70,6 +70,15 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._set_results_viewer)
         self.hub.subscribe(self, EphemerisChangedMessage, handler=self._on_ephemeris_update)
 
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
+
     @property
     def user_api(self):
         expose = ['show_live_preview', 'dataset', 'ephemeris', 'input_lc',

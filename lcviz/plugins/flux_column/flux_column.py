@@ -1,3 +1,5 @@
+from traitlets import observe
+
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin)
@@ -34,6 +36,15 @@ class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin)
 
         # NOTE: may eventually want to add support for choosing the column for TPFs
         self.dataset.add_filter(is_not_tpf)
+
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def user_api(self):
