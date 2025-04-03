@@ -169,7 +169,7 @@ class LCviz(ConfigHelper):
         # Determine if we're loading a DVT file, which has a separate parser
         if isinstance(data, str):
             header = getheader(data)
-            if (header['TELESCOP'] == 'TESS' and 'CREATOR' in header and
+            if (header.get('TELESCOP', '') == 'TESS' and 'CREATOR' in header and
                     'DvTimeSeriesExporter' in header['CREATOR']):
                 super().load_data(data=data,
                                   parser_reference='tess_dvt_parser',
