@@ -162,6 +162,15 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.hub.subscribe(self, ViewerAddedMessage, handler=self._check_if_phase_viewer_exists)
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._check_if_phase_viewer_exists)
 
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
+
     @property
     def user_api(self):
         expose = [
@@ -635,6 +644,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @observe('dataset_selected')
     def _query_params_from_metadata(self, *args):
+        if self.dataset.selected_obj is None:
+            return
         self.query_name = self.dataset.selected_obj.meta.get('OBJECT', '')
         self.query_ra = self.dataset.selected_obj.meta.get('RA')
         self.query_dec = self.dataset.selected_obj.meta.get('DEC')

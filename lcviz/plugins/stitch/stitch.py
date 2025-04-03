@@ -46,17 +46,19 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
 
         self.results_label_default = 'stitched'
 
-    @property
-    def user_api(self):
-        expose = ['dataset', 'stitch', 'remove_input_datasets', 'add_results']
-        return PluginUserApi(self, expose=expose)
+        self._set_relevant()
 
     @observe('dataset_items')
-    def _set_relevent(self, *args):
+    def _set_relevant(self, *args):
         if len(self.dataset_items) < 2:
             self.irrelevant_msg = 'Requires at least two datasets loaded into viewers'
         else:
             self.irrelevant_msg = ''
+
+    @property
+    def user_api(self):
+        expose = ['dataset', 'stitch', 'remove_input_datasets', 'add_results']
+        return PluginUserApi(self, expose=expose)
 
     @with_spinner()
     def stitch(self, add_data=True):
