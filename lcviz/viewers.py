@@ -157,7 +157,9 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
     def set_plot_axes(self):
         # set which components should be plotted
-        dc = self.jdaviz_app.data_collection
+        dc = [dci for dci in self.jdaviz_app.data_collection if 'dt' in [str(c) for c in dci.components]]
+        if not len(dc):
+            return
         component_labels = [comp.label for comp in dc[0].components]
 
         # Get data to be used for axes labels
@@ -166,6 +168,7 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         self._set_plot_y_axes(dc, component_labels, light_curve)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve=None, reference_time=None):
+        # this cannot assume dc[0]
         self.state.x_att = dc[0].components[component_labels.index('dt')]
 
         x_unit = self.time_unit
