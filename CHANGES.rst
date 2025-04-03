@@ -6,6 +6,8 @@
 
 * Fix loading files without TELESCOP set. [#182]
 
+* Add missing plugin description for the Stitch plugin. [#185]
+
 1.1.0 (03-25-2025)
 ------------------
 
