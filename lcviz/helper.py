@@ -236,6 +236,7 @@ class LCviz(ConfigHelper):
                 for item in self.app.state.tool_items}
 
     def _get_clone_viewer_reference(self, reference):
+        # NOTE: moved to jdaviz in 4.3
         base_name = reference.split("[")[0]
         name = base_name
         ind = 0

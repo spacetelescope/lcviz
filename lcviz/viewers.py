@@ -25,6 +25,7 @@ __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
 
 class CloneViewerMixin:
+    # NOTE: moved to jdaviz in 4.3
     def _get_clone_viewer_reference(self):
         base_name = self.reference.split("[")[0]
         name = base_name
