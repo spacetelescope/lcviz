@@ -1,6 +1,8 @@
 1.1.1 (unreleased)
 ------------------
 
+* Fix loading files without TELESCOP set. [#182]
+
 1.1.0 (03-25-2025)
 ------------------
 
