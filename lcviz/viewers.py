@@ -15,7 +15,7 @@ from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.cubeviz.plugins.viewers import (CubevizImageView,
                                                     WithSliceIndicator, WithSliceSelection)
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
-from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
+from jdaviz.configs.specviz.plugins.viewers import Spectrum1DViewer
 
 from lcviz.state import ScatterViewerState
 
@@ -93,12 +93,12 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         self.time_unit = kwargs.get('time_unit', u.d)
         self.initialize_toolbar(default_tool_priority=['jdaviz:selectslice'])
         self._subscribe_to_layers_update()
-        # hack to inherit a small subset of methods from SpecvizProfileView
+        # hack to inherit a small subset of methods from Spectrum1DViewer
         # TODO: refactor jdaviz so these can be included in some mixin
-        self._show_uncertainty_changed = lambda value: SpecvizProfileView._show_uncertainty_changed(self, value)  # noqa
-        self._plot_uncertainties = lambda: SpecvizProfileView._plot_uncertainties(self)
+        self._show_uncertainty_changed = lambda value: Spectrum1DViewer._show_uncertainty_changed(self, value)  # noqa
+        self._plot_uncertainties = lambda: Spectrum1DViewer._plot_uncertainties(self)
         # TODO: _plot_uncertainties in specviz is hardcoded to look at spectral_axis and so crashes
-        self._clean_error = lambda: SpecvizProfileView._clean_error(self)
+        self._clean_error = lambda: Spectrum1DViewer._clean_error(self)
         self.density_map = kwargs.get('density_map', False)
 
     @property
