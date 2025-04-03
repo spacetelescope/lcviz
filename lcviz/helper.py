@@ -136,6 +136,9 @@ class LCviz(ConfigHelper):
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)
         self.app._add_style((__file__, 'lcviz_style.vue'))
 
+        # enable loaders (currently requires dev-flag in jdaviz)
+        self.app.state.dev_loaders = True
+
         # set the link to read the docs
         self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
         self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
