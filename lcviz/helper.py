@@ -138,6 +138,7 @@ class LCviz(ConfigHelper):
 
         # enable loaders (currently requires dev-flag in jdaviz)
         self.app.state.dev_loaders = True
+        self.load = self._load
 
         # set the link to read the docs
         self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
@@ -169,22 +170,15 @@ class LCviz(ConfigHelper):
             Used for DVT parsing if only a single TCE from a multi-TCE file should be
             loaded. Formatted as 'TCE_1', 'TCE_2', etc.
         """
+        kwargs = {}
         # Determine if we're loading a DVT file, which has a separate parser
         if isinstance(data, str):
             header = getheader(data)
             if (header['TELESCOP'] == 'TESS' and 'CREATOR' in header and
                     'DvTimeSeriesExporter' in header['CREATOR']):
-                super().load_data(data=data,
-                                  parser_reference='tess_dvt_parser',
-                                  data_label=data_label,
-                                  extname=extname)
-                return
+                kwargs['extname'] = extname
 
-        super().load_data(
-            data=data,
-            parser_reference='light_curve_parser',
-            data_label=data_label
-        )
+        self.load(data, data_label=data_label, **kwargs)
 
     def get_data(self, data_label=None, cls=LightCurve, subset=None):
         """
