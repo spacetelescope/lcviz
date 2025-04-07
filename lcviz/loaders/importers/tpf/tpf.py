@@ -20,6 +20,7 @@ class TPFImporter(BaseImporterToDataCollection):
         super().__init__(*args, **kwargs)
         if self.is_valid:
             self.data_label_default = f"{self.input.meta.get('OBJECT', 'Light curve')} [TPF]"
+
     @property
     def is_valid(self):
         if self.app.config not in ('deconfigged', 'lcviz'):
