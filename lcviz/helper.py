@@ -172,7 +172,7 @@ class LCviz(ConfigHelper):
             header = getheader(data)
             if (header['TELESCOP'] == 'TESS' and 'CREATOR' in header and
                     'DvTimeSeriesExporter' in header['CREATOR']):
-                kwargs['extname'] = extname
+                kwargs['extension'] = extname
 
         self.load(data, data_label=data_label, **kwargs)
 

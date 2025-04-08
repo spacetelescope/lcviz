@@ -49,9 +49,6 @@ class LightCurveImporter(BaseImporterToDataCollection):
     extension_items = List().tag(sync=True)
     extension_selected = Unicode().tag(sync=True)
 
-    # TODO: fix upstream handling of extension index (store in dict instead of splitting on assumed :)
-    # and consider allowing passing filter for hdu_is_valid and call update_items instead of passing manual_options?
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.is_valid:
@@ -59,16 +56,14 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         self.input_hdulist = isinstance(self.input, fits.HDUList)
         if self.input_hdulist:
-            extension_options = [f"{i}: {hdu.name}"
-                                 for i, hdu in enumerate(self.input)
-                                 if hdu_is_valid(hdu)]
             # TODO: allow multiselect and select_all by default, 
             # update __call__ logic below to loop and add each independently including ephemerides,
             # modify default data_label logic to inject data_label within loop (and inform user)
             self.extension = SelectFileExtensionComponent(self,
                                                           items='extension_items',
                                                           selected='extension_selected',
-                                                          manual_options=extension_options)
+                                                          manual_options=self.input,
+                                                          filters=[hdu_is_valid])
             self._extension_selected_changed()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
@@ -94,7 +89,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
     def _extension_selected_changed(self, event={}):
         if not hasattr(self, 'extension') or not self.input_hdulist:
             return
-        self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected.split(': ')[1]}]"
+        self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected_item['name']}]"
         self._clear_cache('output')
 
         self.create_ephemeris_available = ('TPERIOD' in self.output.meta and
@@ -118,7 +113,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         # HDUList
         hdulist = self.input
-        hdu = hdulist[self.extension.selected_index]
+        hdu = self.extension.selected_hdu
         data = Table(hdu.data)
         # don't load some columns with names that may
         # conflict with components generated later by lcviz
@@ -151,7 +146,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
             t0 = self.output.meta.get('TEPOCH', None) + time_offset - self.app.data_collection[0].coords.reference_time.jd  # noqa
 
             ephem = self.app._jdaviz_helper.plugins['Ephemeris']
-            ephem_component = self.extension.selected.split(': ')[1]
+            ephem_component = self.extension.selected_item['name']
             ephem.add_component(ephem_component, set_as_selected=False)
             ephem.update_ephemeris(ephem_component, t0=t0, period=period, wrap_at=0.5)
             ephem.create_phase_viewer(ephem_component)
