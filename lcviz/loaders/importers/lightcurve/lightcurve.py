@@ -41,6 +41,9 @@ def hdu_is_valid(hdu):
 class LightCurveImporter(BaseImporterToDataCollection):
     template_file = __file__, "./lightcurve.vue"
 
+    create_ephemeris_available = Bool(False).tag(sync=True)
+    create_ephemeris = Bool(True).tag(sync=True)
+
     # HDUList-specific options
     input_hdulist = Bool(False).tag(sync=True)
     extension_items = List().tag(sync=True)
@@ -73,7 +76,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
     @property
     def user_api(self):
-        expose = []
+        expose = ['create_ephemeris']
         if isinstance(self.input, fits.HDUList):
             expose += ['extension']
         return ImporterUserApi(self, expose)
@@ -93,6 +96,10 @@ class LightCurveImporter(BaseImporterToDataCollection):
             return
         self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected.split(': ')[1]}]"
         self._clear_cache('output')
+
+        self.create_ephemeris_available = ('TPERIOD' in self.output.meta and
+                                           'TEPOCH' in self.output.meta and
+                                           'TUNIT1' in self.output.meta)
 
     @property
     def default_viewer_label(self):
@@ -138,8 +145,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
     def __call__(self):
         super().__call__()
 
-        # after data is loaded, check if any ephemeris can be adopted into the ephemeris plugin
-        if 'TPERIOD' in self.output.meta and 'TEPOCH' in self.output.meta and 'TUNIT1' in self.output.meta and 'Ephemeris' in self.app._jdaviz_helper.plugins:
+        if self.create_ephemeris_available and self.create_ephemeris and 'Ephemeris' in self.app._jdaviz_helper.plugins:
             time_offset = int(self.output.meta.get('TUNIT1').split('- ')[1].split(',')[0])
             period = self.output.meta.get('TPERIOD', 1.0)
             t0 = self.output.meta.get('TEPOCH', None) + time_offset - self.app.data_collection[0].coords.reference_time.jd  # noqa

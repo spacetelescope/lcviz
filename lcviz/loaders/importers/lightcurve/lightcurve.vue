@@ -22,5 +22,13 @@
         hint="Label to assign to the new data entry."
       ></plugin-auto-label>
     </v-row>
+    <plugin-switch
+      v-if="create_ephemeris_available"
+      :value.sync="create_ephemeris"
+      label="Create Ephemeris"
+      api_hint="plg.create_ephemeris = "
+      :api_hints_enabled="api_hints_enabled"
+      hint="Create ephemeris entry and phase-viewer."
+    />
   </v-contatiner>
 </template>
