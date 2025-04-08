@@ -1,12 +1,9 @@
-import os
-import numpy as np
 from functools import cached_property
 from traitlets import Bool, List, Unicode, observe
 from astropy.io import fits
 from astropy.table import Table
 from lightkurve import LightCurve
 
-from jdaviz.core.events import SnackbarMessage
 from jdaviz.core.registries import loader_importer_registry
 from jdaviz.core.loaders.importers import BaseImporterToDataCollection
 from jdaviz.core.template_mixin import SelectFileExtensionComponent
@@ -30,11 +27,11 @@ def hdu_is_valid(hdu):
     bool
         True if the HDU is a valid light curve HDU, False otherwise.
     """
-    return isinstance(hdu, fits.hdu.table.BinTableHDU) and \
-           'TIME' in hdu.columns.names and \
-           'LC_INIT' in hdu.columns.names and \
-           'LC_INIT_ERR' in hdu.columns.names and \
-           'TUNIT1' in hdu.header
+    return (isinstance(hdu, fits.hdu.table.BinTableHDU) and
+            'TIME' in hdu.columns.names and
+            'LC_INIT' in hdu.columns.names and
+            'LC_INIT_ERR' in hdu.columns.names and
+            'TUNIT1' in hdu.header)
 
 
 @loader_importer_registry('Light Curve')
@@ -56,7 +53,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         self.input_hdulist = isinstance(self.input, fits.HDUList)
         if self.input_hdulist:
-            # TODO: allow multiselect and select_all by default, 
+            # TODO: allow multiselect and select_all by default,
             # update __call__ logic below to loop and add each independently including ephemerides,
             # modify default data_label logic to inject data_label within loop (and inform user)
             self.extension = SelectFileExtensionComponent(self,
@@ -89,7 +86,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
     def _extension_selected_changed(self, event={}):
         if not hasattr(self, 'extension') or not self.input_hdulist:
             return
-        self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected_item['name']}]"
+        self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected_item['name']}]"  # noqa
         self._clear_cache('output')
 
         self.create_ephemeris_available = ('TPERIOD' in self.output.meta and
@@ -140,7 +137,8 @@ class LightCurveImporter(BaseImporterToDataCollection):
     def __call__(self):
         super().__call__()
 
-        if self.create_ephemeris_available and self.create_ephemeris and 'Ephemeris' in self.app._jdaviz_helper.plugins:
+        if self.create_ephemeris_available and self.create_ephemeris \
+                and 'Ephemeris' in self.app._jdaviz_helper.plugins:
             time_offset = int(self.output.meta.get('TUNIT1').split('- ')[1].split(',')[0])
             period = self.output.meta.get('TPERIOD', 1.0)
             t0 = self.output.meta.get('TEPOCH', None) + time_offset - self.app.data_collection[0].coords.reference_time.jd  # noqa
@@ -150,7 +148,3 @@ class LightCurveImporter(BaseImporterToDataCollection):
             ephem.add_component(ephem_component, set_as_selected=False)
             ephem.update_ephemeris(ephem_component, t0=t0, period=period, wrap_at=0.5)
             ephem.create_phase_viewer(ephem_component)
-
-
-
-

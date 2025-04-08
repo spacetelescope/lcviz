@@ -157,7 +157,8 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
     def set_plot_axes(self):
         # set which components should be plotted
-        dc = [dci for dci in self.jdaviz_app.data_collection if 'dt' in [str(c) for c in dci.components]]
+        dc = [dci for dci in self.jdaviz_app.data_collection
+              if 'dt' in [str(c) for c in dci.components]]
         if not len(dc):
             return
         component_labels = [comp.label for comp in dc[0].components]

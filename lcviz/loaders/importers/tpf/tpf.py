@@ -1,8 +1,5 @@
-import os
-import numpy as np
 from lightkurve import KeplerTargetPixelFile, TessTargetPixelFile
 
-from jdaviz.core.events import SnackbarMessage
 from jdaviz.core.registries import loader_importer_registry
 from jdaviz.core.loaders.importers import BaseImporterToDataCollection
 
@@ -49,5 +46,3 @@ class TPFImporter(BaseImporterToDataCollection):
     @property
     def output(self):
         return self.input
-
-

@@ -1,11 +1,8 @@
 import os
 
-from astropy.io import fits
-from astropy.table import Table
 from glue.config import data_translator
 from jdaviz.core.registries import data_parser_registry
 import lightkurve
-import numpy as np
 
 from lcviz.viewers import PhaseScatterView, TimeScatterView
 from lcviz.plugins.plot_options import PlotOptions
