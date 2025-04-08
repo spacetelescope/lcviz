@@ -109,11 +109,7 @@ class LCviz(ConfigHelper):
                  'lcviz-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'lcviz-export'],
-        'viewer_area': [{'container': 'col',
-                         'children': [{'container': 'row',
-                                       'viewers': [{'name': 'flux-vs-time',
-                                                    'plot': 'lcviz-time-viewer',
-                                                    'reference': 'flux-vs-time'}]}]}]}
+        'viewer_area': [{'container': 'col'}]}
 
     _component_ids = {}
 
