@@ -378,7 +378,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         pv.state.x_att = phase_comp
 
         # set viewer limits
-        pv.state.x_min, pv.state.x_max = (self.wrap_at-1, self.wrap_at)
+        wrap_at = self.ephemerides.get(ephem_component, {}).get('wrap_at', self.wrap_at)
+        pv.state.x_min, pv.state.x_max = (wrap_at-1, wrap_at)
 
         return pv.user_api
 
