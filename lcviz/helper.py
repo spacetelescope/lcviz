@@ -235,15 +235,6 @@ class LCviz(ConfigHelper):
         return {item['name']: widget_serialization['from_json'](item['widget'], None)
                 for item in self.app.state.tool_items}
 
-    def _get_clone_viewer_reference(self, reference):
-        # NOTE: moved to jdaviz in 4.3
-        base_name = reference.split("[")[0]
-        name = base_name
-        ind = 0
-        while name in self.viewers.keys():
-            ind += 1
-            name = f"{base_name}[{ind}]"
-        return name
 
     def _phase_comp_lbl(self, component):
         return f'phase:{component}'

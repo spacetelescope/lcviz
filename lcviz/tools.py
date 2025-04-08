@@ -12,16 +12,7 @@ SidebarShortcutPlotOptions.plugin_name = 'lcviz-plot-options'
 SidebarShortcutExportPlot.plugin_name = 'lcviz-export'
 
 
-__all__ = ['ViewerClone']
+__all__ = []
 
 
-@viewer_tool
-class ViewerClone(Tool):
-    # NOTE: moved to jdaviz in 4.3 as jdaviz:viewer_clone
-    icon = os.path.join(ICON_DIR, 'viewer_clone')
-    tool_id = 'lcviz:viewer_clone'
-    action_text = 'Clone viewer'
-    tool_tip = 'Clone this viewer'
 
-    def activate(self):
-        self.viewer.clone_viewer()
