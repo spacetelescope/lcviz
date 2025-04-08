@@ -21,7 +21,7 @@ from lcviz.parsers import _data_with_reftime
 __all__ = ['Flatten']
 
 
-@tray_registry('flatten', label="Flatten")
+@tray_registry('flatten', label="Flatten", category="data:manipulation")
 class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     """
     See the :ref:`Flatten Plugin Documentation <flatten>` for more details.

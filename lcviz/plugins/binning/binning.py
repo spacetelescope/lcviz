@@ -23,7 +23,7 @@ from lcviz.utils import is_not_tpf
 __all__ = ['Binning']
 
 
-@tray_registry('binning', label="Binning")
+@tray_registry('binning', label="Binning", category='data:manipulation')
 class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
               EphemerisSelectMixin, AddResultsMixin):
     """

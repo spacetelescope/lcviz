@@ -33,7 +33,7 @@ _default_wrap_at = 1.0
 _default_query_radius = 2  # [arcsec]
 
 
-@tray_registry('ephemeris', label="Ephemeris")
+@tray_registry('ephemeris', label="Ephemeris", category='data:analysis')
 class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     """
     See the :ref:`Ephemeris Plugin Documentation <ephemeris>` for more details.

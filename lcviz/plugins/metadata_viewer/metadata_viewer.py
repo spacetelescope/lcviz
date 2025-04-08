@@ -12,7 +12,7 @@ __all__ = ['MetadataViewer']
 Undefined.__str__ = lambda x: ''
 
 
-@tray_registry('lcviz-metadata-viewer', label="Metadata")
+@tray_registry('lcviz-metadata-viewer', label="Metadata", category='data:info')
 class MetadataViewer(MetadataViewer):
     """
     See the :ref:`Metadata Viewer Plugin Documentation <metadata-viewer>` for more details.

@@ -17,3 +17,7 @@ from .viewers import *  # noqa
 from .helper import *  # noqa
 
 from .loaders import *  # noqa
+
+from jdaviz import _ca
+_ca.app.update_tray_items_from_registry()
+_ca.app.update_loaders_from_registry()

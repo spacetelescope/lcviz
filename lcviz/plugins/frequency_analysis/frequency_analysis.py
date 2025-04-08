@@ -16,7 +16,7 @@ from lcviz.utils import data_not_folded, is_not_tpf
 __all__ = ['FrequencyAnalysis']
 
 
-@tray_registry('frequency-analysis', label="Frequency Analysis")
+@tray_registry('frequency-analysis', label="Frequency Analysis", category='data:analysis')
 class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     """
     See the :ref:`Frequency Analysis Plugin Documentation <frequency_analysis>` for more details.

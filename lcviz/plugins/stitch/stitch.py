@@ -13,7 +13,7 @@ from lcviz.utils import data_not_folded, is_not_tpf
 __all__ = ['Stitch']
 
 
-@tray_registry('stitch', label="Stitch")
+@tray_registry('stitch', label="Stitch", category='data:manipulation')
 class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
     """
     See the :ref:`Stitch Plugin Documentation <stitch>` for more details.
