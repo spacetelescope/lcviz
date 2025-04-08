@@ -24,54 +24,8 @@ from lightkurve import LightCurve
 __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
 
-class CloneViewerMixin:
-    # NOTE: moved to jdaviz in 4.3
-    def _get_clone_viewer_reference(self):
-        base_name = self.reference.split("[")[0]
-        name = base_name
-        ind = 0
-        while name in self.jdaviz_helper.viewers.keys():
-            ind += 1
-            name = f"{base_name}[{ind}]"
-        return name
-
-    def clone_viewer(self):
-        name = self.jdaviz_helper._get_clone_viewer_reference(self.reference)
-
-        self.jdaviz_app._on_new_viewer(NewViewerMessage(self.__class__,
-                                                        data=None,
-                                                        sender=self.jdaviz_app),
-                                       vid=name, name=name)
-
-        nv = self.jdaviz_helper.viewers.get(name)
-
-        visible_layers = self.data_menu.data_labels_visible
-        for layer in self.data_menu.data_labels_loaded:
-            visible = layer in visible_layers
-            nv.data_menu.add_data(layer)
-            nv.data_menu.set_layer_visibility(layer, visible)
-            # TODO: don't revert color when adding same data to a new viewer
-            # (same happens when creating a phase-viewer from ephemeris plugin)
-
-        new_viewer = self.jdaviz_app.get_viewer(name)
-        if hasattr(self, 'ephemeris_component'):
-            new_viewer._ephemeris_component = self._ephemeris_component
-        for k, v in self.state.as_dict().items():
-            if k in ('layers',):
-                continue
-            setattr(new_viewer.state, k, v)
-
-        for this_layer_state, new_layer_state in zip(self.state.layers, new_viewer.state.layers):
-            for k, v in this_layer_state.as_dict().items():
-                if k in ('layer',):
-                    continue
-                setattr(new_layer_state, k, v)
-
-        return new_viewer.user_api
-
-
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
-class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, BqplotScatterView):
+class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -79,7 +33,7 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
                     ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
                     ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
                     ['jdaviz:selectslice'],
-                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['jdaviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     default_class = LightCurve
     _state_cls = ScatterViewerState
@@ -272,6 +226,8 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
 @viewer_registry("lcviz-phase-viewer", label="flux-vs-phase")
 class PhaseScatterView(TimeScatterView):
+    _clone_attrs = ('_ephemeris_component',)
+
     def __init__(self, *args, **kwargs):
         self._ephemeris_component = 'default'
         super().__init__(*args, **kwargs)
@@ -302,14 +258,14 @@ class PhaseScatterView(TimeScatterView):
 
 
 @viewer_registry("lcviz-cube-viewer", label="cube")
-class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
+class CubeView(CubevizImageView, WithSliceSelection):
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
                     ['jdaviz:boxzoom'],
                     ['jdaviz:panzoom'],
                     ['bqplot:rectangle'],
-                    ['lcviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['jdaviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
                 ]
     # TODO: can we vary this default_class based on Kepler vs TESS, etc?
     # see https://github.com/spacetelescope/lcviz/pull/81#discussion_r1469721009
