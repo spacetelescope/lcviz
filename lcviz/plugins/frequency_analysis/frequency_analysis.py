@@ -80,6 +80,15 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.plot.viewer.axis_y.label_offset = '55px'
         self._update_xunit()
 
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
+
     # TODO: remove if/once inherited from jdaviz
     # (https://github.com/spacetelescope/jdaviz/pull/2253)
     def _clear_cache(self, *attrs):
