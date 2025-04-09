@@ -238,9 +238,6 @@ class LCviz(ConfigHelper):
             name = f"{base_name}[{ind}]"
         return name
 
-    def _phase_comp_lbl(self, component):
-        return f'phase:{component}'
-
     def _set_data_component(self, data, component_label, values):
         if component_label in self._component_ids:
             component_id = self._component_ids[component_label]

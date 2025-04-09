@@ -24,6 +24,7 @@ from astropy.wcs.wcsapi.wrappers.base import BaseWCSWrapper
 from astropy.wcs.wcsapi import HighLevelWCSMixin
 
 __all__ = ['TimeCoordinates', 'LightCurveHandler',
+           'phase_comp_lbl',
            'data_not_folded', 'is_tpf', 'is_not_tpf',
            'enable_hot_reloading']
 
@@ -504,6 +505,10 @@ class KeplerTPFHandler(TPFHandler):
 @data_translator(TessTargetPixelFile)
 class TessTPFHandler(TPFHandler):
     quality_flag_cls = TessQualityFlags
+
+
+def phase_comp_lbl(component):
+    return f'phase:{component}'
 
 
 # plugin component filters

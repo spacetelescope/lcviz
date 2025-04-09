@@ -21,7 +21,7 @@ from lightkurve import periodogram, FoldedLightCurve
 
 from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
 from lcviz.viewers import PhaseScatterView
-from lcviz.utils import is_not_tpf
+from lcviz.utils import is_not_tpf, phase_comp_lbl
 
 __all__ = ['Ephemeris']
 
@@ -189,11 +189,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _phase_comp_lbl(self, component=None):
         if component is None:
             component = self.component_selected
-        if self.app._jdaviz_helper is None:
-            # duplicate logic from helper in case this is ever called before the helper
-            # is fully intialized
-            return f'phase:{component}'
-        return self.app._jdaviz_helper._phase_comp_lbl(component)
+        return phase_comp_lbl(component)
 
     @property
     def phase_comp_lbl(self):
@@ -285,7 +281,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         dc = self.app.data_collection
 
-        phase_comp_lbl = self._phase_comp_lbl(ephem_component)
+        _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
 
         # we'll create the callable function for this component once so it can be re-used
         _times_to_phases = self._times_to_phases_callable(ephem_component)
@@ -300,7 +296,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             phases = _times_to_phases(times)
 
             self.app._jdaviz_helper._set_data_component(
-                data, phase_comp_lbl, phases
+                data, _phase_comp_lbl, phases
             )
 
             if i != 0:
@@ -324,7 +320,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 if hasattr(mark, 'update_phase_folding'):
                     mark.update_phase_folding()
 
-        return phase_comp_lbl
+        return _phase_comp_lbl
 
     def create_phase_viewer(self, ephem_component=None):
         """
@@ -338,13 +334,13 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         """
         if ephem_component is None:
             ephem_component = self.component_selected
-        phase_comp_lbl = self._phase_comp_lbl(ephem_component)
+        _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
         dc = self.app.data_collection
 
         # check to see if this component already has a phase array.  We'll just check the first
         # item in the data-collection since the rest of the logic in this plugin /should/ populate
         # the arrays across all entries.
-        if phase_comp_lbl not in [comp.label for comp in dc[0].components]:
+        if _phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self.update_ephemeris()  # calls _update_all_phase_arrays
 
         phase_viewer_id = self._generate_phase_viewer_id(ephem_component)
@@ -374,7 +370,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             pv.data_menu.set_layer_visibility(data.label, visible)
 
         # set x_att
-        phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+        phase_comp = self.app._jdaviz_helper._component_ids[_phase_comp_lbl]
         pv.state.x_att = phase_comp
 
         # set viewer limits

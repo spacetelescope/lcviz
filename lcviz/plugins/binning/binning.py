@@ -17,7 +17,7 @@ from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.components import EphemerisSelectMixin
-from lcviz.utils import is_not_tpf
+from lcviz.utils import is_not_tpf, phase_comp_lbl
 
 
 __all__ = ['Binning']
@@ -248,10 +248,11 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
             # convert to glue Data manually, so we may edit the `phase` component:
             handler, _ = data_translator.get_handler_for(lc)
             data = handler.to_data(lc)
-            phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
 
             # here we use the `value` attribute of `lc.time`, which has units of *phase*:
-            self.app._jdaviz_helper._set_data_component(data, phase_comp_lbl, lc.time.value)
+            self.app._jdaviz_helper._set_data_component(data,
+                                                        phase_comp_lbl(self.ephemeris_selected),
+                                                        lc.time.value)
 
         else:
             # need to send through parser-logic to assign the correct reference time
@@ -266,8 +267,7 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
             if self.ephemeris_selected != 'No ephemeris':
                 # prevent phase axis from becoming a time axis:
                 ephemeris_plugin = self.app._jdaviz_helper.plugins['Ephemeris']
-                phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
-                phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+                phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl(self.ephemeris_selected)]
                 for pv in ephemeris_plugin._obj._get_phase_viewers(self.ephemeris_selected):
                     pv.state.x_att = phase_comp
                 # by resetting x_att, the preview marks may have dissappeared
