@@ -86,6 +86,15 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
 
         self._set_default_label()
 
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
+
     @property
     def user_api(self):
         expose = ['show_live_preview', 'show_trend_preview',

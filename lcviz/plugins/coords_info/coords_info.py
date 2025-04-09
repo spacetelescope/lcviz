@@ -37,7 +37,7 @@ class CoordsInfo(CoordsInfo):
             return arr[viewer.state.slices[0], int(round(y)), int(round(x))]
         return super()._get_cube_value(image, arr, x, y, viewer)
 
-    def _lc_viewer_update(self, viewer, x, y):
+    def _lc_viewer_update(self, viewer, x, y, mouseevent=False):
         is_phase = isinstance(viewer, PhaseScatterView)
         # TODO: update with display_unit when supported in lcviz
         x_unit = '' if is_phase else str(viewer.time_unit)
@@ -148,7 +148,7 @@ class CoordsInfo(CoordsInfo):
         self.marks[viewer._reference_id].update_xy([closest_x], [closest_y])  # noqa
         self.marks[viewer._reference_id].visible = True
 
-    def _image_viewer_update(self, viewer, x, y):
+    def _image_viewer_update(self, viewer, x, y, mouseevent=False):
         # Extract first dataset from visible layers and use this for coordinates - the choice
         # of dataset shouldn't matter if the datasets are linked correctly
         active_layer = viewer.active_image_layer
@@ -233,13 +233,13 @@ class CoordsInfo(CoordsInfo):
             self.row1b_title = ''
             self.row1b_text = ''
 
-    def update_display(self, viewer, x, y):
+    def update_display(self, viewer, x, y, mouseevent=True):
         self._dict = {}
 
         if not len(viewer.state.layers):
             return
 
         if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
-            self._lc_viewer_update(viewer, x, y)
+            self._lc_viewer_update(viewer, x, y, mouseevent)
         elif isinstance(viewer, CubeView):
-            self._image_viewer_update(viewer, x, y)
+            self._image_viewer_update(viewer, x, y, mouseevent)
