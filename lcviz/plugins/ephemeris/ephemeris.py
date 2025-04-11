@@ -83,6 +83,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     """
     template_file = __file__, "ephemeris.vue"
 
+    reference_time = None
+
     # EPHEMERIS
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
@@ -170,6 +172,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             self.irrelevant_msg = 'No valid datasets loaded'
         else:
             self.irrelevant_msg = ''
+            if self.reference_time is None:
+                self.reference_time = self.dataset.selected_obj.meta.get('REFTIME', 0.0)
 
     @property
     def user_api(self):
@@ -641,6 +645,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @observe('dataset_selected')
     def _query_params_from_metadata(self, *args):
+        if not hasattr(self, 'dataset'):
+            return
         if self.dataset.selected_obj is None:
             return
         self.query_name = self.dataset.selected_obj.meta.get('OBJECT', '')
@@ -694,12 +700,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _select_query_result(self, *args):
         selected_query_result = self.astroquery_result.loc[self.query_result_selected]
         self.period_from_catalog = selected_query_result['pl_orbper'].base.to_value(u.day)
-        ref_time = self.app.data_collection[0].coords.reference_time.jd
         if np.isnan(selected_query_result['pl_tranmid'].base.to_value(u.day)):
             self.t0_from_catalog = 0
         else:
             self.t0_from_catalog = (
-                selected_query_result['pl_tranmid'].base.to_value(u.day) - ref_time
+                selected_query_result['pl_tranmid'].base.to_value(u.day) - self.reference_time
             ) % self.period_from_catalog
 
     @with_spinner('query_spinner')
