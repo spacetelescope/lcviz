@@ -155,7 +155,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
         return hdulist_to_lightcurve(pri_header, self.extension.selected_hdu)
 
     def __call__(self):
-        if self.extension_multiselect:
+        if self.input_hdulist and self.extension_multiselect:
             data_label = self.data_label_value
             lcs = self.output
             with self.app._jdaviz_helper.batch_load():
