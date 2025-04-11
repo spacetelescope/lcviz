@@ -238,18 +238,3 @@ class LCviz(ConfigHelper):
             name = f"{base_name}[{ind}]"
         return name
 
-    def _set_data_component(self, data, component_label, values):
-        if component_label in self._component_ids:
-            component_id = self._component_ids[component_label]
-        else:
-            existing_components = [component.label for component in data.components]
-            if component_label in existing_components:
-                component_id = data.components[existing_components.index(component_label)]
-            else:
-                component_id = ComponentID(component_label)
-                self._component_ids[component_label] = component_id
-
-        if component_id in data.components:
-            data.update_components({component_id: values})
-        else:
-            data.add_component(values, component_id)
