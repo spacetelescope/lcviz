@@ -170,11 +170,13 @@ class LightCurveImporter(BaseImporterToDataCollection):
             for lc, ext in zip(lcs, self.extension.selected_name):
                 if not has_ephem(lc):
                     continue
+                ephem = self.app._jdaviz_helper.plugins['Ephemeris']
+                ephem_component = self.app.return_unique_name(ext, ephem.component.choices)
+
                 time_offset = int(lc.meta.get('TUNIT1').split('- ')[1].split(',')[0])
                 period = lc.meta.get('TPERIOD', 1.0)
                 t0 = lc.meta.get('TEPOCH', None) + time_offset - self.app.data_collection[0].coords.reference_time.jd  # noqa
 
-                ephem = self.app._jdaviz_helper.plugins['Ephemeris']
-                ephem.add_component(ext, set_as_selected=False)
-                ephem.update_ephemeris(ext, t0=t0, period=period, wrap_at=0.5)
-                ephem.create_phase_viewer(ext)
+                ephem.add_component(ephem_component, set_as_selected=False)
+                ephem.update_ephemeris(ephem_component, t0=t0, period=period, wrap_at=0.5)
+                ephem.create_phase_viewer(ephem_component)
