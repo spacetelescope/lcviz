@@ -89,18 +89,6 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         else:
             self.irrelevant_msg = ''
 
-    # TODO: remove if/once inherited from jdaviz
-    # (https://github.com/spacetelescope/jdaviz/pull/2253)
-    def _clear_cache(self, *attrs):
-        """
-        provide convenience function to clearing the cache for cached_properties
-        """
-        if not len(attrs):
-            attrs = self._cached_properties
-        for attr in attrs:
-            if attr in self.__dict__:
-                del self.__dict__[attr]
-
     @property
     def user_api(self):
         expose = ['dataset', 'method', 'xunit', 'auto_range', 'minimum', 'maximum', 'periodogram']
