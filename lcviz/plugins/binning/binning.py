@@ -17,7 +17,7 @@ from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.components import EphemerisSelectMixin
-from lcviz.utils import is_not_tpf, phase_comp_lbl
+from lcviz.utils import is_lc, phase_comp_lbl
 
 
 __all__ = ['Binning']
@@ -63,7 +63,7 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
         # https://github.com/spacetelescope/jdaviz/pull/2239
         def not_from_binning_plugin(data):
             return data.meta.get('Plugin', None) != self.__class__.__name__
-        self.dataset.add_filter(not_from_binning_plugin, is_not_tpf)
+        self.dataset.add_filter(not_from_binning_plugin, is_lc)
 
         # TODO: viewer added also needs to repopulate marks
         self.hub.subscribe(self, ViewerAddedMessage, handler=self._on_add_viewer)

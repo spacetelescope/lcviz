@@ -25,7 +25,8 @@ from astropy.wcs.wcsapi import HighLevelWCSMixin
 
 __all__ = ['TimeCoordinates', 'LightCurveHandler',
            'phase_comp_lbl',
-           'data_not_folded', 'is_tpf', 'is_not_tpf',
+           'data_not_folded',
+           'is_lc', 'is_tpf', 'is_not_tpf',
            'enable_hot_reloading']
 
 
@@ -515,6 +516,9 @@ def phase_comp_lbl(component):
 def data_not_folded(data):
     return data.meta.get('_LCVIZ_EPHEMERIS', None) is None
 
+def is_lc(data):
+    return (len(data.shape) == 1
+            and isinstance(data.coords, TimeCoordinates))
 
 def is_tpf(data):
     return len(data.shape) == 3
