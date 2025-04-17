@@ -172,8 +172,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             self.irrelevant_msg = 'No valid datasets loaded'
         else:
             self.irrelevant_msg = ''
-            if self.reference_time is None:
-                self.reference_time = self.dataset.selected_obj.meta.get('REFTIME', 0.0)
 
     @property
     def user_api(self):
@@ -569,6 +567,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _update_periodogram(self, *args):
         if not (hasattr(self, 'method') and hasattr(self, 'dataset')):
             return
+        if self.reference_time is None and self.dataset.selected_obj is not None:
+            self.reference_time = self.dataset.selected_obj.meta.get('REFTIME', 0.0)
         # TODO: support multiselect on self.dataset and combine light curves (or would that be a
         # dedicated plugin of its own)?
         self.method_spinner = True
