@@ -6,7 +6,7 @@ from jdaviz.core.registries import tray_registry
 __all__ = ['Export']
 
 
-@tray_registry('lcviz-export', label="Export", category='app:export')
+@tray_registry('export', label="Export", category='app:export', overwrite=True)
 class Export(Export):
     """
     See the :ref:`Export Plot Plugin Documentation <export>` for more details.

@@ -10,13 +10,12 @@ from lcviz.viewers import TimeScatterView, PhaseScatterView, CubeView
 __all__ = ['CoordsInfo']
 
 
-@tool_registry('lcviz-coords-info')
+@tool_registry('g-coords-info', overwrite=True)
 class CoordsInfo(CoordsInfo):
-    _supported_viewer_classes = (TimeScatterView, PhaseScatterView, CubeView)
-    _viewer_classes_with_marker = (TimeScatterView, PhaseScatterView)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._supported_viewer_classes = tuple(list(self._supported_viewer_classes) + [TimeScatterView, PhaseScatterView, CubeView])
+        self._viewer_classes_with_marker = tuple(list(self._viewer_classes_with_marker) + [TimeScatterView, PhaseScatterView])
 
         # TODO: move to jdaviz if/once viewer renaming supported
         self.hub.subscribe(self, ViewerRenamedMessage,

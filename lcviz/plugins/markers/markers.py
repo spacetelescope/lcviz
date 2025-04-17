@@ -7,7 +7,7 @@ from jdaviz.core.registries import tray_registry
 __all__ = ['Markers']
 
 
-@tray_registry('lcviz-markers', label="Markers", category='viewer:options')
+@tray_registry('g-markers', label="Markers", category='viewer:options', overwrite=True)
 class Markers(Markers):
     """
     See the :ref:`Markers Plugin Documentation <markers>` for more details.

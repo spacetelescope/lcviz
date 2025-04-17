@@ -103,12 +103,12 @@ class LCviz(ConfigHelper):
                                  'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
-        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
-        'tray': ['lcviz-metadata-viewer', 'flux-column',
-                 'lcviz-plot-options', 'lcviz-subset-tools',
-                 'lcviz-markers', 'time-selector',
+        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
+        'tray': ['g-metadata-viewer', 'flux-column',
+                 'plot-options', 'g-subset-tools',
+                 'g-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
-                 'binning', 'lcviz-export'],
+                 'binning', 'export'],
         'viewer_area': [{'container': 'col'}]}
 
     _component_ids = {}
