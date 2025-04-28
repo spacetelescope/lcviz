@@ -15,3 +15,5 @@ from .parsers import *  # noqa
 from .tools import *  # noqa
 from .viewers import *  # noqa
 from .helper import *  # noqa
+
+from .loaders import *  # noqa
