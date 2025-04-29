@@ -6,7 +6,8 @@ from jdaviz.core.registries import tray_registry
 __all__ = ['Export']
 
 
-@tray_registry('export', label="Export", category='app:export', overwrite=True)
+@tray_registry('export', label="Export",
+               category='core', sidebar='save', overwrite=True)
 class Export(Export):
     """
     See the :ref:`Export Plot Plugin Documentation <export>` for more details.

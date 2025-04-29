@@ -11,7 +11,7 @@ from lcviz.utils import is_lc, is_not_tpf
 __all__ = ['FluxColumn']
 
 
-@tray_registry('flux-column', label="Flux Column", category='viewer:options')
+@tray_registry('flux-column', label="Flux Column", category='app:options')
 class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     """
     See the :ref:`Flux Column Plugin Documentation <flux-column>` for more details.

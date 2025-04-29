@@ -6,7 +6,8 @@ from jdaviz.core.registries import tray_registry
 __all__ = ['SubsetTools']
 
 
-@tray_registry('g-subset-tools', label="Subset Tools", category='subset:manipulation', overwrite=True)
+@tray_registry('g-subset-tools', label="Subset Tools",
+               category='core', sidebar='subsets', overwrite=True)
 class SubsetTools(SubsetTools):
     """
     See the :ref:`Subset Plugin Documentation <subset-tools>` for more details.
