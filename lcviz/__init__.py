@@ -19,5 +19,28 @@ from .helper import *  # noqa
 from .loaders import *  # noqa
 
 from jdaviz import _ca
+# inject loaders/plugins into the jdaviz deconfigged app
 _ca.app.update_tray_items_from_registry()
 _ca.app.update_loaders_from_registry()
+
+# redirect top-level calls to the deconfigged jdaviz app
+_expose = ['show', 'load', 'batch_load',
+           'toggle_api_hints',
+           'plugins',
+           'loaders',
+           'viewers']
+_incl = ['App', 'enable_hot_reloading', '__version__']
+_temporary_incl = ['LCviz']
+__all__ = _expose + _incl + _temporary_incl
+
+
+def __dir__():
+    return sorted(__all__)
+
+
+def __getattr__(name):
+    if name in _expose:
+        return getattr(_ca, name)
+    if name in globals():
+        return globals()[name]
+    raise AttributeError()
