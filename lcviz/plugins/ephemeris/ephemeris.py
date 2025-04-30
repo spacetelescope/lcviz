@@ -363,17 +363,16 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if len(tvs):
             tvdm = tvs[0].data_menu
             visible_layers = tvdm.data_labels_visible
-            loaded_layers = pv.data_menu.data_labels_loaded
         else:
             visible_layers = [dci.label for dci in dc if is_lc(dci) and is_not_tpf(dci)]
-            loaded_layers = visible_layers
+        loaded_layers = pv.data_menu.data_labels_loaded
 
         for data in dc:
             if data.ndim > 1:
                 # skip image/cube entries
                 continue
             visible = data.label in visible_layers
-            if data.label not in loaded_layers:
+            if data.label not in loaded_layers and data.label in pv.data_menu._obj.dataset.choices:
                 pv.data_menu.add_data(data.label)
             pv.data_menu.set_layer_visibility(data.label, visible)
 
