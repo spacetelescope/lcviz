@@ -175,7 +175,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
                 time_offset = int(lc.meta.get('TUNIT1').split('- ')[1].split(',')[0])
                 period = lc.meta.get('TPERIOD', 1.0)
-                t0 = lc.meta.get('TEPOCH', None) + time_offset - ephem.reference_time
+                t0 = lc.meta.get('TEPOCH', None) + time_offset - ephem._obj.reference_time
 
                 ephem.add_component(ephem_component, set_as_selected=False)
                 ephem.update_ephemeris(ephem_component, t0=t0, period=period, wrap_at=0.5)
