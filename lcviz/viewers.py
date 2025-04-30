@@ -15,9 +15,10 @@ from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.cubeviz.plugins.viewers import (CubevizImageView,
                                                     WithSliceIndicator, WithSliceSelection)
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
-from jdaviz.configs.specviz.plugins.viewers import SpecvizProfileView
+from jdaviz.configs.specviz.plugins.viewers import Spectrum1DViewer
 
 from lcviz.state import ScatterViewerState
+from lcviz.utils import is_lc, is_tpf
 
 from lightkurve import LightCurve
 
@@ -25,6 +26,7 @@ __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
 
 class CloneViewerMixin:
+    # NOTE: moved to jdaviz in 4.3
     def _get_clone_viewer_reference(self):
         base_name = self.reference.split("[")[0]
         name = base_name
@@ -92,13 +94,15 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         self.time_unit = kwargs.get('time_unit', u.d)
         self.initialize_toolbar(default_tool_priority=['jdaviz:selectslice'])
         self._subscribe_to_layers_update()
-        # hack to inherit a small subset of methods from SpecvizProfileView
+        # hack to inherit a small subset of methods from Spectrum1DViewer
         # TODO: refactor jdaviz so these can be included in some mixin
-        self._show_uncertainty_changed = lambda value: SpecvizProfileView._show_uncertainty_changed(self, value)  # noqa
-        self._plot_uncertainties = lambda: SpecvizProfileView._plot_uncertainties(self)
+        self._show_uncertainty_changed = lambda value: Spectrum1DViewer._show_uncertainty_changed(self, value)  # noqa
+        self._plot_uncertainties = lambda: Spectrum1DViewer._plot_uncertainties(self)
         # TODO: _plot_uncertainties in specviz is hardcoded to look at spectral_axis and so crashes
-        self._clean_error = lambda: SpecvizProfileView._clean_error(self)
+        self._clean_error = lambda: Spectrum1DViewer._clean_error(self)
         self.density_map = kwargs.get('density_map', False)
+
+        self.data_menu._obj.dataset.add_filter(is_lc)
 
     @property
     def slice_component_label(self):
@@ -156,7 +160,10 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
 
     def set_plot_axes(self):
         # set which components should be plotted
-        dc = self.jdaviz_app.data_collection
+        dc = [dci for dci in self.jdaviz_app.data_collection
+              if 'dt' in [str(c) for c in dci.components]]
+        if not len(dc):
+            return
         component_labels = [comp.label for comp in dc[0].components]
 
         # Get data to be used for axes labels
@@ -165,6 +172,7 @@ class TimeScatterView(JdavizViewerMixin, CloneViewerMixin, WithSliceIndicator, B
         self._set_plot_y_axes(dc, component_labels, light_curve)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve=None, reference_time=None):
+        # this cannot assume dc[0]
         self.state.x_att = dc[0].components[component_labels.index('dt')]
 
         x_unit = self.time_unit
@@ -330,6 +338,8 @@ class CubeView(CloneViewerMixin, CubevizImageView, WithSliceSelection):
         # * _default_spectrum_viewer_reference_name
         # * _default_flux_viewer_reference_name
         # * _default_uncert_viewer_reference_name
+
+        self.data_menu._obj.dataset.add_filter(is_tpf)
 
     @property
     def slice_component_label(self):
