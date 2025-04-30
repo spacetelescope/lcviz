@@ -20,7 +20,7 @@ from jdaviz.core.events import SnackbarMessage
 from lightkurve import periodogram, FoldedLightCurve
 
 from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
-from lcviz.viewers import PhaseScatterView
+from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.utils import is_lc, is_not_tpf, phase_comp_lbl
 
 __all__ = ['Ephemeris']
@@ -359,9 +359,15 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._check_if_phase_viewer_exists()
 
         # set default data visibility
-        tvdm = self.app._jdaviz_helper.default_time_viewer.data_menu
-        visible_layers = tvdm.data_labels_visible
-        loaded_layers = pv.data_menu.data_labels_loaded
+        tvs = self.get_matching_viewers(TimeScatterView)
+        if len(tvs):
+            tvdm = tvs[0].data_menu
+            visible_layers = tvdm.data_labels_visible
+            loaded_layers = pv.data_menu.data_labels_loaded
+        else:
+            visible_layers = [dci.label for dci in dc if is_lc(dci) and is_not_tpf(dci)]
+            loaded_layers = visible_layers
+
         for data in dc:
             if data.ndim > 1:
                 # skip image/cube entries

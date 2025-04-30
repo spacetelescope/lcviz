@@ -196,7 +196,11 @@ class CoordsInfo(CoordsInfo):
                 self._viewer_mouse_clear_event(viewer)
                 return
             # TODO: store slice unit within image viewer to avoid this assumption?
-            time_unit = str(self.app._jdaviz_helper.default_time_viewer._obj.time_unit)
+            tvs = self.get_viewer_of_cls(TimeScatterView)
+            if len(tvs):
+                time_unit = str(tvs[0].time_unit)
+            else:
+                time_unit = 's'
             self.row2_title = 'Time'
             self.row2_text = f'{time:0.5f} {time_unit}'
             self._dict['time'] = time
