@@ -17,11 +17,13 @@ from .viewers import *  # noqa
 from .helper import *  # noqa
 
 from .loaders import *  # noqa
+from .viewer_creators import *  # noqa
 
 from jdaviz import _ca
 # inject loaders/plugins into the jdaviz deconfigged app
 _ca.app.update_tray_items_from_registry()
 _ca.app.update_loaders_from_registry()
+_ca.app.update_new_viewers_from_registry()
 
 # redirect top-level calls to the deconfigged jdaviz app
 _expose = ['show', 'load', 'batch_load',

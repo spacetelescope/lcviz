@@ -324,6 +324,17 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         return _phase_comp_lbl
 
+    def _set_viewer_to_ephem_component(self, viewer, ephem_component=None):
+        viewer._ephemeris_component = ephem_component
+
+        # set x_att
+        phase_comp = self.app._jdaviz_helper._component_ids[self._phase_comp_lbl(ephem_component)]
+        viewer.state.x_att = phase_comp
+
+        # set viewer limits
+        wrap_at = self.ephemerides.get(ephem_component, {}).get('wrap_at', self.wrap_at)
+        viewer.state.x_min, viewer.state.x_max = (wrap_at-1, wrap_at)
+
     def create_phase_viewer(self, ephem_component=None):
         """
         Create a new phase viewer corresponding to ``component`` and populate the phase arrays
@@ -376,13 +387,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 pv.data_menu.add_data(data.label)
             pv.data_menu.set_layer_visibility(data.label, visible)
 
-        # set x_att
-        phase_comp = self.app._jdaviz_helper._component_ids[_phase_comp_lbl]
-        pv.state.x_att = phase_comp
-
-        # set viewer limits
-        wrap_at = self.ephemerides.get(ephem_component, {}).get('wrap_at', self.wrap_at)
-        pv.state.x_min, pv.state.x_max = (wrap_at-1, wrap_at)
+        self._set_viewer_to_ephem_component(pv, ephem_component=ephem_component)
 
         return pv.user_api
 

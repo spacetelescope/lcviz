@@ -16,7 +16,7 @@ from lcviz.events import EphemerisChangedMessage
 from lcviz.marks import LivePreviewBinning
 from lcviz.parsers import _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-from lcviz.components import EphemerisSelectMixin
+from lcviz.components import EphemerisSelectAllowNoneMixin
 from lcviz.utils import is_lc, phase_comp_lbl
 
 
@@ -25,7 +25,7 @@ __all__ = ['Binning']
 
 @tray_registry('binning', label="Binning", category='data:manipulation')
 class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
-              EphemerisSelectMixin, AddResultsMixin):
+              EphemerisSelectAllowNoneMixin, AddResultsMixin):
     """
     See the :ref:`Binning Plugin Documentation <binning>` for more details.
 
