@@ -24,7 +24,9 @@ from astropy.wcs.wcsapi.wrappers.base import BaseWCSWrapper
 from astropy.wcs.wcsapi import HighLevelWCSMixin
 
 __all__ = ['TimeCoordinates', 'LightCurveHandler',
-           'data_not_folded', 'is_tpf', 'is_not_tpf',
+           'phase_comp_lbl',
+           'data_not_folded',
+           'is_lc', 'is_tpf', 'is_not_tpf',
            'enable_hot_reloading']
 
 
@@ -506,9 +508,18 @@ class TessTPFHandler(TPFHandler):
     quality_flag_cls = TessQualityFlags
 
 
+def phase_comp_lbl(component):
+    return f'phase:{component}'
+
+
 # plugin component filters
 def data_not_folded(data):
     return data.meta.get('_LCVIZ_EPHEMERIS', None) is None
+
+
+def is_lc(data):
+    return (len(data.shape) == 1
+            and isinstance(data.coords, TimeCoordinates))
 
 
 def is_tpf(data):

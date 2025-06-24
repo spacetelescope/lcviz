@@ -10,13 +10,13 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, SelectPluginComponent, PlotMixin)
 from jdaviz.core.user_api import PluginUserApi
 
-from lcviz.utils import data_not_folded, is_not_tpf
+from lcviz.utils import data_not_folded, is_lc
 
 
 __all__ = ['FrequencyAnalysis']
 
 
-@tray_registry('frequency-analysis', label="Frequency Analysis")
+@tray_registry('frequency-analysis', label="Frequency Analysis", category='data:analysis')
 class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     """
     See the :ref:`Frequency Analysis Plugin Documentation <frequency_analysis>` for more details.
@@ -61,7 +61,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self._ignore_auto_update = False
 
         # do not support data only in phase-space
-        self.dataset.add_filter(data_not_folded, is_not_tpf)
+        self.dataset.add_filter(data_not_folded, is_lc)
 
         self.method = SelectPluginComponent(self,
                                             items='method_items',

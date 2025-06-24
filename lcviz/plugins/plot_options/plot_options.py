@@ -7,7 +7,8 @@ from jdaviz.core.registries import tray_registry
 __all__ = ['PlotOptions']
 
 
-@tray_registry('lcviz-plot-options', label="Plot Options")
+@tray_registry('plot-options', label="Plot Options",
+               category='core', sidebar='viewers', subtab=0, overwrite=True)
 class PlotOptions(PlotOptions):
     """
     See the :ref:`Plot Options Plugin Documentation <plot-options>` for more details.

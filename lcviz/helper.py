@@ -6,7 +6,6 @@ import os
 from lightkurve import LightCurve
 
 from glue.config import settings as glue_settings
-from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.units import unit_converter
 from jdaviz.core.helpers import ConfigHelper
@@ -103,12 +102,12 @@ class LCviz(ConfigHelper):
                                  'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
-        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
-        'tray': ['lcviz-metadata-viewer', 'flux-column',
-                 'lcviz-plot-options', 'lcviz-subset-tools',
-                 'lcviz-markers', 'time-selector',
+        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
+        'tray': ['g-metadata-viewer', 'flux-column',
+                 'plot-options', 'g-subset-tools',
+                 'g-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
-                 'binning', 'lcviz-export'],
+                 'binning', 'export'],
         'viewer_area': [{'container': 'col'}]}
 
     _component_ids = {}
@@ -227,23 +226,3 @@ class LCviz(ConfigHelper):
         from ipywidgets.widgets import widget_serialization
         return {item['name']: widget_serialization['from_json'](item['widget'], None)
                 for item in self.app.state.tool_items}
-
-
-    def _phase_comp_lbl(self, component):
-        return f'phase:{component}'
-
-    def _set_data_component(self, data, component_label, values):
-        if component_label in self._component_ids:
-            component_id = self._component_ids[component_label]
-        else:
-            existing_components = [component.label for component in data.components]
-            if component_label in existing_components:
-                component_id = data.components[existing_components.index(component_label)]
-            else:
-                component_id = ComponentID(component_label)
-                self._component_ids[component_label] = component_id
-
-        if component_id in data.components:
-            data.update_components({component_id: values})
-        else:
-            data.add_component(values, component_id)
