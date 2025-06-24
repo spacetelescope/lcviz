@@ -10,7 +10,6 @@ from glue_jupyter.bqplot.scatter import BqplotScatterView
 from astropy import units as u
 from astropy.time import Time
 
-from jdaviz.core.events import NewViewerMessage
 from jdaviz.core.registries import viewer_registry
 from jdaviz.configs.cubeviz.plugins.viewers import (CubevizImageView,
                                                     WithSliceIndicator, WithSliceSelection)
@@ -18,6 +17,7 @@ from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import Spectrum1DViewer
 
 from lcviz.state import ScatterViewerState
+from lcviz.utils import is_lc, is_tpf
 
 from lightkurve import LightCurve
 
@@ -54,6 +54,8 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
         # TODO: _plot_uncertainties in specviz is hardcoded to look at spectral_axis and so crashes
         self._clean_error = lambda: Spectrum1DViewer._clean_error(self)
         self.density_map = kwargs.get('density_map', False)
+
+        self.data_menu._obj.dataset.add_filter(is_lc)
 
     @property
     def slice_component_label(self):
@@ -291,6 +293,8 @@ class CubeView(CubevizImageView, WithSliceSelection):
         # * _default_spectrum_viewer_reference_name
         # * _default_flux_viewer_reference_name
         # * _default_uncert_viewer_reference_name
+
+        self.data_menu._obj.dataset.add_filter(is_tpf)
 
     @property
     def slice_component_label(self):

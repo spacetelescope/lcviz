@@ -10,7 +10,7 @@ from lcviz.viewers import CubeView, TimeScatterView, PhaseScatterView
 __all__ = ['TimeSelector']
 
 
-@tray_registry('time-selector', label="Time Selector")
+@tray_registry('time-selector', label="Time Selector", category='app:options')
 class TimeSelector(Slice, ViewerSelectMixin):
     """
     See the :ref:`Time Selector Plugin Documentation <time-selector>` for more details.

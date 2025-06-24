@@ -1,9 +1,6 @@
 import os
-
-from glue.config import viewer_tool
-from glue.viewers.common.tool import Tool
-
 from jdaviz.core.tools import SidebarShortcutPlotOptions, SidebarShortcutExportPlot
+
 
 ICON_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), 'data', 'icons'))
 
@@ -13,6 +10,3 @@ SidebarShortcutExportPlot.plugin_name = 'lcviz-export'
 
 
 __all__ = []
-
-
-

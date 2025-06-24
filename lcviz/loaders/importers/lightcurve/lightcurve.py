@@ -38,6 +38,7 @@ def hdu_is_valid(hdu):
             'LC_INIT_ERR' in hdu.columns.names and
             'TUNIT1' in hdu.header)
 
+
 def hdulist_to_lightcurve(pri_header, hdu):
     data = Table(hdu.data)
     # don't load some columns with names that may
@@ -60,6 +61,7 @@ def hdulist_to_lightcurve(pri_header, hdu):
     lc.meta['EXTNAME'] = hdu.header['EXTNAME']
 
     return lc
+
 
 def has_ephem(lc):
     return ('TPERIOD' in lc.meta and
@@ -175,7 +177,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
                 time_offset = int(lc.meta.get('TUNIT1').split('- ')[1].split(',')[0])
                 period = lc.meta.get('TPERIOD', 1.0)
-                t0 = lc.meta.get('TEPOCH', None) + time_offset - self.app.data_collection[0].coords.reference_time.jd  # noqa
+                t0 = lc.meta.get('TEPOCH', None) + time_offset - ephem._obj.reference_time
 
                 ephem.add_component(ephem_component, set_as_selected=False)
                 ephem.update_ephemeris(ephem_component, t0=t0, period=period, wrap_at=0.5)
