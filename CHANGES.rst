@@ -4,6 +4,12 @@
 1.1.1 (unreleased)
 ------------------
 
+* Fix loading files without TELESCOP set. [#182]
+
+* Add missing plugin description for the Stitch plugin. [#185]
+
+* Fixes the case of setting original phase-viewer limits of a non-selected ephemeris component [#188]
+
 1.1.0 (03-25-2025)
 ------------------
 

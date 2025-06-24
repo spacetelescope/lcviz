@@ -388,7 +388,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             pv.data_menu.set_layer_visibility(data.label, visible)
 
         self._set_viewer_to_ephem_component(pv, ephem_component=ephem_component)
-
         return pv.user_api
 
     def vue_create_phase_viewer(self, *args):

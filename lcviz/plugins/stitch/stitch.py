@@ -38,6 +38,7 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._plugin_description = 'Stitch light curves together.'
 
         self.dataset.multiselect = True
         # do not support stitching data in phase-space
