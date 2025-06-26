@@ -107,7 +107,7 @@ class LCviz(ConfigHelper):
                  'plot-options', 'g-subset-tools',
                  'g-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
-                 'binning', 'export'],
+                 'binning', 'export', 'logger'],
         'viewer_area': [{'container': 'col'}]}
 
     _component_ids = {}
