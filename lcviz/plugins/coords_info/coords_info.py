@@ -198,7 +198,7 @@ class CoordsInfo(CoordsInfo):
                 self._viewer_mouse_clear_event(viewer)
                 return
             # TODO: store slice unit within image viewer to avoid this assumption?
-            tvs = self.get_viewer_of_cls(TimeScatterView)
+            tvs = self.app.get_viewers_of_cls(TimeScatterView)
             if len(tvs):
                 time_unit = str(tvs[0].time_unit)
             else:
