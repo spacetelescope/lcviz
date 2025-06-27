@@ -26,7 +26,6 @@ dependencies = [
     "lightkurve>=2.5.0",
     # NOTE: glue-jupyter is also pinned by jdaviz.
     "glue-jupyter>=0.22.2",
-    "numpy<2",
 ]
 dynamic = [
     "version",
