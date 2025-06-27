@@ -10,13 +10,13 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, SelectPluginComponent, PlotMixin)
 from jdaviz.core.user_api import PluginUserApi
 
-from lcviz.utils import data_not_folded, is_not_tpf
+from lcviz.utils import data_not_folded, is_lc
 
 
 __all__ = ['FrequencyAnalysis']
 
 
-@tray_registry('frequency-analysis', label="Frequency Analysis")
+@tray_registry('frequency-analysis', label="Frequency Analysis", category='data:analysis')
 class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     """
     See the :ref:`Frequency Analysis Plugin Documentation <frequency_analysis>` for more details.
@@ -61,7 +61,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self._ignore_auto_update = False
 
         # do not support data only in phase-space
-        self.dataset.add_filter(data_not_folded, is_not_tpf)
+        self.dataset.add_filter(data_not_folded, is_lc)
 
         self.method = SelectPluginComponent(self,
                                             items='method_items',
@@ -80,17 +80,14 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.plot.viewer.axis_y.label_offset = '55px'
         self._update_xunit()
 
-    # TODO: remove if/once inherited from jdaviz
-    # (https://github.com/spacetelescope/jdaviz/pull/2253)
-    def _clear_cache(self, *attrs):
-        """
-        provide convenience function to clearing the cache for cached_properties
-        """
-        if not len(attrs):
-            attrs = self._cached_properties
-        for attr in attrs:
-            if attr in self.__dict__:
-                del self.__dict__[attr]
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def user_api(self):
