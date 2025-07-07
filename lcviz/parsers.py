@@ -8,7 +8,7 @@ import numpy as np
 
 from lcviz.viewers import PhaseScatterView, TimeScatterView
 from lcviz.plugins.plot_options import PlotOptions
-from lcviz.utils import LightCurveHandler
+from lcviz.utils import LightCurveHandler, TPFHandler
 
 __all__ = ["light_curve_parser"]
 
@@ -154,7 +154,10 @@ def light_curve_parser(app, file_obj, data_label=None, show_in_viewer=True, **kw
                     app.add_data_to_viewer(viewer.reference, data_label)
 
 
-light_curve_handler = LightCurveHandler()
+lightkurve_handlers = {
+    lightkurve.LightCurve: LightCurveHandler(),
+    lightkurve.targetpixelfile.TargetPixelFile: TPFHandler(),
+}
 
 
 def _data_with_reftime(app, light_curve):
@@ -167,4 +170,8 @@ def _data_with_reftime(app, light_curve):
                 break
 
     # convert to glue Data manually, so we may edit the `dt` component if necessary:
-    return light_curve_handler.to_data(light_curve, reference_time=ff_reference_time)
+    for expected_cls, handler in lightkurve_handlers.items():
+        if isinstance(light_curve, expected_cls):
+            return handler.to_data(light_curve, reference_time=ff_reference_time)
+    else:
+        raise ValueError(f"No handler found for {light_curve} of type {type(light_curve)}")
