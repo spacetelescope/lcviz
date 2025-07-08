@@ -115,6 +115,11 @@ filterwarnings = [
     "ignore::FutureWarning:asteval",
     "ignore:pkg_resources is deprecated as an API:DeprecationWarning:mpl_scatter_density",
 
+    # this will be unnecessary after jdaviz merges and releases:
+    # https://github.com/spacetelescope/jdaviz/pull/3683
+    "ignore:.*The TestRunner class will be deprecated in a future version.*",
+    "ignore:.*The TestRunnerBase class will be deprecated in a future version.*",
+
     # this suppresses a warning from lightkurve that reads: "UserWarning: Warning: the tpfmodel 
     # submodule is not available without oktopus installed, which requires a current version of
     # autograd. See #1452 for details." 
