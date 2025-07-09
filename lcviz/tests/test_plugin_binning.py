@@ -30,6 +30,7 @@ def test_plugin_binning(helper, light_curve_like_kepler_quarter):
     pv = ephem.create_phase_viewer()._obj
 
     with b.as_active():
+        b.show_live_preview = True
         assert b.ephemeris == 'No ephemeris'
         assert len(_get_marks_from_viewer(tv)) == 1
         assert len(_get_marks_from_viewer(pv)) == 1

@@ -10,6 +10,9 @@
 
 * Fixes the case of setting original phase-viewer limits of a non-selected ephemeris component [#188]
 
+* Fix for ``lightkurve.LightCurve`` glue data translators introduced by glue-astronomy 0.12, workaround warnings raised by ``spectral_cube``,
+  ensure folded light curves have the ``normalize_phase`` attribute [#194]
+
 1.1.0 (03-25-2025)
 ------------------
 

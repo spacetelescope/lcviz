@@ -223,6 +223,11 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
         input_lc = self.input_lc
 
+        # fix for bug in py310, see:
+        # https://github.com/spacetelescope/lcviz/pull/194
+        if "NORMALIZE_PHASE" not in input_lc.meta:
+            input_lc.meta["NORMALIZE_PHASE"] = False
+
         lc = input_lc.bin(time_bin_size=(input_lc.time[-1]-input_lc.time[0]).value/self.n_bins)
         if self.ephemeris_selected != 'No ephemeris':
             # lc.time.value are actually phases, so convert to times starting at time t0
