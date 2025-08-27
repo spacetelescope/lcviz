@@ -1,4 +1,4 @@
-1.1.2 (unreleased)
+1.1.2 (08-27-2025)
 ------------------
 
 * Removes the max-pin of numpy by updating lightkurve to 2.5.1. [#200]
