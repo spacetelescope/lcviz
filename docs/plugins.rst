@@ -33,7 +33,7 @@ This plugin allows viewing of any metadata associated with the selected data.
 
 .. seealso::
 
-    :ref:`Jdaviz Metadata Viewer <jdaviz:imviz_metadata-viewer>`
+    :ref:`Jdaviz Metadata Viewer <jdaviz:imviz-metadata-viewer>`
         Jdaviz documentation on the Metadata Viewer plugin.
 
 .. _flux-column:
