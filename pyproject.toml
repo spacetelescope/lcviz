@@ -112,6 +112,7 @@ filterwarnings = [
     "ignore::UserWarning:traittypes",
     "ignore::DeprecationWarning:asteval",
     "ignore::FutureWarning:asteval",
+    "ignore::DeprecationWarning:traitlets",  # remove once https://github.com/spacetelescope/jdaviz/pull/3768 is merged upstream
     "ignore:pkg_resources is deprecated as an API:DeprecationWarning:mpl_scatter_density",
 
     # this will be unnecessary after jdaviz merges and releases:
