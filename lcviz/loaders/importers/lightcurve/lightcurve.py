@@ -156,7 +156,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
             return [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_hdu]
         return hdulist_to_lightcurve(pri_header, self.extension.selected_hdu)
 
-    def __call__(self):
+    def __call__(self, show_in_viewer=True):
         if self.input_hdulist and self.extension_multiselect:
             data_label = self.data_label_value
             lcs = self.output
