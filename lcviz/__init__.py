@@ -19,11 +19,13 @@ from .helper import *  # noqa
 from .loaders import *  # noqa
 from .viewer_creators import *  # noqa
 
-from jdaviz import _ca
+from jdaviz import gca
+
+jdaviz_app = gca()
 # inject loaders/plugins into the jdaviz deconfigged app
-_ca.app.update_tray_items_from_registry()
-_ca.app.update_loaders_from_registry()
-_ca.app.update_new_viewers_from_registry()
+jdaviz_app.app.update_tray_items_from_registry()
+jdaviz_app.app.update_loaders_from_registry()
+jdaviz_app.app.update_new_viewers_from_registry()
 
 # redirect top-level calls to the deconfigged jdaviz app
 _expose = ['show', 'load', 'batch_load',
@@ -42,7 +44,7 @@ def __dir__():
 
 def __getattr__(name):
     if name in _expose:
-        return getattr(_ca, name)
+        return getattr(jdaviz_app, name)
     if name in globals():
         return globals()[name]
     raise AttributeError()
