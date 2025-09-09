@@ -11,7 +11,7 @@ from lcviz.utils import is_lc
 __all__ = ['FluxVsTimeViewerCreator']
 
 
-@viewer_creator_registry('Flux vs Time')
+@viewer_creator_registry('Flux vs Time', overwrite=True)
 class FluxVsTimeViewerCreator(BaseViewerCreator):
     template_file = __file__, "../base_viewer_creator.vue"
 
@@ -25,7 +25,7 @@ class FluxVsTimeViewerCreator(BaseViewerCreator):
         return TimeScatterView
 
 
-@viewer_creator_registry('Flux vs Phase')
+@viewer_creator_registry('Flux vs Phase', overwrite=True)
 class FluxVsPhaseViewerCreator(BaseViewerCreator, EphemerisSelectMixin):
     template_file = __file__, "./phase_viewer_creator.vue"
 
