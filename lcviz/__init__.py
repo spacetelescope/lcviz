@@ -40,11 +40,3 @@ __all__ = _expose + _incl + _temporary_incl
 
 def __dir__():
     return sorted(__all__)
-
-
-def __getattr__(name):
-    if name in _expose:
-        return getattr(jdaviz_app, name)
-    if name in globals():
-        return globals()[name]
-    raise AttributeError()
