@@ -41,6 +41,7 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
         self._plugin_description = 'Stitch light curves together.'
 
         self.dataset.multiselect = True
+        self.dataset.get_data_cls = LightCurve
         # do not support stitching data in phase-space
         # do not allow TPF as input
         self.dataset.add_filter(data_not_folded, is_lc)

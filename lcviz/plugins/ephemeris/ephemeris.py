@@ -17,7 +17,7 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin, DatasetSelectMixin,
 from jdaviz.core.user_api import PluginUserApi
 from jdaviz.core.events import SnackbarMessage
 
-from lightkurve import periodogram, FoldedLightCurve
+from lightkurve import periodogram, FoldedLightCurve, LightCurve
 
 from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
 from lcviz.viewers import TimeScatterView, PhaseScatterView
@@ -132,6 +132,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._prev_wrap_at = _default_wrap_at
         self._nasa_exoplanet_archive = None
 
+        self.dataset.get_data_cls = LightCurve
         self.dataset.add_filter(is_lc)
 
         self.component = EditableSelectPluginComponent(self,

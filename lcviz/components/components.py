@@ -3,6 +3,7 @@ from functools import cached_property
 
 from ipyvuetify import VuetifyTemplate
 from glue.core import HubListener
+from lightkurve import LightCurve
 from traitlets import List, Unicode
 
 from jdaviz.core.template_mixin import DatasetSelect, SelectPluginComponent
@@ -189,6 +190,8 @@ class FluxColumnSelect(SelectPluginComponent):
                          items=items,
                          selected=selected,
                          dataset=dataset)
+
+        self.dataset.get_data_cls = LightCurve
 
         self.add_observe(selected, self._on_change_selected)
         self.add_observe(self.dataset._plugin_traitlets['selected'],
