@@ -21,7 +21,6 @@ class TPFImporter(BaseImporterToDataCollection):
     @property
     def is_valid(self):
         if self.app.config not in ('deconfigged', 'lcviz'):
-            # cubeviz allowed for cubeviz.specviz.load_data support
             # NOTE: temporary during deconfig process
             return False
         return isinstance(self.input, (KeplerTargetPixelFile, TessTargetPixelFile))
