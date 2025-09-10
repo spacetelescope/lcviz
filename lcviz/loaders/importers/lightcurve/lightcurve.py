@@ -149,12 +149,25 @@ class LightCurveImporter(BaseImporterToDataCollection):
     @cached_property
     def output(self):
         if isinstance(self.input, LightCurve):
-            return self.input
+            lc = self.input
+        else:
+            # HDUList case
+            pri_header = self.input[0].header
+            if self.extension_multiselect:
+                lc = [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_hdu]
+            else:
+                lc = hdulist_to_lightcurve(pri_header, self.extension.selected_hdu)
 
-        pri_header = self.input[0].header
-        if self.extension_multiselect:
-            return [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_hdu]
-        return hdulist_to_lightcurve(pri_header, self.extension.selected_hdu)
+        flux_origin = lc.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
+        if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(lc, 'columns', [])):  # noqa
+            # then make a copy of this column so it won't be lost when changing with the flux_column
+            # plugin
+            lc['flux:orig'] = lc['flux']
+            if 'flux_err' in lc.columns:
+                lc['flux:orig_err'] = lc['flux_err']
+            lc.meta['FLUX_ORIGIN'] = 'flux:orig'
+
+        return lc
 
     def __call__(self, show_in_viewer=True):
         if self.input_hdulist and self.extension_multiselect:
