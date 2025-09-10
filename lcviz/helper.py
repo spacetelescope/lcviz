@@ -1,4 +1,5 @@
 from astropy.io.fits import getheader
+from astropy.utils import deprecated
 import astropy.units as u
 import ipyvue
 import os
@@ -144,6 +145,7 @@ class LCviz(ConfigHelper):
             # already been initialized
             plugin._obj.vdocs = self.app.vdocs
 
+    @deprecated(since="1.2", alternative="load")
     def load_data(self, data, data_label=None, extname=None):
         """
         Load data into LCviz.
