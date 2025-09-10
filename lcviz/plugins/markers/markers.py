@@ -41,4 +41,4 @@ class Markers(Markers):
 
     @property
     def coords_info(self):
-        return self.app.session.application._tools['lcviz-coords-info']
+        return self.app.session.application._tools['g-coords-info']
