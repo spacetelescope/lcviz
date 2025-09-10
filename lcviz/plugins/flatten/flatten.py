@@ -14,9 +14,8 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
-from lcviz.utils import data_not_folded, is_lc
+from lcviz.utils import data_not_folded, is_lc, _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-from lcviz.parsers import _data_with_reftime
 
 __all__ = ['Flatten']
 

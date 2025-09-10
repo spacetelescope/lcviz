@@ -14,10 +14,9 @@ from jdaviz.core.user_api import PluginUserApi
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.events import EphemerisChangedMessage
 from lcviz.marks import LivePreviewBinning
-from lcviz.parsers import _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
 from lcviz.components import EphemerisSelectAllowNoneMixin
-from lcviz.utils import is_lc, phase_comp_lbl
+from lcviz.utils import is_lc, phase_comp_lbl, _data_with_reftime
 
 
 __all__ = ['Binning']
