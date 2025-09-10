@@ -22,18 +22,16 @@
       :api_hints_enabled="api_hints_enabled"
       hint="Extension to use from the FITS HDUList."
     />
-    <v-row>
-      <plugin-auto-label
-        :value.sync="data_label_value"
-        :default="data_label_default"
-        :auto.sync="data_label_auto"
-        :invalid_msg="data_label_invalid_msg"
-        :label="extension_multiselect ? 'Base Data Label' : 'Data Label'"
-        api_hint="ldr.importer.data_label ="
-        :api_hints_enabled="api_hints_enabled"
-        :hint="extension_multiselect ? 'Base label to assign to new data entries (will include extension as suffix).' : 'Label to assign to the new data entry.'"
-      ></plugin-auto-label>
-    </v-row>
+    <plugin-auto-label
+      :value.sync="data_label_value"
+      :default="data_label_default"
+      :auto.sync="data_label_auto"
+      :invalid_msg="data_label_invalid_msg"
+      :label="extension_multiselect ? 'Base Data Label' : 'Data Label'"
+      api_hint="ldr.importer.data_label ="
+      :api_hints_enabled="api_hints_enabled"
+      :hint="input_hdulist && extension_multiselect ? 'Base label to assign to new data entries (will include extension as suffix).' : 'Label to assign to the new data entry.'"
+    ></plugin-auto-label>
     <plugin-switch
       v-if="create_ephemeris_available"
       :value.sync="create_ephemeris"

@@ -104,7 +104,10 @@ class LightCurveImporter(BaseImporterToDataCollection):
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
-            self.data_label_default = self.input.meta.get('OBJECT', 'Light curve')
+            if self.input.meta.get('QUARTER', None) is None:
+                self.data_label_default = self.input.meta.get('OBJECT', 'Light curve')
+            else:
+                self.data_label_default = f"{self.input.meta.get('OBJECT', 'Light curve')} [Q{self.input.meta.get('QUARTER')}]"  # noqa
 
     @property
     def user_api(self):
