@@ -3,9 +3,8 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     lc1 = lc
     lc2 = lc.copy()
 
-    lcviz.load_data(lc1, 'lc1')
-    lcviz.load_data(lc2, 'lc2')
-    lcviz.app.add_data_to_viewer('flux-vs-time', 'lc2')
+    lcviz.load(lc1, data_label='lc1')
+    lcviz.load(lc2, data_label='lc2')
     # lcviz.show()
 
     stitch = lcviz.plugins['Stitch']

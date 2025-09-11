@@ -16,7 +16,7 @@ notebook), built on top of `Jdaviz <https://jdaviz.readthedocs.io>`_ and `lightk
                            cadence="long", quarter=10).download()
 
     lcviz = LCviz()
-    lcviz.load_data(lc)
+    lcviz.load(lc)
     lcviz.show()
 
 
