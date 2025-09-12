@@ -3,7 +3,8 @@ import numpy as np
 from glue.core.roi import XRangeROI, YRangeROI
 from astropy.time import Time
 from astropy.utils.data import download_file
-from lightkurve import LightCurve, KeplerTargetPixelFile, search_targetpixelfile
+from lightkurve import (LightCurve, KeplerTargetPixelFile,
+                        search_lightcurve, search_targetpixelfile)
 from lightkurve.io import kepler
 import astropy.units as u
 
@@ -59,6 +60,17 @@ def test_kepler_tpf_via_lightkurve(helper):
     helper.load_data(tpf)
     assert helper.get_data().shape == (4447, 4, 6)  # (time, x, y)
     assert helper.app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
+
+
+@pytest.mark.remote_data
+def test_mult_lc_reftime(helper):
+    lc1 = search_lightcurve("HAT-P-11", mission="Kepler",
+                            cadence="long", quarter=9).download()
+    lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
+                            cadence="long", quarter=10).download()
+    helper.load_data(lc1, data_label='Q9')
+    helper.load_data(lc2, data_label='Q10')
+    assert helper.app.data_collection[0].meta.get('reference_time') == helper.app.data_collection[1].meta.get('reference_time')  # noqa
 
 
 def test_synthetic_lc(helper):

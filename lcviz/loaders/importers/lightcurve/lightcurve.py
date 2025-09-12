@@ -13,6 +13,7 @@ from jdaviz.core.registries import loader_importer_registry
 from jdaviz.core.loaders.importers import BaseImporterToDataCollection
 from jdaviz.core.template_mixin import SelectFileExtensionComponent
 from jdaviz.core.user_api import ImporterUserApi
+from lcviz.utils import _data_with_reftime
 
 
 __all__ = ['LightCurveImporter']
@@ -171,6 +172,12 @@ class LightCurveImporter(BaseImporterToDataCollection):
             lc.meta['FLUX_ORIGIN'] = 'flux:orig'
 
         return lc
+
+    def add_to_data_collection(self, data, *args, **kwargs):
+        lc_cls = data.__class__
+        kwargs.setdefault('cls', lc_cls)
+        data = _data_with_reftime(self.app, data)
+        super().add_to_data_collection(data, *args, **kwargs)
 
     def __call__(self, show_in_viewer=True):
         if self.input_hdulist and self.extension_multiselect:

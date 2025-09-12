@@ -546,6 +546,10 @@ def _data_with_reftime(app, light_curve):
             if ff_reference_time is not None:
                 break
 
+    if isinstance(light_curve, Data):
+        light_curve.meta['reference_time'] = ff_reference_time
+        return light_curve
+
     # convert to glue Data manually, so we may edit the `dt` component if necessary:
     for expected_cls, handler in lightkurve_handlers.items():
         if isinstance(light_curve, expected_cls):
