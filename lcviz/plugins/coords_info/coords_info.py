@@ -14,10 +14,12 @@ __all__ = ['CoordsInfo']
 class CoordsInfo(CoordsInfo):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._supported_viewer_classes = tuple(list(self._supported_viewer_classes)
-                                               + [TimeScatterView, PhaseScatterView, CubeView])
-        self._viewer_classes_with_marker = tuple(list(self._viewer_classes_with_marker)
-                                                 + [TimeScatterView, PhaseScatterView])
+        self._supported_viewer_classes = self._supported_viewer_classes + (
+            TimeScatterView, PhaseScatterView, CubeView
+        )
+        self._viewer_classes_with_marker = self._viewer_classes_with_marker + (
+            TimeScatterView, PhaseScatterView
+        )
 
         # TODO: move to jdaviz if/once viewer renaming supported
         self.hub.subscribe(self, ViewerRenamedMessage,

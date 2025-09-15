@@ -125,7 +125,6 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
         self._set_plot_y_axes(dc, component_labels, light_curve)
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve=None, reference_time=None):
-        # this cannot assume dc[0]
         self.state.x_att = dc[0].components[component_labels.index('dt')]
 
         x_unit = self.time_unit
