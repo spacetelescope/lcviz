@@ -113,9 +113,9 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     ephem = helper.plugins['Ephemeris']
     vc = helper._tray_tools['g-viewer-creator']
 
-    assert len(vc.viewer_types) == 1  # time viewer
+    assert len(vc.viewer_types) == 2  # time viewer, phase viewer for default
     ephem.adopt_period_at_max_power()
-    assert len(vc.viewer_types) == 2  # time viewer, phase viewer at adopted ephemeris
+    assert len(vc.viewer_types) == 2  # time viewer, phase viewer at default
     assert len(ephem._obj._get_phase_viewers()) == 1
 
     vc.vue_create_viewer('flux-vs-phase:default')
