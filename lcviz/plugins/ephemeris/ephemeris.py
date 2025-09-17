@@ -3,6 +3,7 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 import astropy.units as u
 from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
+from astropy.timeseries import LombScargle
 
 from traitlets import Bool, Float, List, Unicode, observe
 
@@ -587,13 +588,26 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if self.method == 'Box Least Squares':
             try:
                 per = periodogram.BoxLeastSquaresPeriodogram.from_lightcurve(self.dataset.selected_obj)  # noqa
+
+                # TODO: will need to return in display units once supported
+                self.period_at_max_power = per.period_at_max_power.value
+
             except Exception as err:
                 self.method_spinner = False
                 self.method_err = str(err)
                 return
+
         elif self.method == 'Lomb-Scargle':
             try:
-                per = periodogram.LombScarglePeriodogram.from_lightcurve(self.dataset.selected_obj)
+                lc = self.dataset.selected_obj
+                ls = LombScargle(lc.time, lc.flux, lc.flux_err, normalization='psd')
+
+                freq = ls.autofrequency()
+                power = ls.power(freq)
+
+                # TODO: will need to return in display units once supported
+                self.period_at_max_power = (1 / freq[np.argmax(power)]).value
+
             except Exception as err:
                 self.method_spinner = False
                 self.method_err = str(err)
@@ -602,8 +616,6 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             self.method_spinner = False
             raise NotImplementedError(f"periodogram not implemented for {self.method}")
 
-        # TODO: will need to return in display units once supported
-        self.period_at_max_power = per.period_at_max_power.value
         self.method_spinner = False
 
     def adopt_period_at_max_power(self):
