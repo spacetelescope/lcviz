@@ -28,8 +28,17 @@ class ViewerCreator(ViewerCreator):
         # and label (what appears in dropdown and the default label of the viewer)
 
         if self.app._jdaviz_helper is not None:
-            phase_viewers = [{'name': f'lcviz-phase-viewer:{e}', 'label': f'flux-vs-phase:{e}'}
-                              for e in self.app._jdaviz_helper.plugins['Ephemeris'].component.choices]  # noqa
+            try:
+                # NOTE: if first data was just added, the plugin may still be irrelevant
+                # and so not available from .plugins dictionary
+                ephem_plg = self.app.get_tray_item_from_name('ephemeris')
+            except KeyError:
+                ephem_plg = None
+            if ephem_plg is not None:
+                phase_viewers = [{'name': f'lcviz-phase-viewer:{e}', 'label': f'flux-vs-phase:{e}'}
+                                for e in ephem_plg.component.choices]  # noqa
+            else:
+                phase_viewers = []
             if self.app._jdaviz_helper._has_cube_data:
                 cube_viewers = [{'name': 'lcviz-cube-viewer', 'label': 'image'}]
             else:

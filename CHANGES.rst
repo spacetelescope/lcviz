@@ -1,6 +1,10 @@
 1.2.0 (unreleased)
 ------------------
 
+* Update jdaviz requirement to 4.3 to include upstream improvements including new loaders implementation. [#183]
+
+* Deprecates ``load_data`` in favor of ``load``. [#183]
+
 1.1.3 (unreleased)
 ------------------
 

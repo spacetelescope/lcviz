@@ -8,12 +8,12 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
-from lcviz.utils import data_not_folded, is_not_tpf
+from lcviz.utils import data_not_folded, is_lc
 
 __all__ = ['Stitch']
 
 
-@tray_registry('stitch', label="Stitch")
+@tray_registry('stitch', label="Stitch", category='data:manipulation')
 class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
     """
     See the :ref:`Stitch Plugin Documentation <stitch>` for more details.
@@ -41,23 +41,26 @@ class Stitch(PluginTemplateMixin, DatasetMultiSelectMixin, AddResultsMixin):
         self._plugin_description = 'Stitch light curves together.'
 
         self.dataset.multiselect = True
+        self.dataset.get_data_cls = LightCurve
         # do not support stitching data in phase-space
         # do not allow TPF as input
-        self.dataset.add_filter(data_not_folded, is_not_tpf)
+        self.dataset.add_filter(data_not_folded, is_lc)
 
         self.results_label_default = 'stitched'
+
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if len(self.dataset_items) < 2:
+            self.irrelevant_msg = 'Requires at least two datasets loaded into viewers'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def user_api(self):
         expose = ['dataset', 'stitch', 'remove_input_datasets', 'add_results']
         return PluginUserApi(self, expose=expose)
-
-    @observe('dataset_items')
-    def _set_relevent(self, *args):
-        if len(self.dataset_items) < 2:
-            self.irrelevant_msg = 'Requires at least two datasets loaded into viewers'
-        else:
-            self.irrelevant_msg = ''
 
     @with_spinner()
     def stitch(self, add_data=True):

@@ -14,18 +14,17 @@ from jdaviz.core.user_api import PluginUserApi
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.events import EphemerisChangedMessage
 from lcviz.marks import LivePreviewBinning
-from lcviz.parsers import _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-from lcviz.components import EphemerisSelectMixin
-from lcviz.utils import is_not_tpf
+from lcviz.components import EphemerisSelectAllowNoneMixin
+from lcviz.utils import is_lc, phase_comp_lbl, _data_with_reftime
 
 
 __all__ = ['Binning']
 
 
-@tray_registry('binning', label="Binning")
+@tray_registry('binning', label="Binning", category='data:manipulation')
 class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
-              EphemerisSelectMixin, AddResultsMixin):
+              EphemerisSelectAllowNoneMixin, AddResultsMixin):
     """
     See the :ref:`Binning Plugin Documentation <binning>` for more details.
 
@@ -63,12 +62,21 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
         # https://github.com/spacetelescope/jdaviz/pull/2239
         def not_from_binning_plugin(data):
             return data.meta.get('Plugin', None) != self.__class__.__name__
-        self.dataset.add_filter(not_from_binning_plugin, is_not_tpf)
+        self.dataset.add_filter(not_from_binning_plugin, is_lc)
 
         # TODO: viewer added also needs to repopulate marks
         self.hub.subscribe(self, ViewerAddedMessage, handler=self._on_add_viewer)
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._set_results_viewer)
         self.hub.subscribe(self, EphemerisChangedMessage, handler=self._on_ephemeris_update)
+
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def user_api(self):
@@ -244,10 +252,11 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
             # convert to glue Data manually, so we may edit the `phase` component:
             handler, _ = data_translator.get_handler_for(lc)
             data = handler.to_data(lc)
-            phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
 
             # here we use the `value` attribute of `lc.time`, which has units of *phase*:
-            self.app._jdaviz_helper._set_data_component(data, phase_comp_lbl, lc.time.value)
+            self.app._jdaviz_helper._set_data_component(data,
+                                                        phase_comp_lbl(self.ephemeris_selected),
+                                                        lc.time.value)
 
         else:
             # need to send through parser-logic to assign the correct reference time
@@ -262,8 +271,7 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
             if self.ephemeris_selected != 'No ephemeris':
                 # prevent phase axis from becoming a time axis:
                 ephemeris_plugin = self.app._jdaviz_helper.plugins['Ephemeris']
-                phase_comp_lbl = self.app._jdaviz_helper._phase_comp_lbl(self.ephemeris_selected)
-                phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
+                phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl(self.ephemeris_selected)]  # noqa
                 for pv in ephemeris_plugin._obj._get_phase_viewers(self.ephemeris_selected):
                     pv.state.x_att = phase_comp
                 # by resetting x_att, the preview marks may have dissappeared

@@ -1,15 +1,17 @@
+from traitlets import observe
+
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
-from lcviz.utils import is_not_tpf
+from lcviz.utils import is_lc
 
 __all__ = ['FluxColumn']
 
 
-@tray_registry('flux-column', label="Flux Column")
+@tray_registry('flux-column', label="Flux Column", category='app:options')
 class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     """
     See the :ref:`Flux Column Plugin Documentation <flux-column>` for more details.
@@ -33,7 +35,16 @@ class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin)
         self._plugin_description = 'Choose flux column.'
 
         # NOTE: may eventually want to add support for choosing the column for TPFs
-        self.dataset.add_filter(is_not_tpf)
+        self.dataset.add_filter(is_lc)
+
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def user_api(self):

@@ -1,7 +1,7 @@
 [project]
 name = "lcviz"
 description = "A Jdaviz-based light curve analysis and visualization tool"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "JDADF Developers", email = "kconroy@stsci.edu" },
 ]
@@ -22,7 +22,7 @@ dependencies = [
     "astropy>=5.2",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
-    "jdaviz>=4.2,<4.3",
+    "jdaviz>=4.3.2,<4.4",
     "lightkurve>=2.5.1",
     # NOTE: glue-jupyter is also pinned by jdaviz.
     "glue-jupyter>=0.22.2",
@@ -112,6 +112,8 @@ filterwarnings = [
     "ignore::UserWarning:traittypes",
     "ignore::DeprecationWarning:asteval",
     "ignore::FutureWarning:asteval",
+    "ignore::DeprecationWarning:traitlets",  # remove once https://github.com/spacetelescope/jdaviz/pull/3768 is merged upstream
+    "ignore:The load_data function is deprecated.*",
     "ignore:pkg_resources is deprecated as an API:DeprecationWarning:mpl_scatter_density",
 
     # this will be unnecessary after jdaviz merges and releases:

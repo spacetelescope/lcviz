@@ -10,13 +10,16 @@ from lcviz.viewers import TimeScatterView, PhaseScatterView, CubeView
 __all__ = ['CoordsInfo']
 
 
-@tool_registry('lcviz-coords-info')
+@tool_registry('g-coords-info', overwrite=True)
 class CoordsInfo(CoordsInfo):
-    _supported_viewer_classes = (TimeScatterView, PhaseScatterView, CubeView)
-    _viewer_classes_with_marker = (TimeScatterView, PhaseScatterView)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._supported_viewer_classes = self._supported_viewer_classes + (
+            TimeScatterView, PhaseScatterView, CubeView
+        )
+        self._viewer_classes_with_marker = self._viewer_classes_with_marker + (
+            TimeScatterView, PhaseScatterView
+        )
 
         # TODO: move to jdaviz if/once viewer renaming supported
         self.hub.subscribe(self, ViewerRenamedMessage,
@@ -37,7 +40,7 @@ class CoordsInfo(CoordsInfo):
             return arr[viewer.state.slices[0], int(round(y)), int(round(x))]
         return super()._get_cube_value(image, arr, x, y, viewer)
 
-    def _lc_viewer_update(self, viewer, x, y):
+    def _lc_viewer_update(self, viewer, x, y, mouseevent=True):
         is_phase = isinstance(viewer, PhaseScatterView)
         # TODO: update with display_unit when supported in lcviz
         x_unit = '' if is_phase else str(viewer.time_unit)
@@ -148,7 +151,7 @@ class CoordsInfo(CoordsInfo):
         self.marks[viewer._reference_id].update_xy([closest_x], [closest_y])  # noqa
         self.marks[viewer._reference_id].visible = True
 
-    def _image_viewer_update(self, viewer, x, y):
+    def _image_viewer_update(self, viewer, x, y, mouseevent=True):
         # Extract first dataset from visible layers and use this for coordinates - the choice
         # of dataset shouldn't matter if the datasets are linked correctly
         active_layer = viewer.active_image_layer
@@ -196,8 +199,15 @@ class CoordsInfo(CoordsInfo):
             except IndexError:
                 self._viewer_mouse_clear_event(viewer)
                 return
+            if time is None:
+                self._viewer_mouse_clear_event(viewer)
+                return
             # TODO: store slice unit within image viewer to avoid this assumption?
-            time_unit = str(self.app._jdaviz_helper.default_time_viewer._obj.time_unit)
+            tvs = self.app.get_viewers_of_cls(TimeScatterView)
+            if len(tvs):
+                time_unit = str(tvs[0].time_unit)
+            else:
+                time_unit = 's'
             self.row2_title = 'Time'
             self.row2_text = f'{time:0.5f} {time_unit}'
             self._dict['time'] = time
@@ -233,13 +243,13 @@ class CoordsInfo(CoordsInfo):
             self.row1b_title = ''
             self.row1b_text = ''
 
-    def update_display(self, viewer, x, y):
+    def update_display(self, viewer, x, y, mouseevent=True):
         self._dict = {}
-
+        self.app.state.show_toolbar_buttons = False
         if not len(viewer.state.layers):
             return
 
         if isinstance(viewer, (TimeScatterView, PhaseScatterView)):
-            self._lc_viewer_update(viewer, x, y)
+            self._lc_viewer_update(viewer, x, y, mouseevent)
         elif isinstance(viewer, CubeView):
-            self._image_viewer_update(viewer, x, y)
+            self._image_viewer_update(viewer, x, y, mouseevent)

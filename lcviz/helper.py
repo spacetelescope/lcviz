@@ -1,4 +1,5 @@
 from astropy.io.fits import getheader
+from astropy.utils import deprecated
 import astropy.units as u
 import ipyvue
 import os
@@ -6,7 +7,6 @@ import os
 from lightkurve import LightCurve
 
 from glue.config import settings as glue_settings
-from glue.core.component_id import ComponentID
 from glue.core.link_helpers import LinkSame
 from glue.core.units import unit_converter
 from jdaviz.core.helpers import ConfigHelper
@@ -103,17 +103,13 @@ class LCviz(ConfigHelper):
                                  'tab_headers': True},
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
-        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'lcviz-coords-info'],
-        'tray': ['lcviz-metadata-viewer', 'flux-column',
-                 'lcviz-plot-options', 'lcviz-subset-tools',
-                 'lcviz-markers', 'time-selector',
+        'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
+        'tray': ['g-metadata-viewer', 'flux-column',
+                 'plot-options', 'g-subset-tools',
+                 'g-markers', 'time-selector',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
-                 'binning', 'lcviz-export'],
-        'viewer_area': [{'container': 'col',
-                         'children': [{'container': 'row',
-                                       'viewers': [{'name': 'flux-vs-time',
-                                                    'plot': 'lcviz-time-viewer',
-                                                    'reference': 'flux-vs-time'}]}]}]}
+                 'binning', 'export', 'logger'],
+        'viewer_area': [{'container': 'col'}]}
 
     _component_ids = {}
 
@@ -136,6 +132,10 @@ class LCviz(ConfigHelper):
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)
         self.app._add_style((__file__, 'lcviz_style.vue'))
 
+        # enable loaders (currently requires dev-flag in jdaviz)
+        self.app.state.dev_loaders = True
+        self.load = self._load
+
         # set the link to read the docs
         self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
         self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
@@ -145,6 +145,7 @@ class LCviz(ConfigHelper):
             # already been initialized
             plugin._obj.vdocs = self.app.vdocs
 
+    @deprecated(since="1.2", alternative="load")
     def load_data(self, data, data_label=None, extname=None):
         """
         Load data into LCviz.
@@ -166,22 +167,15 @@ class LCviz(ConfigHelper):
             Used for DVT parsing if only a single TCE from a multi-TCE file should be
             loaded. Formatted as 'TCE_1', 'TCE_2', etc.
         """
+        kwargs = {}
         # Determine if we're loading a DVT file, which has a separate parser
         if isinstance(data, str):
             header = getheader(data)
             if (header.get('TELESCOP', '') == 'TESS' and 'CREATOR' in header and
                     'DvTimeSeriesExporter' in header['CREATOR']):
-                super().load_data(data=data,
-                                  parser_reference='tess_dvt_parser',
-                                  data_label=data_label,
-                                  extname=extname)
-                return
+                kwargs['extension'] = extname
 
-        super().load_data(
-            data=data,
-            parser_reference='light_curve_parser',
-            data_label=data_label
-        )
+        self.load(data, data_label=data_label, **kwargs)
 
     def get_data(self, data_label=None, cls=LightCurve, subset=None):
         """
@@ -234,31 +228,3 @@ class LCviz(ConfigHelper):
         from ipywidgets.widgets import widget_serialization
         return {item['name']: widget_serialization['from_json'](item['widget'], None)
                 for item in self.app.state.tool_items}
-
-    def _get_clone_viewer_reference(self, reference):
-        base_name = reference.split("[")[0]
-        name = base_name
-        ind = 0
-        while name in self.viewers.keys():
-            ind += 1
-            name = f"{base_name}[{ind}]"
-        return name
-
-    def _phase_comp_lbl(self, component):
-        return f'phase:{component}'
-
-    def _set_data_component(self, data, component_label, values):
-        if component_label in self._component_ids:
-            component_id = self._component_ids[component_label]
-        else:
-            existing_components = [component.label for component in data.components]
-            if component_label in existing_components:
-                component_id = data.components[existing_components.index(component_label)]
-            else:
-                component_id = ComponentID(component_label)
-                self._component_ids[component_label] = component_id
-
-        if component_id in data.components:
-            data.update_components({component_id: values})
-        else:
-            data.add_component(values, component_id)

@@ -47,10 +47,10 @@ class LivePreviewTrend(PluginLine, WithoutPhaseSupport):
 
 
 class LivePreviewFlattened(PluginScatter, WithPhaseSupport):
-    def __init__(self, viewer, *args, **kwargs):
+    def __init__(self, viewer, **kwargs):
         self.viewer = viewer
         kwargs.setdefault('default_size', 16)
-        super().__init__(viewer, *args, **kwargs)
+        super().__init__(viewer, **kwargs)
 
 
 class LivePreviewBinning(PluginScatter, WithPhaseSupport):

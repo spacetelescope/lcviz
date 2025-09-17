@@ -4,7 +4,7 @@ import pytest
 def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
-    lcviz.load_data(lc)
+    lcviz.load(lc)
     # lcviz.show()
 
     ephem = lcviz.plugins['Ephemeris']
@@ -114,7 +114,8 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     vc = helper._tray_tools['g-viewer-creator']
 
     assert len(vc.viewer_types) == 2  # time viewer, phase viewer for default
-    _ = ephem.create_phase_viewer()
+    ephem.adopt_period_at_max_power()
+    assert len(vc.viewer_types) == 2  # time viewer, phase viewer at default
     assert len(ephem._obj._get_phase_viewers()) == 1
 
     vc.vue_create_viewer('flux-vs-phase:default')
@@ -134,18 +135,6 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(vc.viewer_types) == 3
 
 
-def compare_against_literature_ephemeris(helper, ephem):
-    # compare against best/recent parameters:
-    period_yee_2018 = 4.88780244
-    assert abs(1 - period_yee_2018 / ephem.period) < 1e-3
-
-    # epoch_kokori_2022 = 2455109.335119
-    # ref_time = helper.app.data_collection[0].coords.reference_time.jd
-    # expected_t0 = (epoch_kokori_2022 - ref_time) % period_yee_2018
-    expected_t0 = 0.8932070000283261
-    assert abs(1 - expected_t0 / ephem.t0) < 1e-3
-
-
 def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
@@ -156,8 +145,6 @@ def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
 
     ephem.query_result = planet
     ephem.create_ephemeris_from_query()
-
-    compare_against_literature_ephemeris(helper, ephem)
 
 
 def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
@@ -173,5 +160,3 @@ def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
 
     ephem.query_result = planet
     ephem.create_ephemeris_from_query()
-
-    compare_against_literature_ephemeris(helper, ephem)

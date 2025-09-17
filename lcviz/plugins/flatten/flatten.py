@@ -14,14 +14,13 @@ from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.components import FluxColumnSelectMixin
 from lcviz.marks import LivePreviewTrend, LivePreviewFlattened
-from lcviz.utils import data_not_folded, is_not_tpf
+from lcviz.utils import data_not_folded, is_lc, _data_with_reftime
 from lcviz.viewers import TimeScatterView, PhaseScatterView
-from lcviz.parsers import _data_with_reftime
 
 __all__ = ['Flatten']
 
 
-@tray_registry('flatten', label="Flatten")
+@tray_registry('flatten', label="Flatten", category="data:manipulation")
 class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
     """
     See the :ref:`Flatten Plugin Documentation <flatten>` for more details.
@@ -78,13 +77,22 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
 
         # do not support flattening data in phase-space
         # do not allow TPF as input
-        self.dataset.add_filter(data_not_folded, is_not_tpf)
+        self.dataset.add_filter(data_not_folded, is_lc)
 
         # marks do not exist for the new viewer, so force another update to compute and draw
         # those marks
         self.hub.subscribe(self, ViewerAddedMessage, handler=lambda _: self._live_update())
 
         self._set_default_label()
+
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
 
     @property
     def user_api(self):

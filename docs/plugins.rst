@@ -22,7 +22,7 @@ This plugin allows viewing of any metadata associated with the selected data.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       metadata = lcviz.plugins['Metadata']
@@ -57,7 +57,7 @@ This plugin allows choosing which column in the underlying data should be used a
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       flux_col = lcviz.plugins['Flux Column']
@@ -92,7 +92,7 @@ This plugin gives access to per-viewer and per-layer plotting options.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       po = lcviz.plugins['Plot Options']
@@ -129,7 +129,7 @@ This plugin allows viewing and modifying defined subsets.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       subset_tools = lcviz.plugins['Subset Tools']
@@ -167,7 +167,7 @@ visible when the plugin is opened.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       markers = lcviz.plugins['Markers']
@@ -205,7 +205,7 @@ The time selector plugin allows defining the time indicated in all light curve v
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       ts = lcviz.plugins['Time Selector']
@@ -241,11 +241,8 @@ is only available if there are at least two light curves loaded into a light cur
       lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
                               cadence="long", quarter=10).download()
       lcviz = LCviz()
-      lcviz.load_data(lc1, 'lc1')
-      lcviz.load_data(lc2, 'lc2')
-      # NOTE: this line is not technically considered public API - alternatively manually add
-      # the second light curve to the light curve viewer from the data menu
-      lcviz.app.add_data_to_viewer('flux-vs-time', 'lc1')
+      lcviz.load(lc1, data_label='lc1')
+      lcviz.load(lc2, data_label='lc2')
       lcviz.show()
 
       stitch = lcviz.plugins['Stitch']
@@ -282,7 +279,7 @@ can be disabled through the plugin settings.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       flatten = lcviz.plugins['Flatten']
@@ -319,7 +316,7 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
       
       freq = lcviz.plugins['Frequency Analysis']
@@ -359,7 +356,7 @@ for phase-folding.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       ephem = lcviz.plugins['Ephemeris']
@@ -388,7 +385,7 @@ This plugin supports binning a light curve in time or phase-space.
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       binning = lcviz.plugins['Binning']
@@ -424,7 +421,7 @@ This plugin allows exporting the plot in a given viewer to various image formats
       lc = search_lightcurve("HAT-P-11", mission="Kepler",
                              cadence="long", quarter=10).download().flatten()
       lcviz = LCviz()
-      lcviz.load_data(lc)
+      lcviz.load(lc)
       lcviz.show()
 
       export = lcviz.plugins['Export']

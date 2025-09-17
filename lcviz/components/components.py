@@ -3,6 +3,7 @@ from functools import cached_property
 
 from ipyvuetify import VuetifyTemplate
 from glue.core import HubListener
+from lightkurve import LightCurve
 from traitlets import List, Unicode
 
 from jdaviz.core.template_mixin import DatasetSelect, SelectPluginComponent
@@ -10,7 +11,8 @@ from jdaviz.core.template_mixin import DatasetSelect, SelectPluginComponent
 from lcviz.events import (EphemerisComponentChangedMessage,
                           FluxColumnChangedMessage)
 
-__all__ = ['EphemerisSelect', 'EphemerisSelectMixin',
+__all__ = ['EphemerisSelect',
+           'EphemerisSelectMixin', 'EphemerisSelectAllowNoneMixin',
            'FluxColumnSelect', 'FluxColumnSelectMixin']
 
 
@@ -68,7 +70,7 @@ class EphemerisSelect(SelectPluginComponent):
         selected : str
             the name of the selected traitlet defined in ``plugin``
         default_text : str or None
-            the text to show for no selection.  If not provided or None, no entry will be provided
+            the text to show for no selection.  If None, no entry will be provided
             in the dropdown for no selection.
         manual_options: list
             list of options to provide that are not automatically populated by ephemerides.  If
@@ -147,6 +149,38 @@ class EphemerisSelectMixin(VuetifyTemplate, HubListener):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.ephemeris = EphemerisSelect(self, 'ephemeris_items', 'ephemeris_selected',
+                                         default_text=None)
+
+
+class EphemerisSelectAllowNoneMixin(VuetifyTemplate, HubListener):
+    """
+    Applies the EphemerisSelect component as a mixin in the base plugin.  This
+    automatically adds traitlets as well as new properties to the plugin with minimal
+    extra code.  For multiple instances or custom traitlet names/defaults, use the
+    component instead.
+
+    To use in a plugin:
+
+    * add ``EphemerisSelectMixin`` as a mixin to the class
+    * use the traitlets available from the plugin or properties/methods available from
+      ``plugin.ephemeris``.
+
+    Example template (label and hint are optional)::
+
+      <plugin-ephemeris-select
+        :items="ephemeris_items"
+        :selected.sync="ephemeris_selected"
+        label="Ephemeris"
+        hint="Select ephemeris."
+      />
+
+    """
+    ephemeris_items = List().tag(sync=True)
+    ephemeris_selected = Unicode().tag(sync=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.ephemeris = EphemerisSelect(self, 'ephemeris_items', 'ephemeris_selected')
 
 
@@ -156,6 +190,8 @@ class FluxColumnSelect(SelectPluginComponent):
                          items=items,
                          selected=selected,
                          dataset=dataset)
+
+        self.dataset.get_data_cls = LightCurve
 
         self.add_observe(selected, self._on_change_selected)
         self.add_observe(self.dataset._plugin_traitlets['selected'],

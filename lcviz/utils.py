@@ -13,7 +13,8 @@ from lightkurve import (
     LightCurve, KeplerLightCurve, TessLightCurve, FoldedLightCurve
 )
 from lightkurve.targetpixelfile import (
-    KeplerTargetPixelFile, TessTargetPixelFile, TargetPixelFileFactory
+    KeplerTargetPixelFile, TessTargetPixelFile,
+    TargetPixelFile, TargetPixelFileFactory
 )
 from lightkurve.utils import KeplerQualityFlags, TessQualityFlags
 
@@ -24,7 +25,9 @@ from astropy.wcs.wcsapi.wrappers.base import BaseWCSWrapper
 from astropy.wcs.wcsapi import HighLevelWCSMixin
 
 __all__ = ['TimeCoordinates', 'LightCurveHandler',
-           'data_not_folded', 'is_tpf', 'is_not_tpf',
+           'phase_comp_lbl',
+           'data_not_folded',
+           'is_lc', 'is_tpf', 'is_not_tpf',
            'enable_hot_reloading']
 
 
@@ -506,9 +509,18 @@ class TessTPFHandler(TPFHandler):
     quality_flag_cls = TessQualityFlags
 
 
+def phase_comp_lbl(component):
+    return f'phase:{component}'
+
+
 # plugin component filters
 def data_not_folded(data):
     return data.meta.get('_LCVIZ_EPHEMERIS', None) is None
+
+
+def is_lc(data):
+    return (len(data.shape) == 1
+            and isinstance(data.coords, TimeCoordinates))
 
 
 def is_tpf(data):
@@ -517,3 +529,30 @@ def is_tpf(data):
 
 def is_not_tpf(data):
     return not is_tpf(data)
+
+
+lightkurve_handlers = {
+    LightCurve: LightCurveHandler(),
+    TargetPixelFile: TPFHandler(),
+}
+
+
+def _data_with_reftime(app, light_curve):
+    # grab the first-found reference time in the data collection:
+    ff_reference_time = None
+    for existing_data in app.data_collection:
+        if hasattr(existing_data, 'meta') and 'reference_time' in existing_data.meta:
+            ff_reference_time = existing_data.meta.get('reference_time', None)
+            if ff_reference_time is not None:
+                break
+
+    if isinstance(light_curve, Data):
+        light_curve.meta['reference_time'] = ff_reference_time
+        return light_curve
+
+    # convert to glue Data manually, so we may edit the `dt` component if necessary:
+    for expected_cls, handler in lightkurve_handlers.items():
+        if isinstance(light_curve, expected_cls):
+            return handler.to_data(light_curve, reference_time=ff_reference_time)
+    else:
+        raise ValueError(f"No handler found for {light_curve} of type {type(light_curve)}")

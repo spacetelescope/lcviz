@@ -25,9 +25,3 @@ Viewers
 
 .. automodapi:: lcviz.viewers
    :no-inheritance-diagram:
-
-Parsers
-=======
-
-.. automodapi:: lcviz.parsers
-   :no-inheritance-diagram:

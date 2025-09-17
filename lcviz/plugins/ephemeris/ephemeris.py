@@ -17,11 +17,11 @@ from jdaviz.core.template_mixin import (PluginTemplateMixin, DatasetSelectMixin,
 from jdaviz.core.user_api import PluginUserApi
 from jdaviz.core.events import SnackbarMessage
 
-from lightkurve import periodogram, FoldedLightCurve
+from lightkurve import periodogram, FoldedLightCurve, LightCurve
 
 from lcviz.events import EphemerisComponentChangedMessage, EphemerisChangedMessage
-from lcviz.viewers import PhaseScatterView
-from lcviz.utils import is_not_tpf
+from lcviz.viewers import TimeScatterView, PhaseScatterView
+from lcviz.utils import is_lc, is_not_tpf, phase_comp_lbl
 
 __all__ = ['Ephemeris']
 
@@ -33,7 +33,7 @@ _default_wrap_at = 1.0
 _default_query_radius = 2  # [arcsec]
 
 
-@tray_registry('ephemeris', label="Ephemeris")
+@tray_registry('ephemeris', label="Ephemeris", category='data:analysis')
 class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     """
     See the :ref:`Ephemeris Plugin Documentation <ephemeris>` for more details.
@@ -83,6 +83,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     """
     template_file = __file__, "ephemeris.vue"
 
+    reference_time = None
+
     # EPHEMERIS
     component_mode = Unicode().tag(sync=True)
     component_edit_value = Unicode().tag(sync=True)
@@ -130,7 +132,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._prev_wrap_at = _default_wrap_at
         self._nasa_exoplanet_archive = None
 
-        self.dataset.add_filter(is_not_tpf)
+        self.dataset.get_data_cls = LightCurve
+        self.dataset.add_filter(is_lc)
 
         self.component = EditableSelectPluginComponent(self,
                                                        name='ephemeris',
@@ -162,6 +165,15 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self.hub.subscribe(self, ViewerAddedMessage, handler=self._check_if_phase_viewer_exists)
         self.hub.subscribe(self, ViewerRemovedMessage, handler=self._check_if_phase_viewer_exists)
 
+        self._set_relevant()
+
+    @observe('dataset_items')
+    def _set_relevant(self, *args):
+        if not len(self.dataset_items):
+            self.irrelevant_msg = 'No valid datasets loaded'
+        else:
+            self.irrelevant_msg = ''
+
     @property
     def user_api(self):
         expose = [
@@ -180,11 +192,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _phase_comp_lbl(self, component=None):
         if component is None:
             component = self.component_selected
-        if self.app._jdaviz_helper is None:
-            # duplicate logic from helper in case this is ever called before the helper
-            # is fully intialized
-            return f'phase:{component}'
-        return self.app._jdaviz_helper._phase_comp_lbl(component)
+        return phase_comp_lbl(component)
 
     @property
     def phase_comp_lbl(self):
@@ -276,7 +284,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         dc = self.app.data_collection
 
-        phase_comp_lbl = self._phase_comp_lbl(ephem_component)
+        _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
 
         # we'll create the callable function for this component once so it can be re-used
         _times_to_phases = self._times_to_phases_callable(ephem_component)
@@ -291,7 +299,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             phases = _times_to_phases(times)
 
             self.app._jdaviz_helper._set_data_component(
-                data, phase_comp_lbl, phases
+                data, _phase_comp_lbl, phases
             )
 
             if i != 0:
@@ -315,7 +323,18 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 if hasattr(mark, 'update_phase_folding'):
                     mark.update_phase_folding()
 
-        return phase_comp_lbl
+        return _phase_comp_lbl
+
+    def _set_viewer_to_ephem_component(self, viewer, ephem_component=None):
+        viewer._ephemeris_component = ephem_component
+
+        # set x_att
+        phase_comp = self.app._jdaviz_helper._component_ids[self._phase_comp_lbl(ephem_component)]
+        viewer.state.x_att = phase_comp
+
+        # set viewer limits
+        wrap_at = self.ephemerides.get(ephem_component, {}).get('wrap_at', self.wrap_at)
+        viewer.state.x_min, viewer.state.x_max = (wrap_at-1, wrap_at)
 
     def create_phase_viewer(self, ephem_component=None):
         """
@@ -329,13 +348,13 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         """
         if ephem_component is None:
             ephem_component = self.component_selected
-        phase_comp_lbl = self._phase_comp_lbl(ephem_component)
+        _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
         dc = self.app.data_collection
 
         # check to see if this component already has a phase array.  We'll just check the first
         # item in the data-collection since the rest of the logic in this plugin /should/ populate
         # the arrays across all entries.
-        if phase_comp_lbl not in [comp.label for comp in dc[0].components]:
+        if _phase_comp_lbl not in [comp.label for comp in dc[0].components]:
             self.update_ephemeris()  # calls _update_all_phase_arrays
 
         phase_viewer_id = self._generate_phase_viewer_id(ephem_component)
@@ -352,25 +371,24 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         self._check_if_phase_viewer_exists()
 
         # set default data visibility
-        tvdm = self.app._jdaviz_helper.default_time_viewer.data_menu
-        visible_layers = tvdm.data_labels_visible
+        tvs = self.get_matching_viewers(TimeScatterView)
+        if len(tvs):
+            tvdm = tvs[0].data_menu
+            visible_layers = tvdm.data_labels_visible
+        else:
+            visible_layers = [dci.label for dci in dc if is_lc(dci) and is_not_tpf(dci)]
         loaded_layers = pv.data_menu.data_labels_loaded
+
         for data in dc:
             if data.ndim > 1:
                 # skip image/cube entries
                 continue
             visible = data.label in visible_layers
-            if data.label not in loaded_layers:
+            if data.label not in loaded_layers and data.label in pv.data_menu._obj.dataset.choices:
                 pv.data_menu.add_data(data.label)
             pv.data_menu.set_layer_visibility(data.label, visible)
 
-        # set x_att
-        phase_comp = self.app._jdaviz_helper._component_ids[phase_comp_lbl]
-        pv.state.x_att = phase_comp
-
-        # set viewer limits
-        wrap_at = self.ephemerides.get(ephem_component, {}).get('wrap_at', self.wrap_at)
-        pv.state.x_min, pv.state.x_max = (wrap_at-1, wrap_at)
+        self._set_viewer_to_ephem_component(pv, ephem_component=ephem_component)
 
         return pv.user_api
 
@@ -560,6 +578,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _update_periodogram(self, *args):
         if not (hasattr(self, 'method') and hasattr(self, 'dataset')):
             return
+        if self.reference_time is None and self.dataset.selected_obj is not None:
+            self.reference_time = self.dataset.selected_obj.meta.get('REFTIME', 0.0)
         # TODO: support multiselect on self.dataset and combine light curves (or would that be a
         # dedicated plugin of its own)?
         self.method_spinner = True
@@ -636,6 +656,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
     @observe('dataset_selected')
     def _query_params_from_metadata(self, *args):
+        if not hasattr(self, 'dataset'):
+            return
+        if self.dataset.selected_obj is None:
+            return
         self.query_name = self.dataset.selected_obj.meta.get('OBJECT', '')
         self.query_ra = self.dataset.selected_obj.meta.get('RA')
         self.query_dec = self.dataset.selected_obj.meta.get('DEC')
@@ -687,12 +711,11 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _select_query_result(self, *args):
         selected_query_result = self.astroquery_result.loc[self.query_result_selected]
         self.period_from_catalog = selected_query_result['pl_orbper'].base.to_value(u.day)
-        ref_time = self.app.data_collection[0].coords.reference_time.jd
         if np.isnan(selected_query_result['pl_tranmid'].base.to_value(u.day)):
             self.t0_from_catalog = 0
         else:
             self.t0_from_catalog = (
-                selected_query_result['pl_tranmid'].base.to_value(u.day) - ref_time
+                selected_query_result['pl_tranmid'].base.to_value(u.day) - self.reference_time
             ) % self.period_from_catalog
 
     @with_spinner('query_spinner')

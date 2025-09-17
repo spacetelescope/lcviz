@@ -7,7 +7,8 @@ from jdaviz.core.registries import tray_registry
 __all__ = ['Markers']
 
 
-@tray_registry('lcviz-markers', label="Markers")
+@tray_registry('g-markers', label="Markers",
+               category='core', sidebar='viewers', subtab=1, overwrite=True)
 class Markers(Markers):
     """
     See the :ref:`Markers Plugin Documentation <markers>` for more details.
@@ -40,4 +41,4 @@ class Markers(Markers):
 
     @property
     def coords_info(self):
-        return self.app.session.application._tools['lcviz-coords-info']
+        return self.app.session.application._tools['g-coords-info']

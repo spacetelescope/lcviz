@@ -22,7 +22,7 @@ jobs:
   ci_tests:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure }}
+    continue-on-error: ${{ matrix.allow_failure || contains(github.event.pull_request.labels.*.name, 'continue-on-error') }}
     strategy:
       matrix:
         include:
@@ -44,31 +44,31 @@ jobs:
             toxenv: securityaudit
             allow_failure: false
 
-          - name: Python 3.10 with coverage checking, all deps, and remote data
+          - name: Python 3.11 with coverage checking, all deps, and remote data
             os: ubuntu-latest
-            python: '3.10'
-            toxenv: py310-test-alldeps-cov
+            python: '3.11'
+            toxenv: py311-test-alldeps-cov
             toxposargs: --remote-data
             allow_failure: false
 
-          - name: OS X - Python 3.10
+          - name: OS X - Python 3.11
             os: macos-latest
-            python: '3.10'
-            toxenv: py310-test
+            python: '3.11'
+            toxenv: py311-test
             allow_failure: false
 
           - name: Windows - Python 3.11
             os: windows-latest
-            python: 3.11
+            python: '3.11'
             toxenv: py311-test
             allow_failure: false
 
           # This also runs on cron but we want to make sure new changes
           # won't break this job at the PR stage.
-          - name: Python 3.12 with latest dev versions of key dependencies, and remote data
+          - name: Python 3.13 with latest dev versions of key dependencies, and remote data
             os: ubuntu-latest
-            python: '3.12'
-            toxenv: py312-test-devdeps
+            python: '3.13'
+            toxenv: py313-test-devdeps
             toxposargs: --remote-data --run-slow
             allow_failure: true
 
