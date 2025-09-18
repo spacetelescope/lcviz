@@ -140,15 +140,9 @@ class LightCurveImporter(BaseImporterToDataCollection):
             self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected_item['name']}]"  # noqa
             self.create_ephemeris_available = has_ephem(self.output)
 
-    @property
-    def default_viewer_label(self):
-        return 'flux-vs-time'
-
-    @property
-    def default_viewer_reference(self):
-        # returns the registry name of the default viewer
-        # only used if `show_in_viewer=True` and no existing viewers can accept the data
-        return 'lcviz-time-viewer'
+    @staticmethod
+    def _get_supported_viewers():
+        return [{'label': 'flux-vs-time', 'reference': 'lcviz-time-viewer'}]
 
     @cached_property
     def output(self):
@@ -179,13 +173,13 @@ class LightCurveImporter(BaseImporterToDataCollection):
         data = _data_with_reftime(self.app, data)
         super().add_to_data_collection(data, *args, **kwargs)
 
-    def __call__(self, show_in_viewer=True):
+    def __call__(self):
         if self.input_hdulist and self.extension_multiselect:
             data_label = self.data_label_value
             lcs = self.output
             with self.app._jdaviz_helper.batch_load():
                 for lc, ext in zip(lcs, self.extension.selected_name):
-                    self.add_to_data_collection(lc, f"{data_label} [{ext}]", show_in_viewer=True)
+                    self.add_to_data_collection(lc, f"{data_label} [{ext}]")
         else:
             super().__call__()
             lcs = [self.output]

@@ -32,6 +32,25 @@
       :api_hints_enabled="api_hints_enabled"
       :hint="input_hdulist && extension_multiselect ? 'Base label to assign to new data entries (will include extension as suffix).' : 'Label to assign to the new data entry.'"
     ></plugin-auto-label>
+
+    <plugin-viewer-create-new
+      :items="viewer_items"
+      :selected.sync="viewer_selected"
+      :create_new_items="viewer_create_new_items"
+      :create_new_selected.sync="viewer_create_new_selected"
+      :new_label_value.sync="viewer_label_value"
+      :new_label_default="viewer_label_default"
+      :new_label_auto.sync="viewer_label_auto"
+      :new_label_invalid_msg="viewer_label_invalid_msg"
+      :multiselect="viewer_multiselect"
+      :show_multiselect_toggle="false"
+      label="Viewer for Light Curve"
+      api_hint='ldr.importer.viewer = '
+      :api_hints_enabled="api_hints_enabled"
+      :show_if_single_entry="true"
+      hint="Select the viewer to use for the new 1D Light Curve data entry."
+    ></plugin-viewer-create-new>
+
     <plugin-switch
       v-if="create_ephemeris_available"
       :value.sync="create_ephemeris"
@@ -40,5 +59,20 @@
       :api_hints_enabled="api_hints_enabled"
       :hint="extension_multiselect && extension_selected.length > 1 ? 'Create ephemerides entries and phase-viewers.': 'Create ephemeris entry and phase-viewer.'"
     />
-  </v-contatiner>
+
+    <v-row justify="end">
+      <plugin-action-button
+        :spinner="import_spinner"
+        :disabled="import_disabled"
+        :results_isolated_to_plugin="false"
+        :api_hints_enabled="api_hints_enabled"
+        @click="import_clicked">
+        {{ api_hints_enabled ?
+          'ldr.importer()'
+          :
+          'Import'
+        }}
+      </plugin-action-button>
+    </v-row>
+  </v-container>
 </template>

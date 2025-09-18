@@ -22,7 +22,7 @@ dependencies = [
     "astropy>=5.2",
     # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
     # to devdeps in tox.ini
-    "jdaviz>=4.3.2,<4.4",
+    "jdaviz>=4.4,<4.5",
     "lightkurve>=2.5.1",
     # NOTE: glue-jupyter is also pinned by jdaviz.
     "glue-jupyter>=0.22.2",

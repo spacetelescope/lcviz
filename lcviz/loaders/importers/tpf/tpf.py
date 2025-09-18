@@ -25,9 +25,9 @@ class TPFImporter(BaseImporterToDataCollection):
             return False
         return isinstance(self.input, (KeplerTargetPixelFile, TessTargetPixelFile))
 
-    @property
-    def default_viewer_label(self):
-        return 'image'
+    @staticmethod
+    def _get_supported_viewers():
+        return [{'label': 'image', 'reference': 'lcviz-cube-viewer'}]
 
     @property
     def ignore_viewers_with_cls(self):
@@ -35,12 +35,6 @@ class TPFImporter(BaseImporterToDataCollection):
         # load automatically and instead default to creating and loading into
         # an image viewer
         return (TimeScatterView, PhaseScatterView)
-
-    @property
-    def default_viewer_reference(self):
-        # returns the registry name of the default viewer
-        # only used if `show_in_viewer=True` and no existing viewers can accept the data
-        return 'lcviz-cube-viewer'
 
     @property
     def output(self):
