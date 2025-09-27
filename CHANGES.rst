@@ -5,6 +5,9 @@
 1.2.1 (unreleased)
 ------------------
 
+* Update jdaviz requirement to 4.4 to include upstream improvements including support for
+  selecting/naming the viewer within the loaders as well as improvements to the logger. [#204]
+
 
 1.2.0 (09-17-2025)
 ------------------
