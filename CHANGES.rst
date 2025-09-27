@@ -1,8 +1,5 @@
-1.3.0 (unreleased)
-------------------
 
-
-1.2.1 (unreleased)
+1.2.1 (09-26-2025)
 ------------------
 
 * Update jdaviz requirement to 4.4 to include upstream improvements including support for
