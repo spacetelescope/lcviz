@@ -150,7 +150,7 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
                                          'domain': {'x': 0, 'y': 0}})
 
     # print(label_mouseover.as_text())
-    assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.00643e+01 electron / s',  # noqa
+    assert label_mouseover.as_text() == ('Pixel x=00000.0 y=00000.0 Value +1.00643e+01 electron / (s pix2)',  # noqa
                                          'Time 46.99807 d',
                                          '')
 
@@ -164,4 +164,4 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
                                                       'axes_y': 0,
                                                       'axes_y:unit': 'pix',
                                                       'value': 10.064313,
-                                                      'value:unit': 'electron / s'})
+                                                      'value:unit': 'electron / (s pix2)'})
