@@ -1,6 +1,8 @@
 1.3.0 (unreleased)
 ------------------
 
+* Photometric Extraction plugin to extract light curves from TPF cubes. [#115]
+
 1.2.2 (unreleased)
 ------------------
 
@@ -55,8 +57,6 @@
 * Update jdaviz requirement to 4.0 to include upstream improvements including API hints. [#121, #133]
 
 * Prevent duplicate sub-intervals (quarter/sector/campaign) in data labels. [#120]
-
-* Photometric extraction plugin. [#115]
 
 * Add feature to query the NASA Exoplanet Archive for exoplanet ephemerides. [#127]
 
