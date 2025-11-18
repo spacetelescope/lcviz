@@ -3,7 +3,7 @@ from traitlets import Bool, Unicode, observe
 from lightkurve import LightCurve
 
 from jdaviz.core.registries import tray_registry
-from jdaviz.configs.cubeviz.plugins import SpectralExtraction
+from jdaviz.configs.cubeviz.plugins import SpectralExtraction3D
 from jdaviz.core.user_api import PluginUserApi
 
 
@@ -11,7 +11,7 @@ __all__ = ['PhotometricExtraction']
 
 
 @tray_registry('photometric-extraction', label="Photometric Extraction")
-class PhotometricExtraction(SpectralExtraction):
+class PhotometricExtraction(SpectralExtraction3D):
     """
     See the :ref:`Photometric Extraction Plugin Documentation <photometric-extraction>`
     for more details.
