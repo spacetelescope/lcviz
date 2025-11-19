@@ -83,7 +83,10 @@ def _get_display_unit(app, axis):
         if axis == 'time':
             return u.d
         elif axis == 'flux':
-            return app._jdaviz_helper.default_time_viewer._obj.data()[0].flux.unit
+            try:
+                return app._jdaviz_helper.default_time_viewer._obj.data()[0].flux.unit
+            except ValueError:
+                return u.electron / u.s
         else:
             raise ValueError(f"could not find units for axis='{axis}'")
     try:
