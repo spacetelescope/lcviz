@@ -18,7 +18,7 @@ __all__ = ['TPFImporter']
 class TPFImporter(BaseImporterToDataCollection):
     template_file = __file__, "tpf.vue"
 
-    auto_extract = Bool(True).tag(sync=True)
+    auto_extract = Bool(False).tag(sync=True)
 
     # Extracted Data
     ext_data_label_value = Unicode().tag(sync=True)
