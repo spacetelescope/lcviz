@@ -35,7 +35,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_markers(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     tv = helper.default_time_viewer._obj
 
     mp = helper.plugins['Markers']
@@ -127,7 +127,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
 @pytest.mark.remote_data
 def test_tpf_markers(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
 
     # TODO: replace with test fixture
     from lightkurve import search_targetpixelfile
@@ -135,7 +135,7 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
                                  mission="Kepler",
                                  cadence="long",
                                  quarter=10).download()
-    helper.load_data(tpf)
+    helper.load(tpf)
 
     mp = helper.plugins['Markers']
     label_mouseover = mp._obj.coords_info
