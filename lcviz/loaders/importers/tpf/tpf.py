@@ -11,7 +11,7 @@ __all__ = ['TPFImporter']
 
 @loader_importer_registry('TPF')
 class TPFImporter(BaseImporterToDataCollection):
-    template_file = __file__, "../to_dc_with_label.vue"
+    template_file = __file__, "tpf.vue"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
