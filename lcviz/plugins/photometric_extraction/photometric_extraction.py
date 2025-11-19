@@ -28,6 +28,7 @@ class PhotometricExtraction(SpectralExtraction3D):
     * :meth:`extract`
     """
     resulting_product_name = Unicode("light curve").tag(sync=True)
+    extracted_format = "Light Curve"
     do_auto_extraction = False
     wavelength_dependent_available = Bool(False).tag(sync=True)
     bg_export_available = Bool(False).tag(sync=True)
