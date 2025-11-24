@@ -144,7 +144,7 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
     assert abs(helper.plugins['Time Selector'].value - 46.998069) < 1e-4
 
     # test event in image (TPF) viewer
-    iv = helper.viewers['image']._obj
+    iv = helper.viewers['TPF']._obj
     label_mouseover._viewer_mouse_event(iv,
                                         {'event': 'mousemove',
                                          'domain': {'x': 0, 'y': 0}})

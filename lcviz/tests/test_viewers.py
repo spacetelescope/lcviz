@@ -38,6 +38,6 @@ def test_clone(helper, light_curve_like_kepler_quarter):
                                  cadence="long",
                                  quarter=10).download()
     helper.load(tpf)
-    im_viewer = helper.viewers['image']
-    assert helper._get_clone_viewer_reference(im_viewer._obj.reference) == 'image[1]'
+    im_viewer = helper.viewers['TPF']
+    assert helper._get_clone_viewer_reference(im_viewer._obj.reference) == 'TPF[1]'
     im_viewer._obj.clone_viewer()
