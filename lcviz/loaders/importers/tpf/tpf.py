@@ -91,7 +91,7 @@ class TPFImporter(BaseImporterToDataCollection):
 
     @staticmethod
     def _get_supported_viewers():
-        return [{'label': 'image', 'reference': 'lcviz-cube-viewer'}]
+        return [{'label': 'TPF', 'reference': 'lcviz-cube-viewer'}]
 
     @property
     def ignore_viewers_with_cls(self):
