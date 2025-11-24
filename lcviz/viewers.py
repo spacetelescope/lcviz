@@ -333,7 +333,8 @@ class CubeView(CubevizImageView, WithSliceSelection):
                 layer.attribute = flux_comp
 
     def _expected_subset_layer_default(self, layer_state):
-        if get_subset_type(layer_state.layer) == 'spectral':  # NOTE: spectral here means xrange (i.e. not spatial)
+        # NOTE: spectral here means xrange (i.e. not spatial)
+        if get_subset_type(layer_state.layer) == 'spectral':
             # ONLY show spatial subsets in image/cube viewer
             return False
 
