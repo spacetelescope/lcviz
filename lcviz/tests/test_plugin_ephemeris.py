@@ -14,7 +14,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     assert len(helper.app.get_viewer_ids()) == 1
@@ -82,7 +82,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
 
 
 def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     assert len(ephem._obj._get_phase_viewers()) == 0
@@ -109,7 +109,7 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
 
 
 def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
     vc = helper._tray_tools['g-viewer-creator']
 
@@ -136,7 +136,7 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
 
 
 def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()
@@ -151,7 +151,7 @@ def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
     # test that the query successfully falls back on the RA/Dec:
     light_curve_like_kepler_quarter.meta['OBJECT'] = ''
 
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()

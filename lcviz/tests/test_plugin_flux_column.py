@@ -14,7 +14,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_flux_column(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
 
     fo = helper.plugins['Flux Column']
     assert len(fo.flux_column.choices) == 2
