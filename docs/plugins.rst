@@ -228,7 +228,7 @@ Note that this plugin is only available if TPF data is loaded into the app.
 .. admonition:: User API Example
     :class: dropdown
 
-    See the :class:`~lcviz.plugins.stitch.stitch.Stitch` user API documentation for more details.
+    See the :class:`~lcviz.plugins.photometric_extraction.photometric_extraction.PhotometricExtraction` user API documentation for more details.
 
     .. code-block:: python
 
