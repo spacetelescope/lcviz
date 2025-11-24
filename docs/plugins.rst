@@ -239,7 +239,7 @@ Note that this plugin is only available if TPF data is loaded into the app.
                                    cadence="long",
                                    quarter=10).download()
       lcviz = LCviz()
-      lcviz.load_data(tpf)
+      lcviz.load(tpf)
       lcviz.show()
 
       ext = lcviz.plugins['Photometric Extraction']
