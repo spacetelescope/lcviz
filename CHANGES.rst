@@ -1,6 +1,8 @@
 1.3.0 (unreleased)
 ------------------
 
+* Update jdaviz requirement to 4.5. [#210]
+
 1.2.2 (unreleased)
 ------------------
 
