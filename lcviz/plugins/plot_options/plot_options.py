@@ -3,6 +3,9 @@ import numpy as np
 from traitlets import observe
 from jdaviz.configs.default.plugins import PlotOptions
 from jdaviz.core.registries import tray_registry
+from jdaviz.utils import get_subset_type
+
+from lcviz.viewers import CubeView
 
 __all__ = ['PlotOptions']
 
@@ -33,6 +36,17 @@ class PlotOptions(PlotOptions):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        def not_spatial_subset_in_scatter_viewer(lyr):
+            # note: have to check the classname instead of isinstance to avoid circular import
+            if np.any([isinstance(viewer, CubeView)
+                       for viewer in self.layer.viewer_objs]):
+                return True
+            # at this point, NO selected viewers are TPF Cube viewers,
+            # so we want to exclude spatial subsets
+            return get_subset_type(lyr) != 'spatial'
+
+        self.layer.add_filter(not_spatial_subset_in_scatter_viewer)
 
     @observe('vdocs')
     def _update_docs_link(self, *args):
