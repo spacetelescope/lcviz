@@ -88,7 +88,7 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(ephem._obj._get_phase_viewers()) == 0
     pv1 = ephem.create_phase_viewer()
     assert len(ephem._obj._get_phase_viewers()) == 1
-    pv2 = pv1._obj.glue_viewer.clone_viewer()
+    pv2 = pv1._obj.clone_viewer()
     assert len(ephem._obj._get_phase_viewers()) == 2
     assert len(helper.viewers) == 3
     assert pv1._obj.reference_id == 'flux-vs-phase:default'
