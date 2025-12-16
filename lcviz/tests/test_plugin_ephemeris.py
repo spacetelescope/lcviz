@@ -14,7 +14,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     assert len(helper.app.get_viewer_ids()) == 1
@@ -82,24 +82,26 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
 
 
 def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     assert len(ephem._obj._get_phase_viewers()) == 0
     pv1 = ephem.create_phase_viewer()
     assert len(ephem._obj._get_phase_viewers()) == 1
-    pv2 = pv1._obj.clone_viewer()
+    pv2 = pv1._obj.glue_viewer.clone_viewer()
     assert len(ephem._obj._get_phase_viewers()) == 2
     assert len(helper.viewers) == 3
-    assert pv1._obj.reference_id == 'flux-vs-phase:default'
-    assert pv1._obj._ephemeris_component == 'default'
+    assert pv1._obj.glue_viewer.reference_id == 'flux-vs-phase:default'
+    assert pv1._obj.glue_viewer._ephemeris_component == 'default'
+    # NOTE: this should be updated once upstream changes to return the JdavizViewerWindow user_api
     assert pv2._obj.reference_id == 'flux-vs-phase:default[1]'
     assert pv2._obj._ephemeris_component == 'default'
 
     # renaming ephemeris should update both labels
     ephem.rename_component('default', 'renamed')
-    assert pv1._obj.reference_id == 'flux-vs-phase:renamed'
-    assert pv1._obj._ephemeris_component == 'renamed'
+    assert pv1._obj.glue_viewer.reference_id == 'flux-vs-phase:renamed'
+    assert pv1._obj.glue_viewer._ephemeris_component == 'renamed'
+    # NOTE: this should be updated once upstream changes to return the JdavizViewerWindow user_api
     assert pv2._obj.reference_id == 'flux-vs-phase:renamed[1]'
     assert pv2._obj._ephemeris_component == 'renamed'
     assert len(ephem._obj._get_phase_viewers()) == 2
@@ -109,7 +111,7 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
 
 
 def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
     vc = helper._tray_tools['g-viewer-creator']
 
@@ -136,7 +138,7 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
 
 
 def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()
@@ -151,7 +153,7 @@ def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
     # test that the query successfully falls back on the RA/Dec:
     light_curve_like_kepler_quarter.meta['OBJECT'] = ''
 
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()

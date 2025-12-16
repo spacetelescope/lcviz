@@ -64,7 +64,7 @@ def test_round_trip(helper):
     function ``_download_and_write_lc_snippet``.
     """
     lc = LightCurve.read(SMALL_LC_PATH, astropy_native=True)
-    helper.load_data(lc)
+    helper.load(lc)
 
     # these times chosen by hand during Kepler Q0:
     near_transit = Time([
@@ -72,7 +72,7 @@ def test_round_trip(helper):
         '2009-05-02 03:52'
     ], format='iso')
 
-    viewer = helper.default_time_viewer._obj
+    viewer = helper.default_time_viewer._obj.glue_viewer
     viewer.apply_roi(XRangeROI(*near_transit))
 
     columns_to_check = ['time', 'flux', 'flux_err']
