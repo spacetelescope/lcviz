@@ -9,6 +9,7 @@ from lightkurve import LightCurve
 from glue.config import settings as glue_settings
 from glue.core.link_helpers import LinkSame
 from glue.core.units import unit_converter
+from jdaviz.configs.default.plugins.viewers import JdavizViewerWindow
 from jdaviz.core.helpers import ConfigHelper
 
 from lcviz import __version__
@@ -41,7 +42,7 @@ for name, path in custom_components.items():
 
 
 def _get_range_subset_bounds(self, subset_state, *args, **kwargs):
-    viewer = self._jdaviz_helper.default_time_viewer._obj
+    viewer = self._jdaviz_helper.default_time_viewer._obj.glue_viewer
     light_curve = viewer.data()[0]
     reference_time = light_curve.meta['reference_time']
     if viewer:
@@ -83,7 +84,7 @@ def _get_display_unit(app, axis):
         if axis == 'time':
             return u.d
         elif axis == 'flux':
-            return app._jdaviz_helper.default_time_viewer._obj.data()[0].flux.unit
+            return app._jdaviz_helper.default_time_viewer._obj.glue_viewer.data()[0].flux.unit
         else:
             raise ValueError(f"could not find units for axis='{axis}'")
     try:
@@ -204,7 +205,7 @@ class LCviz(ConfigHelper):
                if isinstance(viewer, TimeScatterView)]
         if not len(tvs):
             raise ValueError("no time viewers exist")
-        return tvs[0].user_api
+        return JdavizViewerWindow(tvs[0], app=self.app).user_api
 
     @property
     def _has_cube_data(self):

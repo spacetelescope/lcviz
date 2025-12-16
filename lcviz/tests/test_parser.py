@@ -19,7 +19,7 @@ def test_kepler_via_mast_local_file(helper):
     )  # 188 KB
 
     path = download_file(url, cache=True, timeout=100)
-    helper.load_data(path)
+    helper.load(path)
 
     data = helper.app.data_collection[0]
     flux_arr = data['flux']
@@ -39,7 +39,7 @@ def test_kepler_via_mast_preparsed(helper):
     )  # 188 KB
 
     light_curve = kepler.read_kepler_lightcurve(url)
-    helper.load_data(light_curve)
+    helper.load(light_curve)
 
     data = helper.app.data_collection[0]
     flux_arr = data['flux']
@@ -57,7 +57,7 @@ def test_kepler_tpf_via_lightkurve(helper):
                                  mission="Kepler",
                                  cadence="long",
                                  quarter=10).download()
-    helper.load_data(tpf)
+    helper.load(tpf)
     assert helper.get_data().shape == (4447, 4, 6)  # (time, x, y)
     assert helper.app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
 
@@ -68,8 +68,8 @@ def test_mult_lc_reftime(helper):
                             cadence="long", quarter=9).download()
     lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
                             cadence="long", quarter=10).download()
-    helper.load_data(lc1, data_label='Q9')
-    helper.load_data(lc2, data_label='Q10')
+    helper.load(lc1, data_label='Q9')
+    helper.load(lc2, data_label='Q10')
     assert helper.app.data_collection[0].meta.get('reference_time') == helper.app.data_collection[1].meta.get('reference_time')  # noqa
 
 
@@ -78,7 +78,7 @@ def test_synthetic_lc(helper):
     flux = np.ones(len(time)) * u.electron / u.s
     flux_err = 0.1 * np.ones_like(flux)
     lc = LightCurve(time=time, flux=flux, flux_err=flux_err)
-    helper.load_data(lc)
+    helper.load(lc)
 
     data = helper.app.data_collection[0]
     flux_arr = data['flux']
@@ -92,8 +92,8 @@ def test_synthetic_lc(helper):
 
 def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
-    helper.load_data(lc)
-    viewer = helper.default_time_viewer._obj
+    helper.load(lc)
+    viewer = helper.default_time_viewer._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     # the min/max of temporal regions can be defined in two ways:
@@ -117,8 +117,8 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
 
 def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
-    helper.load_data(lc)
-    viewer = helper.default_time_viewer._obj
+    helper.load(lc)
+    viewer = helper.default_time_viewer._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     subset_plugin._obj.subset_selected = "Create New"
@@ -135,11 +135,11 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
 
 def test_data_label(helper, light_curve_like_kepler_quarter):
     # add data without specifying data label:
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     object_name = helper.app.data_collection[-1].meta['OBJECT']
     assert helper.app.data_collection[-1].label == f'{object_name} [Q10]'
 
     # specify label, check that quarter isn't appended:
     data_label = 'Cool target'
-    helper.load_data(light_curve_like_kepler_quarter, data_label=data_label)
+    helper.load(light_curve_like_kepler_quarter, data_label=data_label)
     assert helper.app.data_collection[-1].label == data_label

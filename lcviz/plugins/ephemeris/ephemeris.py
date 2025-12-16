@@ -8,6 +8,7 @@ from traitlets import Bool, Float, List, Unicode, observe
 
 from glue.core.link_helpers import LinkSame
 from glue.core.message import DataCollectionAddMessage
+from jdaviz.configs.default.plugins.viewers import JdavizViewerWindow
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.events import (NewViewerMessage, ViewerAddedMessage, ViewerRemovedMessage)
 from jdaviz.core.registries import tray_registry
@@ -390,7 +391,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         self._set_viewer_to_ephem_component(pv, ephem_component=ephem_component)
 
-        return pv.user_api
+        return JdavizViewerWindow(pv, app=self.app).user_api
 
     def vue_create_phase_viewer(self, *args):
         if not self.phase_viewer_exists:
