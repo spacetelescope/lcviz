@@ -28,7 +28,7 @@ def test_clone(helper, light_curve_like_kepler_quarter):
     def_viewer = helper.viewers['flux-vs-time']
     assert helper._get_clone_viewer_reference(def_viewer._obj.reference) == 'flux-vs-time[1]'
 
-    new_viewer = def_viewer._obj.clone_viewer()
+    new_viewer = def_viewer._obj.glue_viewer.clone_viewer()
     assert helper._get_clone_viewer_reference(new_viewer._obj.reference) == 'flux-vs-time[2]'
 
     # TODO: replace with test fixture
@@ -40,4 +40,4 @@ def test_clone(helper, light_curve_like_kepler_quarter):
     helper.load_data(tpf)
     im_viewer = helper.viewers['image']
     assert helper._get_clone_viewer_reference(im_viewer._obj.reference) == 'image[1]'
-    im_viewer._obj.clone_viewer()
+    im_viewer._obj.glue_viewer.clone_viewer()
