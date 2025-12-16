@@ -96,8 +96,9 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'value': 0.9675873517990112,
                                                       'value:unit': ''})
 
-    mp._obj._on_viewer_key_event(pv, {'event': 'keydown',
-                                      'key': 'm'})
+    mp._obj._on_viewer_key_event(pv._obj.glue_viewer,
+                                 {'event': 'keydown',
+                                  'key': 'm'})
     assert len(mp.export_table()) == 2
     assert len(_get_markers_from_viewer(tv._obj.glue_viewer).x) == 1
     assert len(_get_markers_from_viewer(pv._obj.glue_viewer).x) == 1
@@ -145,8 +146,8 @@ def test_tpf_markers(helper, light_curve_like_kepler_quarter):
     assert abs(helper.plugins['Time Selector'].value - 46.998069) < 1e-4
 
     # test event in image (TPF) viewer
-    iv = helper.viewers['image']._obj
-    label_mouseover._viewer_mouse_event(iv,
+    iv = helper.viewers['image']
+    label_mouseover._viewer_mouse_event(iv._obj.glue_viewer,
                                         {'event': 'mousemove',
                                          'domain': {'x': 0, 'y': 0}})
 

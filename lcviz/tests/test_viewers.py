@@ -3,7 +3,7 @@ import pytest
 
 def test_reset_limits(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer._obj
+    tv = helper.default_time_viewer._obj.glue_viewer
 
     orig_xlims = (tv.state.x_min, tv.state.x_max)
     orig_ylims = (tv.state.y_min, tv.state.y_max)
