@@ -10,7 +10,7 @@ def test_docs_snippets(helper):
                                  quarter=10).download()
     lcviz = helper
     lcviz.load(tpf)
-    lcviz.show()
+    # lcviz.show()
 
     ext = lcviz.plugins['Photometric Extraction']
     ext.open_in_tray()
