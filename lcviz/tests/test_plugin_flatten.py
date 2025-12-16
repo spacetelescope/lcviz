@@ -24,11 +24,11 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer._obj
+    helper.load(light_curve_like_kepler_quarter)
+    tv = helper.default_time_viewer._obj.glue_viewer
 
     ephem = helper.plugins['Ephemeris']
-    pv = ephem.create_phase_viewer()._obj
+    pv = ephem.create_phase_viewer()._obj.glue_viewer
     f = helper.plugins['Flatten']
 
     # no marks until plugin opened/active
@@ -73,7 +73,7 @@ def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
 
 
 def test_unnormalize(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
 
     f = helper.plugins['Flatten']
 

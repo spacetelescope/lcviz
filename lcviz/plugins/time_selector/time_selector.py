@@ -1,7 +1,7 @@
 from traitlets import observe
 
 from jdaviz.core.template_mixin import ViewerSelectMixin
-from jdaviz.configs.cubeviz.plugins import Slice
+from jdaviz.configs.cubeviz.plugins import BaseSlicePlugin
 from jdaviz.core.registries import tray_registry
 
 from lcviz.events import EphemerisChangedMessage
@@ -11,7 +11,7 @@ __all__ = ['TimeSelector']
 
 
 @tray_registry('time-selector', label="Time Selector", category='app:options')
-class TimeSelector(Slice, ViewerSelectMixin):
+class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
     """
     See the :ref:`Time Selector Plugin Documentation <time-selector>` for more details.
 
@@ -52,13 +52,6 @@ class TimeSelector(Slice, ViewerSelectMixin):
 
         self.viewer.add_filter(lambda viewer: isinstance(viewer, (TimeScatterView, PhaseScatterView, CubeView)))  # noqa
         self._set_relevant()
-
-    @observe('viewer_items')
-    def _set_relevant(self, *args):
-        if not len(self.viewer_items):
-            self.irrelevant_msg = 'No valid viewers'
-        else:
-            self.irrelevant_msg = ''
 
     @observe('vdocs')
     def _update_docs_link(self, *args):

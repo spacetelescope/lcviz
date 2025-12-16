@@ -293,7 +293,12 @@ class CubeView(CubevizImageView, WithSliceSelection):
         # * _default_flux_viewer_reference_name
         # * _default_uncert_viewer_reference_name
 
-        self.data_menu._obj.dataset.add_filter(is_tpf)
+        def data_not_in_viewer(data):
+            return data.label not in self.data_menu.layer.choices
+
+        self.data_menu._obj.dataset.filters = ['is_not_wcs_only',
+                                               data_not_in_viewer,
+                                               is_tpf]
 
     @property
     def slice_component_label(self):

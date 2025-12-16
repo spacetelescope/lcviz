@@ -4,6 +4,7 @@
 1.2.2 (unreleased)
 ------------------
 
+* Update jdaviz requirement to 4.5, including support for popping out and showing viewers inline. [#210]
 
 1.2.1 (09-26-2025)
 ------------------
