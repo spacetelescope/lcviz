@@ -3,7 +3,7 @@ import pytest
 
 def test_reset_limits(helper, light_curve_like_kepler_quarter):
     helper.load(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer._obj
+    tv = helper.default_time_viewer._obj.glue_viewer
 
     orig_xlims = (tv.state.x_min, tv.state.x_max)
     orig_ylims = (tv.state.y_min, tv.state.y_max)
@@ -28,7 +28,7 @@ def test_clone(helper, light_curve_like_kepler_quarter):
     def_viewer = helper.viewers['flux-vs-time']
     assert helper._get_clone_viewer_reference(def_viewer._obj.reference) == 'flux-vs-time[1]'
 
-    new_viewer = def_viewer._obj.clone_viewer()
+    new_viewer = def_viewer._obj.glue_viewer.clone_viewer()
     assert helper._get_clone_viewer_reference(new_viewer._obj.reference) == 'flux-vs-time[2]'
 
     # TODO: replace with test fixture
@@ -40,4 +40,4 @@ def test_clone(helper, light_curve_like_kepler_quarter):
     helper.load(tpf)
     im_viewer = helper.viewers['TPF']
     assert helper._get_clone_viewer_reference(im_viewer._obj.reference) == 'TPF[1]'
-    im_viewer._obj.clone_viewer()
+    im_viewer._obj.glue_viewer.clone_viewer()

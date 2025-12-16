@@ -93,7 +93,7 @@ def test_synthetic_lc(helper):
 def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
     helper.load(lc)
-    viewer = helper.default_time_viewer._obj
+    viewer = helper.default_time_viewer._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     # the min/max of temporal regions can be defined in two ways:
@@ -118,7 +118,7 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
 def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
     helper.load(lc)
-    viewer = helper.default_time_viewer._obj
+    viewer = helper.default_time_viewer._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     subset_plugin._obj.subset_selected = "Create New"
