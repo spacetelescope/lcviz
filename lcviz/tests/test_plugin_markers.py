@@ -36,14 +36,14 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 def test_plugin_markers(helper, light_curve_like_kepler_quarter):
     helper.load_data(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer._obj
+    tv = helper.default_time_viewer
 
     mp = helper.plugins['Markers']
     label_mouseover = mp._obj.coords_info
     mp.open_in_tray()
 
     # test event in flux-vs-time viewer
-    label_mouseover._viewer_mouse_event(tv,
+    label_mouseover._viewer_mouse_event(tv._obj.glue_viewer,
                                         {'event': 'mousemove',
                                          'domain': {'x': 0, 'y': 0}})
 
@@ -65,16 +65,17 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                                       'value': 0.96758735,
                                                       'value:unit': ''})
 
-    mp._obj._on_viewer_key_event(tv, {'event': 'keydown',
-                                      'key': 'm'})
+    mp._obj._on_viewer_key_event(tv._obj.glue_viewer,
+                                 {'event': 'keydown',
+                                  'key': 'm'})
     assert len(mp.export_table()) == 1
-    assert len(_get_markers_from_viewer(tv).x) == 1
+    assert len(_get_markers_from_viewer(tv._obj.glue_viewer).x) == 1
 
     ephem = helper.plugins['Ephemeris']
-    pv = ephem.create_phase_viewer()._obj
+    pv = ephem.create_phase_viewer()
 
     # test event in flux-vs-phase viewer
-    label_mouseover._viewer_mouse_event(pv,
+    label_mouseover._viewer_mouse_event(pv._obj.glue_viewer,
                                         {'event': 'mousemove',
                                          'domain': {'x': 0.5, 'y': 0}})
 
@@ -98,12 +99,12 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
     mp._obj._on_viewer_key_event(pv, {'event': 'keydown',
                                       'key': 'm'})
     assert len(mp.export_table()) == 2
-    assert len(_get_markers_from_viewer(tv).x) == 1
-    assert len(_get_markers_from_viewer(pv).x) == 1
+    assert len(_get_markers_from_viewer(tv._obj.glue_viewer).x) == 1
+    assert len(_get_markers_from_viewer(pv._obj.glue_viewer).x) == 1
 
     # test event in flux-vs-phase viewer (with cursor only)
     label_mouseover.dataset.selected = 'none'
-    label_mouseover._viewer_mouse_event(pv,
+    label_mouseover._viewer_mouse_event(pv._obj.glue_viewer,
                                         {'event': 'mousemove',
                                          'domain': {'x': 0.6, 'y': 0}})
 
