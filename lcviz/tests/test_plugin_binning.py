@@ -20,7 +20,7 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
 
 
 def test_plugin_binning(helper, light_curve_like_kepler_quarter):
-    helper.load_data(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter)
     tv = helper.default_time_viewer._obj.glue_viewer
 
     b = helper.plugins['Binning']
