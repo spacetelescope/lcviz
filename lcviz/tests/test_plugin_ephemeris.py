@@ -91,17 +91,17 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
     pv2 = pv1._obj.glue_viewer.clone_viewer()
     assert len(ephem._obj._get_phase_viewers()) == 2
     assert len(helper.viewers) == 3
-    assert pv1._obj.reference_id == 'flux-vs-phase:default'
-    assert pv1._obj._ephemeris_component == 'default'
-    assert pv2._obj.reference_id == 'flux-vs-phase:default[1]'
-    assert pv2._obj._ephemeris_component == 'default'
+    assert pv1._obj.glue_viewer.reference_id == 'flux-vs-phase:default'
+    assert pv1._obj.glue_viewer._ephemeris_component == 'default'
+    assert pv2._obj.glue_viewer.reference_id == 'flux-vs-phase:default[1]'
+    assert pv2._obj.glue_viewer._ephemeris_component == 'default'
 
     # renaming ephemeris should update both labels
     ephem.rename_component('default', 'renamed')
-    assert pv1._obj.reference_id == 'flux-vs-phase:renamed'
-    assert pv1._obj._ephemeris_component == 'renamed'
-    assert pv2._obj.reference_id == 'flux-vs-phase:renamed[1]'
-    assert pv2._obj._ephemeris_component == 'renamed'
+    assert pv1._obj.glue_viewer.reference_id == 'flux-vs-phase:renamed'
+    assert pv1._obj.glue_viewer._ephemeris_component == 'renamed'
+    assert pv2._obj.glue_viewer.reference_id == 'flux-vs-phase:renamed[1]'
+    assert pv2._obj.glue_viewer._ephemeris_component == 'renamed'
     assert len(ephem._obj._get_phase_viewers()) == 2
 
     ephem.remove_component('renamed')
