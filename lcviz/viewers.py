@@ -127,7 +127,8 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
     def _set_plot_x_axes(self, dc, component_labels, light_curve=None, reference_time=None):
         self.state.x_att = dc[0].components[component_labels.index('dt')]
 
-        x_unit = self.time_unit
+        x_unit = self.time_unit  # TODO: use get display unit instead?  Or at least update self.time_unit
+        reference_time = light_curve.meta.get('reference_time', None)
 
         if light_curve is not None and reference_time is None:
             reference_time = light_curve.meta.get('reference_time', None)
@@ -140,7 +141,10 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
         self.figure.axes[0].num_ticks = 5
 
     def _set_plot_y_axes(self, dc, component_labels, light_curve):
-        self.state.y_att = dc[0].components[component_labels.index('flux')]
+        try:
+            self.state.y_att = dc[0].components[component_labels.index('flux')]
+        except ValueError:
+            pass
 
         y_unit = light_curve.flux.unit
         y_unit_physical_type = str(y_unit.physical_type).title()
