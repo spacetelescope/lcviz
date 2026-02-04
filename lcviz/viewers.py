@@ -15,6 +15,7 @@ from jdaviz.configs.cubeviz.plugins.viewers import (CubevizImageView,
                                                     WithSliceIndicator, WithSliceSelection)
 from jdaviz.configs.default.plugins.viewers import JdavizViewerMixin
 from jdaviz.configs.specviz.plugins.viewers import Spectrum1DViewer
+from jdaviz.utils import get_subset_type
 
 from lcviz.state import ScatterViewerState
 from lcviz.utils import is_lc, is_tpf
@@ -170,13 +171,15 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
         self.figure.axes[1].num_ticks = 5
 
     def _expected_subset_layer_default(self, layer_state):
-        super()._expected_subset_layer_default(layer_state)
+        if get_subset_type(layer_state.layer) == 'spatial':
+            # do not show spatial subsets in time or phase viewers
+            layer_state.visible = False
+        else:
+            layer_state.linewidth = 3
 
-        layer_state.linewidth = 3
-
-        # optionally prevent subset from being rendered
-        # as a density map, rather than shaded markers over data:
-        layer_state.density_map = self.density_map
+            # optionally prevent subset from being rendered
+            # as a density map, rather than shaded markers over data:
+            layer_state.density_map = self.density_map
 
     def add_data(self, data, color=None, alpha=None, **layer_state):
         """
@@ -333,6 +336,12 @@ class CubeView(CubevizImageView, WithSliceSelection):
         for layer in self.state.layers:
             if hasattr(layer, 'attribute') and layer.attribute != flux_comp:
                 layer.attribute = flux_comp
+
+    def _expected_subset_layer_default(self, layer_state):
+        # NOTE: spectral here means xrange (i.e. not spatial)
+        if get_subset_type(layer_state.layer) == 'spectral':
+            # ONLY show spatial subsets in image/cube viewer
+            return False
 
     def data(self, cls=None):
         # TODO: generalize upstream in jdaviz.
