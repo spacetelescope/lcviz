@@ -84,7 +84,7 @@ class TPFImporter(BaseImporterToDataCollection):
 
     @property
     def is_valid(self):
-        if self.app.config not in ('deconfigged', 'lcviz'):
+        if self._app.config not in ('deconfigged', 'lcviz'):
             # NOTE: temporary during deconfig process
             return False
         return isinstance(self.input, (KeplerTargetPixelFile, TessTargetPixelFile))
@@ -115,7 +115,7 @@ class TPFImporter(BaseImporterToDataCollection):
             return
 
         try:
-            plg = self.app.get_tray_item_from_name('photometric-extraction')
+            plg = self._app.get_tray_item_from_name('photometric-extraction')
             ext = plg._extract_in_new_instance(dataset=data_label,
                                                auto_update=False,
                                                add_data=False)
@@ -134,7 +134,7 @@ class TPFImporter(BaseImporterToDataCollection):
                 " See the 3D spectral extraction plugin for details or to"
                 " perform a custom extraction.",
                 color='warning', sender=self, timeout=10000)
-        self.app.hub.broadcast(msg)
+        self._app.hub.broadcast(msg)
 
         if ext is not None:
             self.add_to_data_collection(ext, ext_data_label, viewer_select=self.ext_viewer)

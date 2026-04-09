@@ -21,7 +21,7 @@ def test_kepler_via_mast_local_file(helper):
     path = download_file(url, cache=True, timeout=100)
     helper.load(path)
 
-    data = helper.app.data_collection[0]
+    data = helper._app.data_collection[0]
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
@@ -41,7 +41,7 @@ def test_kepler_via_mast_preparsed(helper):
     light_curve = kepler.read_kepler_lightcurve(url)
     helper.load(light_curve)
 
-    data = helper.app.data_collection[0]
+    data = helper._app.data_collection[0]
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
@@ -59,7 +59,7 @@ def test_kepler_tpf_via_lightkurve(helper):
                                  quarter=10).download()
     helper.load(tpf)
     assert helper.get_data().shape == (4447, 4, 6)  # (time, x, y)
-    assert helper.app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
+    assert helper._app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
 
 
 @pytest.mark.remote_data
@@ -70,7 +70,7 @@ def test_mult_lc_reftime(helper):
                             cadence="long", quarter=10).download()
     helper.load(lc1, data_label='Q9')
     helper.load(lc2, data_label='Q10')
-    assert helper.app.data_collection[0].meta.get('reference_time') == helper.app.data_collection[1].meta.get('reference_time')  # noqa
+    assert helper._app.data_collection[0].meta.get('reference_time') == helper._app.data_collection[1].meta.get('reference_time')  # noqa
 
 
 def test_synthetic_lc(helper):
@@ -80,7 +80,7 @@ def test_synthetic_lc(helper):
     lc = LightCurve(time=time, flux=flux, flux_err=flux_err)
     helper.load(lc)
 
-    data = helper.app.data_collection[0]
+    data = helper._app.data_collection[0]
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
@@ -106,7 +106,7 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
         subset_plugin._obj.subset_selected = "Create New"
         viewer.apply_roi(XRangeROI(*time_range))
 
-    subsets = helper.app.get_subsets()
+    subsets = helper._app.get_subsets()
 
     subset_1_bounds_jd = subsets['Subset 1'][0]['region'].jd
     subset_2_bounds_jd = subsets['Subset 2'][0]['region'].jd
@@ -124,7 +124,7 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
     subset_plugin._obj.subset_selected = "Create New"
     viewer.apply_roi(YRangeROI(1, 1.05))
 
-    subsets = helper.app.get_subsets()
+    subsets = helper._app.get_subsets()
 
     # TODO: subsets['Subset 1'][0]['region'] is still returning a Time object
 
@@ -136,10 +136,10 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
 def test_data_label(helper, light_curve_like_kepler_quarter):
     # add data without specifying data label:
     helper.load(light_curve_like_kepler_quarter)
-    object_name = helper.app.data_collection[-1].meta['OBJECT']
-    assert helper.app.data_collection[-1].label == f'{object_name} [Q10]'
+    object_name = helper._app.data_collection[-1].meta['OBJECT']
+    assert helper._app.data_collection[-1].label == f'{object_name} [Q10]'
 
     # specify label, check that quarter isn't appended:
     data_label = 'Cool target'
     helper.load(light_curve_like_kepler_quarter, data_label=data_label)
-    assert helper.app.data_collection[-1].label == data_label
+    assert helper._app.data_collection[-1].label == data_label

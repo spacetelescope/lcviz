@@ -55,7 +55,7 @@ class PlotOptions(PlotOptions):
     def _default_tpf_stretch(
             self, vmin_percentile=5, vmax_percentile=99, tpf_viewer_reference='image'
     ):
-        viewer = self.app.get_viewer(tpf_viewer_reference)
+        viewer = self._app.get_viewer(tpf_viewer_reference)
         image = viewer.layers[0].get_image_data()
         vmin, vmax = np.nanpercentile(
             image, [vmin_percentile, vmax_percentile]

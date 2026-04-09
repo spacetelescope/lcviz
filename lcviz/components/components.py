@@ -85,7 +85,7 @@ class EphemerisSelect(SelectPluginComponent):
 
     @cached_property
     def ephemeris_plugin(self):
-        return self.app._jdaviz_helper.plugins.get('Ephemeris', None)
+        return self._app._jdaviz_helper.plugins.get('Ephemeris', None)
 
     @cached_property
     def selected_obj(self):
@@ -257,10 +257,10 @@ class FluxColumnSelect(SelectPluginComponent):
         # instead of using lightkurve's select_flux and having to reparse the data entry, we'll
         # manipulate the arrays in the data-collection directly, and modify FLUX_ORIGIN so that
         # exporting back to a lightkurve object works as expected
-        self.app._jdaviz_helper._set_data_component(dc_item, 'flux', dc_item[self.selected])
+        self._app._jdaviz_helper._set_data_component(dc_item, 'flux', dc_item[self.selected])
         if self.selected+"_err" in dc_item.component_ids():
             if "flux_err" in dc_item.component_ids():
-                self.app._jdaviz_helper._set_data_component(dc_item, 'flux_err',
+                self._app._jdaviz_helper._set_data_component(dc_item, 'flux_err',
                                                             dc_item[self.selected + "_err"])
             else:
                 dc_item.add_component(dc_item[self.selected + "_err"], 'flux_err')
@@ -275,10 +275,10 @@ class FluxColumnSelect(SelectPluginComponent):
 
     def add_new_flux_column(self, flux, flux_err, label, selected=False):
         dc_item = self.dataset.selected_dc_item
-        self.app._jdaviz_helper._set_data_component(dc_item,
+        self._app._jdaviz_helper._set_data_component(dc_item,
                                                     label,
                                                     flux)
-        self.app._jdaviz_helper._set_data_component(dc_item,
+        self._app._jdaviz_helper._set_data_component(dc_item,
                                                     f"{label}_err",
                                                     flux_err)
 

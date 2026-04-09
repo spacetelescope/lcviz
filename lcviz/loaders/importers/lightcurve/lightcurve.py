@@ -119,7 +119,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
     @property
     def is_valid(self):
-        if self.app.config not in ('deconfigged', 'lcviz'):
+        if self._app.config not in ('deconfigged', 'lcviz'):
             # NOTE: temporary during deconfig process
             return False
         return (isinstance(self.input, LightCurve) or
@@ -177,7 +177,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
         if self.input_hdulist and self.extension_multiselect:
             data_label = self.data_label_value
             lcs = self.output
-            with self.app._jdaviz_helper.batch_load():
+            with self._app._jdaviz_helper.batch_load():
                 for lc, ext in zip(lcs, self.extension.selected_name):
                     self.add_to_data_collection(lc, f"{data_label} [{ext}]")
         else:
@@ -185,12 +185,12 @@ class LightCurveImporter(BaseImporterToDataCollection):
             lcs = [self.output]
 
         if self.create_ephemeris_available and self.create_ephemeris \
-                and 'Ephemeris' in self.app._jdaviz_helper.plugins:
+                and 'Ephemeris' in self._app._jdaviz_helper.plugins:
             for lc, ext in zip(lcs, self.extension.selected_name):
                 if not has_ephem(lc):
                     continue
-                ephem = self.app._jdaviz_helper.plugins['Ephemeris']
-                ephem_component = self.app.return_unique_name(ext, ephem.component.choices)
+                ephem = self._app._jdaviz_helper.plugins['Ephemeris']
+                ephem_component = self._app.return_unique_name(ext, ephem.component.choices)
 
                 time_offset = int(lc.meta.get('TUNIT1').split('- ')[1].split(',')[0])
                 period = lc.meta.get('TPERIOD', 1.0)

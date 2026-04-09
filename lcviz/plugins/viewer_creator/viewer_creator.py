@@ -27,11 +27,11 @@ class ViewerCreator(ViewerCreator):
         # list of dictionaries with name (registry name)
         # and label (what appears in dropdown and the default label of the viewer)
 
-        if self.app._jdaviz_helper is not None:
+        if self._app._jdaviz_helper is not None:
             try:
                 # NOTE: if first data was just added, the plugin may still be irrelevant
                 # and so not available from .plugins dictionary
-                ephem_plg = self.app.get_tray_item_from_name('ephemeris')
+                ephem_plg = self._app.get_tray_item_from_name('ephemeris')
             except KeyError:
                 ephem_plg = None
             if ephem_plg is not None:
@@ -39,7 +39,7 @@ class ViewerCreator(ViewerCreator):
                                 for e in ephem_plg.component.choices]  # noqa
             else:
                 phase_viewers = []
-            if self.app._jdaviz_helper._has_cube_data:
+            if self._app._jdaviz_helper._has_cube_data:
                 cube_viewers = [{'name': 'lcviz-cube-viewer', 'label': 'image'}]
             else:
                 cube_viewers = []
@@ -56,18 +56,18 @@ class ViewerCreator(ViewerCreator):
     def vue_create_viewer(self, name):
         if name.startswith('lcviz-phase-viewer') or name.startswith('flux-vs-phase'):
             ephem_comp = name.split(':')[1]
-            ephem_plg = self.app._jdaviz_helper.plugins['Ephemeris']
+            ephem_plg = self._app._jdaviz_helper.plugins['Ephemeris']
             ephem_plg.create_phase_viewer(ephem_comp)
             return
         if name in ('flux-vs-time', 'lcviz-time-viewer'):
             # allow passing label and map to the name for upstream support
-            viewer_id = self.app._jdaviz_helper._get_clone_viewer_reference('flux-vs-time')
-            self.app._on_new_viewer(NewViewerMessage(TimeScatterView, data=None, sender=self.app),
+            viewer_id = self._app._jdaviz_helper._get_clone_viewer_reference('flux-vs-time')
+            self._app._on_new_viewer(NewViewerMessage(TimeScatterView, data=None, sender=self.app),
                                     vid=viewer_id, name=viewer_id)
             return
         if name in ('image', 'lcviz-cube-viewer'):
-            viewer_id = self.app._jdaviz_helper._get_clone_viewer_reference('image')
-            self.app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=self.app),
+            viewer_id = self._app._jdaviz_helper._get_clone_viewer_reference('image')
+            self._app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=self.app),
                                     vid=viewer_id, name=viewer_id)
             return
 

@@ -110,7 +110,7 @@ class CoordsInfo(CoordsInfo):
                 closest_i = cur_i
                 closest_x = cur_x
                 closest_y = cur_y
-                closest_icon = self.app.state.layer_icons.get(lyr.layer.label, '')
+                closest_icon = self._app.state.layer_icons.get(lyr.layer.label, '')
                 closest_lyr = lyr
                 self._dict['data_label'] = lyr.layer.label
 
@@ -187,7 +187,7 @@ class CoordsInfo(CoordsInfo):
 
         # set default empty values
         if self.dataset.selected != 'none' and image is not None:
-            self.icon = self.app.state.layer_icons.get(image.label, '')  # noqa
+            self.icon = self._app.state.layer_icons.get(image.label, '')  # noqa
             self._dict['data_label'] = image.label
 
         if self.dataset.selected == 'none' or image is None:
@@ -203,7 +203,7 @@ class CoordsInfo(CoordsInfo):
                 self._viewer_mouse_clear_event(viewer)
                 return
             # TODO: store slice unit within image viewer to avoid this assumption?
-            tvs = self.app.get_viewers_of_cls(TimeScatterView)
+            tvs = self._app.get_viewers_of_cls(TimeScatterView)
             if len(tvs):
                 time_unit = str(tvs[0].time_unit)
             else:
@@ -245,7 +245,7 @@ class CoordsInfo(CoordsInfo):
 
     def update_display(self, viewer, x, y, mouseevent=True):
         self._dict = {}
-        self.app.state.show_toolbar_buttons = False
+        self._app.state.show_toolbar_buttons = False
         if not len(viewer.state.layers):
             return
 

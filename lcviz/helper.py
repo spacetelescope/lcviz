@@ -124,33 +124,33 @@ class LCviz(ConfigHelper):
         super().__init__(*args, **kwargs)
 
         # override jdaviz behavior to support temporal subsets
-        self.app._get_range_subset_bounds = (
+        self._app._get_range_subset_bounds = (
             lambda *args, **kwargs: _get_range_subset_bounds(self.app, *args, **kwargs)
         )
 
-        self.app._link_new_data = (
+        self._app._link_new_data = (
             lambda *args, **kwargs: _link_new_data(self.app, *args, **kwargs)
         )
 
-        self.app._get_display_unit = (
+        self._app._get_display_unit = (
             lambda *args, **kwargs: _get_display_unit(self.app, *args, **kwargs)
         )
 
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)
-        self.app._add_style((__file__, 'lcviz_style.vue'))
+        self._app._add_style((__file__, 'lcviz_style.vue'))
 
         # enable loaders (currently requires dev-flag in jdaviz)
-        self.app.state.dev_loaders = True
+        self._app.state.dev_loaders = True
         self.load = self._load
 
         # set the link to read the docs
-        self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
-        self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
+        self._app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
+        self._app.docs_link = f"https://lcviz.readthedocs.io/en/{self._app.vdocs}"
         for plugin in self.plugins.values():
             # NOTE that plugins that need to override upstream docs_link should do so in
             # an @observe('vdocs') rather than the init, since plugin instances have
             # already been initialized
-            plugin._obj.vdocs = self.app.vdocs
+            plugin._obj.vdocs = self._app.vdocs
 
     @deprecated(since="1.2", alternative="load")
     def load_data(self, data, data_label=None, extname=None):
@@ -207,7 +207,7 @@ class LCviz(ConfigHelper):
 
     @property
     def default_time_viewer(self):
-        tvs = [viewer for vid, viewer in self.app._viewer_store.items()
+        tvs = [viewer for vid, viewer in self._app._viewer_store.items()
                if isinstance(viewer, TimeScatterView)]
         if not len(tvs):
             raise ValueError("no time viewers exist")
@@ -215,7 +215,7 @@ class LCviz(ConfigHelper):
 
     @property
     def _has_cube_data(self):
-        for data in self.app.data_collection:
+        for data in self._app.data_collection:
             if data.ndim == 3:
                 return True
         return False
@@ -234,4 +234,4 @@ class LCviz(ConfigHelper):
         # for now this is just useful for dev-debugging access to toolbar entries
         from ipywidgets.widgets import widget_serialization
         return {item['name']: widget_serialization['from_json'](item['widget'], None)
-                for item in self.app.state.tool_items}
+                for item in self._app.state.tool_items}

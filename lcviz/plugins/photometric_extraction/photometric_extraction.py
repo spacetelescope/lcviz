@@ -67,8 +67,8 @@ class PhotometricExtraction(SpectralExtraction3D):
 
     def _on_global_display_unit_changed(self, msg=None):
         if msg is None:
-            self.flux_units = str(self.app._get_display_unit('flux'))
-            self.time_units = str(self.app._get_display_unit('time'))
+            self.flux_units = str(self._app._get_display_unit('flux'))
+            self.time_units = str(self._app._get_display_unit('time'))
         elif msg.axis == 'flux':
             self.flux_units = str(msg.unit)
         elif msg.axis == 'time':

@@ -51,7 +51,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                          'Time 5.45833e+00 d',
                                          'Flux 9.67587e-01')
 
-    object_name = helper.app.data_collection[-1].meta['OBJECT']
+    object_name = helper._app.data_collection[-1].meta['OBJECT']
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': f'{object_name} [Q10]',
                                                       'time': 5.4583335,
                                                       'time:unit': 'd',

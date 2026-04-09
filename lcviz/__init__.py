@@ -22,9 +22,9 @@ from jdaviz import gca
 
 jdaviz_app = gca()
 # inject loaders/plugins into the jdaviz deconfigged app
-jdaviz_app.app.update_tray_items_from_registry()
-jdaviz_app.app.update_loaders_from_registry()
-jdaviz_app.app.update_new_viewers_from_registry()
+jdaviz_app._app.update_tray_items_from_registry()
+jdaviz_app._app.update_loaders_from_registry()
+jdaviz_app._app.update_new_viewers_from_registry()
 
 # redirect top-level calls to the deconfigged jdaviz app
 _expose = ['show', 'load', 'batch_load',
