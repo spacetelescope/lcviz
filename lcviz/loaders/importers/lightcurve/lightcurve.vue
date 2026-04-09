@@ -60,19 +60,13 @@
       :hint="extension_multiselect && extension_selected.length > 1 ? 'Create ephemerides entries and phase-viewers.': 'Create ephemeris entry and phase-viewer.'"
     />
 
-    <v-row justify="end">
-      <plugin-action-button
-        :spinner="import_spinner"
-        :disabled="import_disabled"
-        :results_isolated_to_plugin="false"
-        :api_hints_enabled="api_hints_enabled"
-        @click="import_clicked">
-        {{ api_hints_enabled ?
-          'ldr.load()'
-          :
-          'Import'
-        }}
-      </plugin-action-button>
-    </v-row>
+    <loader-import-button
+      :spinner="import_spinner"
+      :disabled_msg="import_disabled_msg"
+      :api_hints_enabled="api_hints_enabled"
+      api_hint="ldr.load()"
+      :data_label_overwrite="data_label_overwrite"
+      @click="import_clicked">
+    </loader-import-button>
   </v-container>
 </template>
