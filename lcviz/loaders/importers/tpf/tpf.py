@@ -9,6 +9,7 @@ from jdaviz.core.template_mixin import (AutoTextField,
 from jdaviz.core.user_api import ImporterUserApi
 
 from lcviz.viewers import TimeScatterView, PhaseScatterView
+from lcviz.utils import _data_with_reftime
 
 
 __all__ = ['TPFImporter']
@@ -100,6 +101,14 @@ class TPFImporter(BaseImporterToDataCollection):
         # an image viewer
         return (TimeScatterView, PhaseScatterView)
 
+    def add_to_data_collection(self, data, *args, **kwargs):
+        from lightkurve import LightCurve
+        if isinstance(data, LightCurve):
+            lc_cls = data.__class__
+            kwargs.setdefault('cls', lc_cls)
+            data = _data_with_reftime(self._app, data)
+        super().add_to_data_collection(data, *args, **kwargs)
+
     @observe('data_label_value')
     def _data_label_changed(self, msg={}):
         self.ext_data_label_default = f"{self.data_label_value} (auto-extracted)"
@@ -114,6 +123,7 @@ class TPFImporter(BaseImporterToDataCollection):
         if not self.auto_extract:
             return
 
+        plg = None
         try:
             plg = self._app.get_tray_item_from_name('photometric-extraction')
             ext = plg._extract_in_new_instance(dataset=data_label,
@@ -124,14 +134,16 @@ class TPFImporter(BaseImporterToDataCollection):
             ext.meta['plugin'] = plg._plugin_name
         except Exception:
             ext = None
+            plugin_label = getattr(plg, '_registry_label', 'Photometric Extraction')
             msg = SnackbarMessage(
-                "Automatic spectrum extraction failed. See the 3D spectral extraction"
+                f"Automatic light curve extraction failed. See the {plugin_label}"
                 " plugin to perform a custom extraction",
                 color='error', sender=self, timeout=10000)
         else:
+            plugin_label = getattr(plg, '_registry_label', 'Photometric Extraction')
             msg = SnackbarMessage(
-                "The extracted 1D spectrum was generated automatically."
-                " See the 3D spectral extraction plugin for details or to"
+                f"The extracted light curve was generated automatically."
+                f" See the {plugin_label} plugin for details or to"
                 " perform a custom extraction.",
                 color='warning', sender=self, timeout=10000)
         self._app.hub.broadcast(msg)
