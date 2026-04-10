@@ -1,3 +1,5 @@
+import warnings
+
 from astropy.io.fits import getheader
 from astropy.utils import deprecated
 import astropy.units as u
@@ -121,6 +123,12 @@ class LCviz(ConfigHelper):
     _component_ids = {}
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "LCviz is deprecated and will be removed in a future version. "
+            "Please use jdaviz.open() or jdaviz.loaders instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         super().__init__(*args, **kwargs)
 
         # override jdaviz behavior to support temporal subsets

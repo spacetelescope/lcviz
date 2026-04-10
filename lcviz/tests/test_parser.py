@@ -166,3 +166,10 @@ def test_lc_fits_not_valid_for_image_importer(light_curve_like_kepler_quarter, t
 
     # Image should NOT be a valid format for light curve FITS files
     assert 'Image' not in format_choices
+
+
+def test_lcviz_deprecation_warning():
+    """Test that instantiating LCviz directly raises a deprecation warning."""
+    from lcviz import LCviz
+    with pytest.warns(DeprecationWarning, match="LCviz is deprecated"):
+        LCviz()
