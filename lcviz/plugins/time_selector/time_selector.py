@@ -66,6 +66,34 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
     def valid_slice_att_names(self):
         return ["time", "dt"]
 
+    def _initialize_location(self, *args):
+        # override to handle scatter viewers that don't have x_att_pixel
+        # (introduced in jdaviz main for profile viewers)
+        if not self.value_unit:
+            for viewer in self.slice_indicator_viewers:
+                if getattr(viewer.state, 'x_display_unit', None) is not None:
+                    self.value_unit = viewer.state.x_display_unit
+                    break
+
+        if self._indicator_initialized:
+            return
+
+        self._clear_cache()
+        for viewer in self.slice_indicator_viewers:
+            x_att = str(viewer.state.x_att) if viewer.state.x_att is not None else ''
+            x_att_pixel = getattr(viewer.state, 'x_att_pixel', None)
+            x_att_pixel_str = str(x_att_pixel) if x_att_pixel is not None else ''
+            if (x_att not in self.valid_slice_att_names and
+                    x_att_pixel_str not in self.valid_slice_att_names):
+                continue
+            if self._app._get_display_unit(viewer.slice_display_unit_name) == '':
+                continue
+            slice_values = viewer.slice_values
+            if len(slice_values):
+                self.value = float(slice_values[int(len(slice_values)/2)])
+                self._indicator_initialized = True
+                return
+
     @property
     def user_api(self):
         api = super().user_api
