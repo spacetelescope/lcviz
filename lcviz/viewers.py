@@ -68,6 +68,15 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
     def slice_display_unit_name(self):
         return 'time'
 
+    def _set_slice_indicator_value(self, value):
+        # Override to ensure visibility for 1D light curves.
+        # The parent class SliceIndicatorMarks._set_visibility checks for 3D data,
+        # which hides the indicator for 1D light curves.
+        self.slice_indicator.value = value
+        if len(self.layers) > 0:
+            self.slice_indicator.visible = True
+            self.slice_indicator.label.visible = self.slice_indicator._show_value
+
     def data(self, cls=None):
         data = []
 

@@ -173,3 +173,37 @@ def test_lcviz_deprecation_warning():
     from lcviz import LCviz
     with pytest.warns(DeprecationWarning, match="LCviz is deprecated"):
         LCviz()
+
+
+def test_deconfigged_load_lc_visibility(light_curve_like_kepler_quarter):
+    """
+    Test that after loading a light curve into jdaviz deconfigged (with lcviz imported),
+    the expected plugins are visible, the slice indicator mark is shown, and the
+    time-selector tool is visible in the viewer toolbar.
+    """
+    import jdaviz as jd
+
+    ldr = jd.loaders['object']
+    ldr.object = light_curve_like_kepler_quarter
+    ldr.load()
+
+    # Time Selector plugin should be relevant and visible
+    assert 'Time Selector' in jd.plugins
+
+    # Other expected lcviz plugins should also be present
+    for plugin_name in ['Flux Column', 'Binning', 'Flatten', 'Ephemeris']:
+        assert plugin_name in jd.plugins, f"{plugin_name} not found in plugins"
+
+    app = ldr._obj._app
+    viewer = list(app._viewer_store.values())[0]
+
+    # Slice indicator mark should be visible
+    indicator = viewer.slice_indicator
+    assert indicator.visible, "Slice indicator mark should be visible after loading LC data"
+    assert indicator.label.visible, "Slice indicator label should be visible"
+    assert indicator.value != 0.0, "Slice indicator value should be initialized to a non-zero time"
+
+    # selectslice tool should be visible in the viewer toolbar
+    tools = viewer.toolbar.tools_data
+    assert tools.get('jdaviz:selectslice', {}).get('visible'), \
+        "selectslice tool should be visible after loading LC data"

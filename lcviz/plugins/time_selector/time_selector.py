@@ -50,6 +50,9 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         self.session.hub.subscribe(self, EphemerisChangedMessage,
                                    handler=self._on_ephemeris_changed)
 
+        # Remove the is_slice_selection_viewer filter from parent class since
+        # TimeScatterView/PhaseScatterView use WithSliceIndicator not WithSliceSelection
+        self.viewer.remove_filter('is_slice_selection_viewer')
         self.viewer.add_filter(lambda viewer: isinstance(viewer, (TimeScatterView, PhaseScatterView, CubeView)))  # noqa
         self._set_relevant()
 
@@ -86,8 +89,8 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
             if (x_att not in self.valid_slice_att_names and
                     x_att_pixel_str not in self.valid_slice_att_names):
                 continue
-            if self._app._get_display_unit(viewer.slice_display_unit_name) == '':
-                continue
+            # NOTE: unlike parent class, we don't check for empty display units
+            # because lcviz viewers work with native units
             slice_values = viewer.slice_values
             if len(slice_values):
                 self.value = float(slice_values[int(len(slice_values)/2)])
