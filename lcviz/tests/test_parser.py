@@ -143,3 +143,26 @@ def test_data_label(helper, light_curve_like_kepler_quarter):
     data_label = 'Cool target'
     helper.load(light_curve_like_kepler_quarter, data_label=data_label)
     assert helper._app.data_collection[-1].label == data_label
+
+
+def test_lc_fits_not_valid_for_image_importer(light_curve_like_kepler_quarter, tmp_path):
+    """
+    Test that FITS files with BinTableHDU containing TIME column are not
+    valid for the Image importer, but are valid for the Light Curve importer.
+    """
+    import jdaviz as jd
+
+    # Write the light curve fixture to a FITS file
+    fits_path = tmp_path / "test_lc.fits"
+    light_curve_like_kepler_quarter.to_fits(fits_path, overwrite=True)
+
+    ldr = jd.loaders['file']
+    ldr.filepath = str(fits_path)
+
+    format_choices = ldr.format.choices
+
+    # Light Curve should be a valid format
+    assert 'Light Curve' in format_choices
+
+    # Image should NOT be a valid format for light curve FITS files
+    assert 'Image' not in format_choices
