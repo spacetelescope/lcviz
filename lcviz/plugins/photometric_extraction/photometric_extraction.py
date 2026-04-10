@@ -10,7 +10,8 @@ from jdaviz.core.user_api import PluginUserApi
 __all__ = ['PhotometricExtraction']
 
 
-@tray_registry('photometric-extraction', label="Photometric Extraction")
+@tray_registry('photometric-extraction', label="Photometric Extraction",
+               category='data:reduction')
 class PhotometricExtraction(SpectralExtraction3D):
     """
     See the :ref:`Photometric Extraction Plugin Documentation <photometric-extraction>`
@@ -64,6 +65,9 @@ class PhotometricExtraction(SpectralExtraction3D):
             self.irrelevant_msg = 'Requires at least one TPF cube to be loaded'
         else:
             self.irrelevant_msg = ''
+
+    def _get_supported_viewers(self):
+        return [{'label': 'flux-vs-time', 'reference': 'lcviz-time-viewer'}]
 
     def _on_global_display_unit_changed(self, msg=None):
         if msg is None:
