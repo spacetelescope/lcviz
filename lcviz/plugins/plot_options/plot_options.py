@@ -1,83 +1,55 @@
 import numpy as np
 
-from traitlets import observe
 from jdaviz.configs.default.plugins import PlotOptions
-from jdaviz.core.registries import tray_registry
 from jdaviz.utils import get_subset_type
 
-from lcviz.viewers import CubeView
-
-__all__ = ['PlotOptions']
+__all__ = []
 
 
-@tray_registry('plot-options', label="Plot Options",
-               category='core', sidebar='viewers', subtab=0, overwrite=True)
-class PlotOptions(PlotOptions):
-    """
-    See the :ref:`Plot Options Plugin Documentation <plot-options>` for more details.
+def _default_tpf_stretch(self, vmin_percentile=5, vmax_percentile=99,
+                         tpf_viewer_reference='image'):
+    """Set a sensible log stretch for the TPF image viewer."""
+    viewer = self._app.get_viewer(tpf_viewer_reference)
+    image = viewer.layers[0].get_image_data()
+    vmin, vmax = np.nanpercentile(image, [vmin_percentile, vmax_percentile])
 
-    For a full list of exposed attributes, call ``dir(plugin)``.  Note that some attributes are
-    applicable depending on the selection of ``viewer`` and/or ``layer``.  Below are
-    a list of some common attributes and methods are available through the
-    :ref:`public plugin API <plugin-apis>`:
+    self.viewer_selected = tpf_viewer_reference
+    self.stretch_function_value = 'log'
+    self.stretch_vmin_value = vmin
+    self.stretch_vmax_value = vmax
 
-    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.show`
-    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
-    * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
-    * ``viewer`` (:class:`~jdaviz.core.template_mixin.ViewerSelect`):
-    * ``viewer_multiselect``
-    * ``layer`` (:class:`~jdaviz.core.template_mixin.LayerSelect`):
-    * ``layer_multiselect``
-    * :meth:`select_all`
-    * ``subset_color`` (:class:`~jdaviz.core.template_mixin.PlotOptionsSyncState`):
-    * ``line_color`` (:class:`~jdaviz.core.template_mixin.PlotOptionsSyncState`):
-    * ``line_width`` (:class:`~jdaviz.core.template_mixin.PlotOptionsSyncState`):
-    * ``line_opacity`` (:class:`~jdaviz.core.template_mixin.PlotOptionsSyncState`):
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        def not_spatial_subset_in_scatter_viewer(lyr):
-            # note: have to check the classname instead of isinstance to avoid circular import
-            if np.any([isinstance(viewer, CubeView)
-                       for viewer in self.layer.viewer_objs]):
-                return True
-            # at this point, NO selected viewers are TPF Cube viewers,
-            # so we want to exclude spatial subsets
-            return get_subset_type(lyr) != 'spatial'
+def _lcviz_layer_filter_factory(plugin):
+    """Layer filter factory: exclude spatial subsets in scatter viewers unless CubeView active."""
+    from lcviz.viewers import CubeView
 
-        self.layer.add_filter(not_spatial_subset_in_scatter_viewer)
+    def _filter(lyr):
+        if np.any([isinstance(v, CubeView) for v in plugin.layer.viewer_objs]):
+            return True
+        return get_subset_type(lyr) != 'spatial'
 
-    @observe('vdocs')
-    def _update_docs_link(self, *args):
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#plot-options"
+    return _filter
 
-    def _default_tpf_stretch(
-            self, vmin_percentile=5, vmax_percentile=99, tpf_viewer_reference='image'
-    ):
-        viewer = self._app.get_viewer(tpf_viewer_reference)
-        image = viewer.layers[0].get_image_data()
-        vmin, vmax = np.nanpercentile(
-            image, [vmin_percentile, vmax_percentile]
-        )
 
-        self.viewer_selected = tpf_viewer_reference
-        self.stretch_function_value = 'log'
-        self.stretch_vmin_value = vmin
-        self.stretch_vmax_value = vmax
+# Inject lcviz-specific behavior into the upstream PlotOptions via the hook API.
 
-    @property
-    def user_api(self):
-        api = super().user_api
-        expose = [e for e in api._expose if e not in ('apply_RGB_presets', 'line_as_steps',
-                  'uncertainty_visible')]
+PlotOptions.register_layer_filter(_lcviz_layer_filter_factory)
 
-        expose += ['marker_visible', 'marker_fill', 'marker_opacity',
-                   'marker_size_mode', 'marker_size', 'marker_size_scale',
-                   'marker_size_col', 'marker_size_vmin', 'marker_size_vmax',
-                   'marker_color_mode', 'marker_color', 'marker_color_col',
-                   'marker_colormap', 'marker_colormap_vmin', 'marker_colormap_vmax',
-                   'line_visible', 'line_width']
-        api._expose = expose
+PlotOptions.register_user_api(
+    expose=[
+        'marker_visible', 'marker_fill', 'marker_opacity',
+        'marker_size_mode', 'marker_size', 'marker_size_scale',
+        'marker_size_col', 'marker_size_vmin', 'marker_size_vmax',
+        'marker_color_mode', 'marker_color', 'marker_color_col',
+        'marker_colormap', 'marker_colormap_vmin', 'marker_colormap_vmax',
+        'line_visible', 'line_width',
+    ],
+    remove=['apply_RGB_presets', 'line_as_steps', 'uncertainty_visible'],
+)
 
-        return api
+# Convenience method injected onto the plugin class for TPF stretch setup.
+PlotOptions._default_tpf_stretch = _default_tpf_stretch
+
+PlotOptions._docs_link_fmt = (
+    'https://lcviz.readthedocs.io/en/{vdocs}/plugins.html#plot-options'
+)
