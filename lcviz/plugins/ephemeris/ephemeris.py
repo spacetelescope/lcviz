@@ -295,6 +295,9 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             data_is_folded = '_LCVIZ_EPHEMERIS' in data.meta.keys()
             if data_is_folded:
                 continue
+            if not is_lc(data):
+                # skip non-light curve data (e.g. images, cubes)
+                continue
 
             times = data.get_component('World 0').data
             phases = _times_to_phases(times)
