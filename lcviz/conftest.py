@@ -17,6 +17,12 @@ def helper():
 
 
 @pytest.fixture
+def deconfigged_helper():
+    from jdaviz.configs.deconfigged.helper import App
+    return App()
+
+
+@pytest.fixture
 def light_curve_like_kepler_quarter(seed=42):
     """
     Generate a normalized (near unity) light curve with

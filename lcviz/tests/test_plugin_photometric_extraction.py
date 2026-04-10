@@ -2,7 +2,9 @@ import pytest
 
 
 @pytest.mark.remote_data
-def test_docs_snippets(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     from lightkurve import search_targetpixelfile
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
@@ -17,7 +19,9 @@ def test_docs_snippets(helper):
 
 
 @pytest.mark.remote_data
-def test_loader_autoextract(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_loader_autoextract(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     from lightkurve import search_targetpixelfile
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
@@ -35,7 +39,9 @@ def test_loader_autoextract(helper, light_curve_like_kepler_quarter):
 
 
 @pytest.mark.remote_data
-def test_plugin_photometric_extraction(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_photometric_extraction(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     from lightkurve import search_targetpixelfile
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",

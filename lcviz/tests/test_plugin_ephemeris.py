@@ -1,7 +1,9 @@
 import pytest
 
 
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
     lcviz.load(lc)
@@ -13,7 +15,9 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     ephem.rename_component('default', 'my component name')
 
 
-def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_ephemeris(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
@@ -81,7 +85,9 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem.dpdt = 0.005
 
 
-def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_cloned_phase_viewer(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
@@ -137,7 +143,9 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(vc.viewer_types) == 3
 
 
-def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_ephemeris_queries(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     helper.load(light_curve_like_kepler_quarter)
     ephem = helper.plugins['Ephemeris']
 
@@ -149,7 +157,9 @@ def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
     ephem.create_ephemeris_from_query()
 
 
-def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_ephemeris_query_no_name(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     # test that the query successfully falls back on the RA/Dec:
     light_curve_like_kepler_quarter.meta['OBJECT'] = ''
 

@@ -20,7 +20,9 @@ def _assert_dict_allclose(dict1, dict2):
             assert v == dict2.get(k)
 
 
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
     lcviz.load(lc)
@@ -34,9 +36,11 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     markers.clear_table()
 
 
-def test_plugin_markers(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_markers(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     helper.load(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer
+    tv = helper.viewers['flux-vs-time']
 
     mp = helper.plugins['Markers']
     label_mouseover = mp._obj.coords_info
@@ -128,7 +132,9 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
 
 @pytest.mark.remote_data
-def test_tpf_markers(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_tpf_markers(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     helper.load(light_curve_like_kepler_quarter)
 
     # TODO: replace with test fixture

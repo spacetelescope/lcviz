@@ -12,7 +12,9 @@ from lcviz.utils import TimeCoordinates
 
 
 @pytest.mark.remote_data
-def test_kepler_via_mast_local_file(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_via_mast_local_file(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     url = (
         'https://archive.stsci.edu/pub/kepler/'
         'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
@@ -32,7 +34,9 @@ def test_kepler_via_mast_local_file(helper):
 
 
 @pytest.mark.remote_data
-def test_kepler_via_mast_preparsed(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_via_mast_preparsed(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     url = (
      'https://archive.stsci.edu/pub/kepler/'
      'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
@@ -52,7 +56,9 @@ def test_kepler_via_mast_preparsed(helper):
 
 
 @pytest.mark.remote_data
-def test_kepler_tpf_via_lightkurve(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_tpf_via_lightkurve(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
                                  cadence="long",
@@ -63,7 +69,9 @@ def test_kepler_tpf_via_lightkurve(helper):
 
 
 @pytest.mark.remote_data
-def test_mult_lc_reftime(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_mult_lc_reftime(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     lc1 = search_lightcurve("HAT-P-11", mission="Kepler",
                             cadence="long", quarter=9).download()
     lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
@@ -73,7 +81,9 @@ def test_mult_lc_reftime(helper):
     assert helper._app.data_collection[0].meta.get('reference_time') == helper._app.data_collection[1].meta.get('reference_time')  # noqa
 
 
-def test_synthetic_lc(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_synthetic_lc(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     time = Time(np.linspace(2460050, 2460060), format='jd')
     flux = np.ones(len(time)) * u.electron / u.s
     flux_err = 0.1 * np.ones_like(flux)
@@ -93,7 +103,7 @@ def test_synthetic_lc(helper):
 def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
     helper.load(lc)
-    viewer = helper.default_time_viewer._obj.glue_viewer
+    viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     # the min/max of temporal regions can be defined in two ways:
@@ -115,10 +125,12 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     np.testing.assert_allclose(subset_2_bounds_jd, [2455761.50076602, 2455765.50076602])
 
 
-def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_apply_yrangerois(helper_name, light_curve_like_kepler_quarter, request):
     lc = light_curve_like_kepler_quarter
+    helper = request.getfixturevalue(helper_name)
     helper.load(lc)
-    viewer = helper.default_time_viewer._obj.glue_viewer
+    viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     subset_plugin._obj.subset_selected = "Create New"
@@ -133,7 +145,9 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
     np.testing.assert_allclose([subset_state.lo, subset_state.hi], [1, 1.05])
 
 
-def test_data_label(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_data_label(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     # add data without specifying data label:
     helper.load(light_curve_like_kepler_quarter)
     object_name = helper._app.data_collection[-1].meta['OBJECT']

@@ -1,4 +1,9 @@
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
+import pytest
+
+
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
     lc1 = lc
     lc2 = lc.copy()
@@ -14,7 +19,9 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     print(stitched_lc)
 
 
-def test_plugin_stitch(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_stitch(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     helper.load(light_curve_like_kepler_quarter, data_label='lc1')
 
     assert "Stitch" not in helper.plugins.keys()
