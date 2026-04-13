@@ -111,7 +111,7 @@ class LCviz(ConfigHelper):
                      'dense_toolbar': False,
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
-        'tray': ['g-metadata-viewer', 'flux-column',
+        'tray': ['g-metadata-viewer', 'flux-column', 'lcviz-unit-conversion',
                  'plot-options', 'g-subset-tools',
                  'g-markers', 'time-selector', 'photometric-extraction',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',

@@ -72,6 +72,34 @@ This plugin allows choosing which column in the underlying data should be used a
     * :meth:`lightkurve.LightCurve.select_flux`
 
 
+.. _unit-conversion
+
+Unit Conversion
+===============
+
+This plugin allows choosing app-wide units to use for the time and flux axes.
+
+
+.. admonition:: User API Example
+    :class: dropdown
+
+    See the :class:`~lcviz.plugins.unit_conversion.unit_conversion.UnitConversion` user API documentation for more details.
+
+    .. code-block:: python
+
+      from lcviz import LCviz
+      from lightkurve import search_lightcurve
+      lc = search_lightcurve("HAT-P-11", mission="Kepler",
+                             cadence="long", quarter=10).download().flatten()
+      lcviz = LCviz()
+      lcviz.load_data(lc)
+      lcviz.show()
+
+      units = lcviz.plugins['Unit Conversion']
+      print(units.time_unit.choices)
+      units.time_unit = 'hr'
+
+
 .. _plot-options:
 
 Plot Options

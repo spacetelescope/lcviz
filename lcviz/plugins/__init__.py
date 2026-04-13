@@ -14,3 +14,4 @@ from .photometric_extraction.photometric_extraction import *  # noqa
 from .plot_options.plot_options import *  # noqa
 from .stitch.stitch import *  # noqa
 from .subset_tools.subset_tools import *  # noqa
+from .unit_conversion.unit_conversion import *  # noqa
