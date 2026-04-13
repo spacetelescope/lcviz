@@ -9,7 +9,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
+    lcviz.load(lc, format='Light Curve')
     # lcviz.show()
 
     flux_col = lcviz.plugins['Flux Column']
@@ -21,7 +21,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_plugin_flux_column(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
 
     fo = helper.plugins['Flux Column']
     assert len(fo.flux_column.choices) == 2

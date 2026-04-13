@@ -8,8 +8,8 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
     lc1 = lc
     lc2 = lc.copy()
 
-    lcviz.load(lc1, data_label='lc1')
-    lcviz.load(lc2, data_label='lc2')
+    lcviz.load(lc1, format='Light Curve', data_label='lc1')
+    lcviz.load(lc2, format='Light Curve', data_label='lc2')
     # lcviz.show()
 
     stitch = lcviz.plugins['Stitch']
@@ -22,11 +22,11 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_plugin_stitch(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter, data_label='lc1')
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve', data_label='lc1')
 
     assert "Stitch" not in helper.plugins.keys()
 
-    helper.load(light_curve_like_kepler_quarter.copy(), data_label='lc2')
+    helper.load(light_curve_like_kepler_quarter.copy(), format='Light Curve', data_label='lc2')
     helper._app.add_data_to_viewer('flux-vs-time', 'lc2')
     assert "Stitch" in helper.plugins.keys()
 

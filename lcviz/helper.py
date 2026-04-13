@@ -114,7 +114,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
         'tray': ['g-metadata-viewer', 'flux-column',
-                 'plot-options', 'g-subset-tools',
+                 'g-plot-options', 'g-subset-tools',
                  'g-markers', 'time-selector', 'photometric-extraction',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'export', 'logger'],
@@ -190,7 +190,7 @@ class LCviz(ConfigHelper):
                     'DvTimeSeriesExporter' in header['CREATOR']):
                 kwargs['extension'] = extname
 
-        self.load(data, data_label=data_label, **kwargs)
+        self.load(data, data_label=data_label, format=['Light Curve', 'TPF'], **kwargs)
 
     def get_data(self, data_label=None, cls=LightCurve, subset=None):
         """

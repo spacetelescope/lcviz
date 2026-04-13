@@ -88,7 +88,7 @@ def test_synthetic_lc(helper_name, request):
     flux = np.ones(len(time)) * u.electron / u.s
     flux_err = 0.1 * np.ones_like(flux)
     lc = LightCurve(time=time, flux=flux, flux_err=flux_err)
-    helper.load(lc)
+    helper.load(lc, format='Light Curve')
 
     data = helper._app.data_collection[0]
     flux_arr = data['flux']
@@ -102,7 +102,7 @@ def test_synthetic_lc(helper_name, request):
 
 def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
-    helper.load(lc)
+    helper.load(lc, format='Light Curve')
     viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
@@ -129,7 +129,7 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
 def test_apply_yrangerois(helper_name, light_curve_like_kepler_quarter, request):
     lc = light_curve_like_kepler_quarter
     helper = request.getfixturevalue(helper_name)
-    helper.load(lc)
+    helper.load(lc, format='Light Curve')
     viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
@@ -149,13 +149,13 @@ def test_apply_yrangerois(helper_name, light_curve_like_kepler_quarter, request)
 def test_data_label(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
     # add data without specifying data label:
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     object_name = helper._app.data_collection[-1].meta['OBJECT']
     assert helper._app.data_collection[-1].label == f'{object_name} [Q10]'
 
     # specify label, check that quarter isn't appended:
     data_label = 'Cool target'
-    helper.load(light_curve_like_kepler_quarter, data_label=data_label)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve', data_label=data_label)
     assert helper._app.data_collection[-1].label == data_label
 
 

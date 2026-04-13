@@ -12,7 +12,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
+    lcviz.load(lc, format='Light Curve')
     # lcviz.show()
 
     binning = lcviz.plugins['Binning']
@@ -24,7 +24,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_plugin_binning(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     tv = helper.viewers['flux-vs-time']._obj.glue_viewer
 
     b = helper.plugins['Binning']

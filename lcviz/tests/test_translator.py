@@ -67,7 +67,7 @@ def test_round_trip(helper_name, request):
     function ``_download_and_write_lc_snippet``.
     """
     lc = LightCurve.read(SMALL_LC_PATH, astropy_native=True)
-    helper.load(lc)
+    helper.load(lc, format='Light Curve')
 
     # these times chosen by hand during Kepler Q0:
     near_transit = Time([

@@ -4,7 +4,7 @@ import pytest
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_reset_limits(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     tv = helper.viewers['flux-vs-time']._obj.glue_viewer
 
     orig_xlims = (tv.state.x_min, tv.state.x_max)
@@ -27,7 +27,7 @@ def test_reset_limits(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_clone(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
 
     def_viewer = helper.viewers['flux-vs-time']
     assert helper._get_clone_viewer_reference(def_viewer._obj.reference) == 'flux-vs-time[1]'

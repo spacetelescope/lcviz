@@ -6,7 +6,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
+    lcviz.load(lc, format='Light Curve')
     # lcviz.show()
 
     ephem = lcviz.plugins['Ephemeris']
@@ -18,7 +18,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_plugin_ephemeris(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     assert len(helper._app.get_viewer_ids()) == 1
@@ -88,7 +88,7 @@ def test_plugin_ephemeris(helper_name, light_curve_like_kepler_quarter, request)
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_cloned_phase_viewer(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     assert len(ephem._obj._get_phase_viewers()) == 0
@@ -117,7 +117,7 @@ def test_cloned_phase_viewer(helper_name, light_curve_like_kepler_quarter, reque
 
 
 def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
     vc = helper._tray_tools['g-viewer-creator']
 
@@ -146,7 +146,7 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_ephemeris_queries(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()
@@ -163,7 +163,7 @@ def test_ephemeris_query_no_name(helper_name, light_curve_like_kepler_quarter, r
     # test that the query successfully falls back on the RA/Dec:
     light_curve_like_kepler_quarter.meta['OBJECT'] = ''
 
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()

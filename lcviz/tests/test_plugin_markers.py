@@ -25,7 +25,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
+    lcviz.load(lc, format='Light Curve')
     # lcviz.show()
 
     markers = lcviz.plugins['Markers']
@@ -39,7 +39,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_plugin_markers(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     tv = helper.viewers['flux-vs-time']
 
     mp = helper.plugins['Markers']
@@ -135,7 +135,7 @@ def test_plugin_markers(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_tpf_markers(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
 
     # TODO: replace with test fixture
     from lightkurve import search_targetpixelfile

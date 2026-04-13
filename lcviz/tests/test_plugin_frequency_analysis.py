@@ -10,7 +10,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
     lcviz, lc = helper, light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
+    lcviz.load(lc, format='Light Curve')
     # lcviz.show()
 
     freq = lcviz.plugins['Frequency Analysis']
@@ -24,7 +24,7 @@ def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_plugin_frequency_analysis(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
 
     freq = helper.plugins['Frequency Analysis']
     freq.open_in_tray()
