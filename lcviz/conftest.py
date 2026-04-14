@@ -18,8 +18,8 @@ def helper():
 
 @pytest.fixture
 def deconfigged_helper():
-    from jdaviz.configs.deconfigged.helper import App
-    return App()
+    import jdaviz
+    return jdaviz.new_app()
 
 
 @pytest.fixture

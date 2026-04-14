@@ -93,6 +93,19 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         self.input_hdulist = isinstance(self.input, fits.HDUList)
         if self.input_hdulist:
+            # Build ext_options as a list of dicts (required by SelectFileExtensionComponent)
+            ext_options = [{'label': f"{i}: [{hdu.name},{getattr(hdu, 'ver', 1)}]",
+                            'name': hdu.name,
+                            'ver': getattr(hdu, 'ver', 1),
+                            'name_ver': f"{hdu.name},{getattr(hdu, 'ver', 1)}",
+                            'index': i,
+                            'data_hash': None,
+                            'obj': hdu} for i, hdu in enumerate(self.input)]
+
+            def _hdu_filter(item):
+                hdu = item.get('obj')
+                return hdu_is_valid(hdu)
+
             # TODO: allow multiselect and select_all by default,
             # update __call__ logic below to loop and add each independently including ephemerides,
             # modify default data_label logic to inject data_label within loop (and inform user)
@@ -100,8 +113,8 @@ class LightCurveImporter(BaseImporterToDataCollection):
                                                           items='extension_items',
                                                           selected='extension_selected',
                                                           multiselect='extension_multiselect',
-                                                          manual_options=self.input,
-                                                          filters=[hdu_is_valid])
+                                                          manual_options=ext_options,
+                                                          filters=[_hdu_filter])
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
@@ -122,9 +135,18 @@ class LightCurveImporter(BaseImporterToDataCollection):
         if self._app.config not in ('deconfigged', 'lcviz'):
             # NOTE: temporary during deconfig process
             return False
-        return (isinstance(self.input, LightCurve) or
-                (isinstance(self.input, fits.HDUList)
-                 and len([hdu for hdu in self.input if hdu_is_valid(hdu)])))  # noqa
+        if isinstance(self.input, LightCurve):
+            return True
+        if isinstance(self.input, fits.HDUList):
+            for hdu in self.input:
+                if hdu_is_valid(hdu):
+                    return True
+                # also accept generic lightkurve-written FITS with TIME+FLUX columns
+                if (isinstance(hdu, fits.hdu.table.BinTableHDU) and
+                        'TIME' in hdu.columns.names and
+                        'FLUX' in hdu.columns.names):
+                    return True
+        return False  # noqa
 
     @observe('extension_selected')
     def _extension_selected_changed(self, event={}):
@@ -152,18 +174,20 @@ class LightCurveImporter(BaseImporterToDataCollection):
             # HDUList case
             pri_header = self.input[0].header
             if self.extension_multiselect:
-                lc = [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_hdu]
+                lc = [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_obj]
             else:
-                lc = hdulist_to_lightcurve(pri_header, self.extension.selected_hdu)
+                lc = hdulist_to_lightcurve(pri_header, self.extension.selected_obj)
 
-        flux_origin = lc.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
-        if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(lc, 'columns', [])):  # noqa
-            # then make a copy of this column so it won't be lost when changing with the flux_column
-            # plugin
-            lc['flux:orig'] = lc['flux']
-            if 'flux_err' in lc.columns:
-                lc['flux:orig_err'] = lc['flux_err']
-            lc.meta['FLUX_ORIGIN'] = 'flux:orig'
+        lcs = lc if isinstance(lc, list) else [lc]
+        for single_lc in lcs:
+            flux_origin = single_lc.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
+            if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(single_lc, 'columns', [])):  # noqa
+                # then make a copy of this column so it won't be lost when changing with the
+                # flux_column plugin
+                single_lc['flux:orig'] = single_lc['flux']
+                if 'flux_err' in single_lc.columns:
+                    single_lc['flux:orig_err'] = single_lc['flux_err']
+                single_lc.meta['FLUX_ORIGIN'] = 'flux:orig'
 
         return lc
 
