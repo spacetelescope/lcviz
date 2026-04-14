@@ -221,4 +221,3 @@ CoordsInfo.register_viewer_class(CubeView, with_marker=False)
 CoordsInfo.register_viewer_update_handler(TimeScatterView, _lc_viewer_update)
 CoordsInfo.register_viewer_update_handler(PhaseScatterView, _lc_viewer_update)
 CoordsInfo.register_viewer_update_handler(CubeView, _lcviz_tpf_image_viewer_update)
-

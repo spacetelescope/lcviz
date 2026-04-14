@@ -255,8 +255,8 @@ class Binning(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin,
 
             # here we use the `value` attribute of `lc.time`, which has units of *phase*:
             self._app._jdaviz_helper._set_data_component(data,
-                                                        phase_comp_lbl(self.ephemeris_selected),
-                                                        lc.time.value)
+                                                         phase_comp_lbl(self.ephemeris_selected),
+                                                         lc.time.value)
 
         else:
             # need to send through parser-logic to assign the correct reference time

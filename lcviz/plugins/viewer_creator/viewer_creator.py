@@ -63,12 +63,12 @@ class ViewerCreator(ViewerCreator):
             # allow passing label and map to the name for upstream support
             viewer_id = self._app._jdaviz_helper._get_clone_viewer_reference('flux-vs-time')
             self._app._on_new_viewer(NewViewerMessage(TimeScatterView, data=None, sender=self.app),
-                                    vid=viewer_id, name=viewer_id)
+                                     vid=viewer_id, name=viewer_id)
             return
         if name in ('image', 'lcviz-cube-viewer'):
             viewer_id = self._app._jdaviz_helper._get_clone_viewer_reference('image')
             self._app._on_new_viewer(NewViewerMessage(CubeView, data=None, sender=self.app),
-                                    vid=viewer_id, name=viewer_id)
+                                     vid=viewer_id, name=viewer_id)
             return
 
         super().vue_create_viewer(name)

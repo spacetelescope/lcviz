@@ -364,8 +364,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         phase_viewer_id = self._generate_phase_viewer_id(ephem_component)
         # TODO: stack horizontally by default?
         self._app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
-                                vid=phase_viewer_id, name=phase_viewer_id,
-                                open_data_menu_if_empty=False)
+                                 vid=phase_viewer_id, name=phase_viewer_id,
+                                 open_data_menu_if_empty=False)
 
         # access new viewer, set bookkeeping for ephemeris component
         pv = self._app.get_viewer(phase_viewer_id)

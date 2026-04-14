@@ -65,7 +65,8 @@ def test_kepler_tpf_via_lightkurve(helper_name, request):
                                  quarter=10).download()
     helper.load(tpf)
     assert helper.get_data().shape == (4447, 4, 6)  # (time, x, y)
-    assert helper._app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
+    obj = helper._app.data_collection[0].get_object(cls=KeplerTargetPixelFile)
+    assert obj.shape == (4447, 4, 6)
 
 
 @pytest.mark.remote_data

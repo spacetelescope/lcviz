@@ -261,7 +261,7 @@ class FluxColumnSelect(SelectPluginComponent):
         if self.selected+"_err" in dc_item.component_ids():
             if "flux_err" in dc_item.component_ids():
                 self._app._jdaviz_helper._set_data_component(dc_item, 'flux_err',
-                                                            dc_item[self.selected + "_err"])
+                                                             dc_item[self.selected + "_err"])
             else:
                 dc_item.add_component(dc_item[self.selected + "_err"], 'flux_err')
         else:
@@ -276,11 +276,11 @@ class FluxColumnSelect(SelectPluginComponent):
     def add_new_flux_column(self, flux, flux_err, label, selected=False):
         dc_item = self.dataset.selected_dc_item
         self._app._jdaviz_helper._set_data_component(dc_item,
-                                                    label,
-                                                    flux)
+                                                     label,
+                                                     flux)
         self._app._jdaviz_helper._set_data_component(dc_item,
-                                                    f"{label}_err",
-                                                    flux_err)
+                                                     f"{label}_err",
+                                                     flux_err)
 
         # broadcast so all instances update to get the new column and selection (if applicable)
         self.hub.broadcast(FluxColumnChangedMessage(dataset=self.dataset.selected,
