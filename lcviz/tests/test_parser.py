@@ -12,7 +12,9 @@ from lcviz.utils import TimeCoordinates
 
 
 @pytest.mark.remote_data
-def test_kepler_via_mast_local_file(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_via_mast_local_file(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     url = (
         'https://archive.stsci.edu/pub/kepler/'
         'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
@@ -21,7 +23,7 @@ def test_kepler_via_mast_local_file(helper):
     path = download_file(url, cache=True, timeout=100)
     helper.load(path)
 
-    data = helper.app.data_collection[0]
+    data = helper._app.data_collection[0]
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
@@ -32,7 +34,9 @@ def test_kepler_via_mast_local_file(helper):
 
 
 @pytest.mark.remote_data
-def test_kepler_via_mast_preparsed(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_via_mast_preparsed(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     url = (
      'https://archive.stsci.edu/pub/kepler/'
      'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
@@ -41,7 +45,7 @@ def test_kepler_via_mast_preparsed(helper):
     light_curve = kepler.read_kepler_lightcurve(url)
     helper.load(light_curve)
 
-    data = helper.app.data_collection[0]
+    data = helper._app.data_collection[0]
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
@@ -52,35 +56,42 @@ def test_kepler_via_mast_preparsed(helper):
 
 
 @pytest.mark.remote_data
-def test_kepler_tpf_via_lightkurve(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_tpf_via_lightkurve(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
                                  cadence="long",
                                  quarter=10).download()
     helper.load(tpf)
     assert helper.get_data().shape == (4447, 4, 6)  # (time, x, y)
-    assert helper.app.data_collection[0].get_object(cls=KeplerTargetPixelFile).shape == (4447, 4, 6)
+    obj = helper._app.data_collection[0].get_object(cls=KeplerTargetPixelFile)
+    assert obj.shape == (4447, 4, 6)
 
 
 @pytest.mark.remote_data
-def test_mult_lc_reftime(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_mult_lc_reftime(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     lc1 = search_lightcurve("HAT-P-11", mission="Kepler",
                             cadence="long", quarter=9).download()
     lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
                             cadence="long", quarter=10).download()
     helper.load(lc1, data_label='Q9')
     helper.load(lc2, data_label='Q10')
-    assert helper.app.data_collection[0].meta.get('reference_time') == helper.app.data_collection[1].meta.get('reference_time')  # noqa
+    assert helper._app.data_collection[0].meta.get('reference_time') == helper._app.data_collection[1].meta.get('reference_time')  # noqa
 
 
-def test_synthetic_lc(helper):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_synthetic_lc(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
     time = Time(np.linspace(2460050, 2460060), format='jd')
     flux = np.ones(len(time)) * u.electron / u.s
     flux_err = 0.1 * np.ones_like(flux)
     lc = LightCurve(time=time, flux=flux, flux_err=flux_err)
-    helper.load(lc)
+    helper.load(lc, format='Light Curve')
 
-    data = helper.app.data_collection[0]
+    data = helper._app.data_collection[0]
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
@@ -92,8 +103,8 @@ def test_synthetic_lc(helper):
 
 def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     lc = light_curve_like_kepler_quarter
-    helper.load(lc)
-    viewer = helper.default_time_viewer._obj.glue_viewer
+    helper.load(lc, format='Light Curve')
+    viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     # the min/max of temporal regions can be defined in two ways:
@@ -106,7 +117,7 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
         subset_plugin._obj.subset_selected = "Create New"
         viewer.apply_roi(XRangeROI(*time_range))
 
-    subsets = helper.app.get_subsets()
+    subsets = helper._app.get_subsets()
 
     subset_1_bounds_jd = subsets['Subset 1'][0]['region'].jd
     subset_2_bounds_jd = subsets['Subset 2'][0]['region'].jd
@@ -115,16 +126,18 @@ def test_apply_xrangerois(helper, light_curve_like_kepler_quarter):
     np.testing.assert_allclose(subset_2_bounds_jd, [2455761.50076602, 2455765.50076602])
 
 
-def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_apply_yrangerois(helper_name, light_curve_like_kepler_quarter, request):
     lc = light_curve_like_kepler_quarter
-    helper.load(lc)
-    viewer = helper.default_time_viewer._obj.glue_viewer
+    helper = request.getfixturevalue(helper_name)
+    helper.load(lc, format='Light Curve')
+    viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
     subset_plugin = helper.plugins['Subset Tools']
 
     subset_plugin._obj.subset_selected = "Create New"
     viewer.apply_roi(YRangeROI(1, 1.05))
 
-    subsets = helper.app.get_subsets()
+    subsets = helper._app.get_subsets()
 
     # TODO: subsets['Subset 1'][0]['region'] is still returning a Time object
 
@@ -133,13 +146,79 @@ def test_apply_yrangerois(helper, light_curve_like_kepler_quarter):
     np.testing.assert_allclose([subset_state.lo, subset_state.hi], [1, 1.05])
 
 
-def test_data_label(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_data_label(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     # add data without specifying data label:
-    helper.load(light_curve_like_kepler_quarter)
-    object_name = helper.app.data_collection[-1].meta['OBJECT']
-    assert helper.app.data_collection[-1].label == f'{object_name} [Q10]'
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
+    object_name = helper._app.data_collection[-1].meta['OBJECT']
+    assert helper._app.data_collection[-1].label == f'{object_name} [Q10]'
 
     # specify label, check that quarter isn't appended:
     data_label = 'Cool target'
-    helper.load(light_curve_like_kepler_quarter, data_label=data_label)
-    assert helper.app.data_collection[-1].label == data_label
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve', data_label=data_label)
+    assert helper._app.data_collection[-1].label == data_label
+
+
+def test_lc_fits_not_valid_for_image_importer(light_curve_like_kepler_quarter, tmp_path):
+    """
+    Test that FITS files with BinTableHDU containing TIME column are not
+    valid for the Image importer, but are valid for the Light Curve importer.
+    """
+    import jdaviz as jd
+
+    # Write the light curve fixture to a FITS file
+    fits_path = tmp_path / "test_lc.fits"
+    light_curve_like_kepler_quarter.to_fits(fits_path, overwrite=True)
+
+    ldr = jd.loaders['file']
+    ldr.filepath = str(fits_path)
+
+    format_choices = ldr.format.choices
+
+    # Light Curve should be a valid format
+    assert 'Light Curve' in format_choices
+
+    # Image should NOT be a valid format for light curve FITS files
+    assert 'Image' not in format_choices
+
+
+def test_lcviz_deprecation_warning():
+    """Test that instantiating LCviz directly raises a deprecation warning."""
+    from lcviz import LCviz
+    with pytest.warns(DeprecationWarning, match="LCviz is deprecated"):
+        LCviz()
+
+
+def test_deconfigged_load_lc_visibility(light_curve_like_kepler_quarter):
+    """
+    Test that after loading a light curve into jdaviz deconfigged (with lcviz imported),
+    the expected plugins are visible, the slice indicator mark is shown, and the
+    time-selector tool is visible in the viewer toolbar.
+    """
+    import jdaviz as jd
+
+    ldr = jd.loaders['object']
+    ldr.object = light_curve_like_kepler_quarter
+    ldr.load()
+
+    # Time Selector plugin should be relevant and visible
+    assert 'Time Selector' in jd.plugins
+
+    # Other expected lcviz plugins should also be present
+    for plugin_name in ['Flux Column', 'Binning', 'Flatten', 'Ephemeris']:
+        assert plugin_name in jd.plugins, f"{plugin_name} not found in plugins"
+
+    app = ldr._obj._app
+    viewer = list(app._viewer_store.values())[0]
+
+    # Slice indicator mark should be visible
+    indicator = viewer.slice_indicator
+    assert indicator.visible, "Slice indicator mark should be visible after loading LC data"
+    assert indicator.label.visible, "Slice indicator label should be visible"
+    assert indicator.value != 0.0, "Slice indicator value should be initialized to a non-zero time"
+
+    # selectslice tool should be visible in the viewer toolbar
+    tools = viewer.toolbar.tools_data
+    assert tools.get('jdaviz:selectslice', {}).get('visible'), \
+        "selectslice tool should be visible after loading LC data"

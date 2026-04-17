@@ -1,3 +1,5 @@
+import warnings
+
 from astropy.io.fits import getheader
 from astropy.utils import deprecated
 import astropy.units as u
@@ -42,7 +44,11 @@ for name, path in custom_components.items():
 
 
 def _get_range_subset_bounds(self, subset_state, *args, **kwargs):
-    viewer = self._jdaviz_helper.default_time_viewer._obj.glue_viewer
+    time_viewers = [v for v in self._viewer_store.values()
+                    if isinstance(v, TimeScatterView)]
+    if not time_viewers:  # pragma: no cover
+        raise ValueError("Unable to find time viewer")
+    viewer = time_viewers[0]
     light_curve = viewer.data()[0]
     reference_time = light_curve.meta['reference_time']
     if viewer:
@@ -85,9 +91,10 @@ def _get_display_unit(app, axis):
             return u.d
         elif axis == 'flux':
             try:
-                data = app._jdaviz_helper.default_time_viewer._obj.glue_viewer.data()
-                if len(data) > 0:
-                    return data[0].flux.unit
+                time_viewers = [v for v in app._viewer_store.values()
+                                if isinstance(v, TimeScatterView)]
+                if time_viewers and len(time_viewers[0].data()) > 0:
+                    return time_viewers[0].data()[0].flux.unit
                 return u.electron / u.s
             except (ValueError, IndexError):
                 return u.electron / u.s
@@ -101,6 +108,61 @@ def _get_display_unit(app, axis):
         raise ValueError(f"could not find display unit for axis='{axis}'")
 
 
+def _apply_lcviz_patches(jdaviz_application):
+    """
+    Apply lcviz-specific instance patches to a JdavizApplication for temporal data support.
+
+    Each patch falls back to the original jdaviz implementation when no temporal data is
+    present, so the patched app remains safe to use with spectral data as well.
+
+    Idempotent: calling multiple times on the same instance is safe.
+    """
+    if getattr(jdaviz_application, '_lcviz_patched', False):
+        return
+
+    from lcviz.utils import TimeCoordinates
+
+    _original_get_range_subset_bounds = type(jdaviz_application)._get_range_subset_bounds
+    _original_get_display_unit = type(jdaviz_application)._get_display_unit
+
+    def _patched_get_range_subset_bounds(*args, **kwargs):
+        if any(isinstance(v, TimeScatterView)
+               for v in jdaviz_application._viewer_store.values()):
+            return _get_range_subset_bounds(jdaviz_application, *args, **kwargs)
+        return _original_get_range_subset_bounds(jdaviz_application, *args, **kwargs)
+
+    def _patched_link_new_data(reference_data=None, data_to_be_linked=None):
+        dc = jdaviz_application.data_collection
+        linked = dc[data_to_be_linked] if data_to_be_linked else (dc[-1] if len(dc) else None)
+        if linked is not None and isinstance(linked.coords, TimeCoordinates):
+            return _link_new_data(jdaviz_application, reference_data, data_to_be_linked)
+        # for non-time data in deconfigged config the base implementation is a no-op
+
+    def _patched_get_display_unit(*args, **kwargs):
+        axis = args[0] if args else kwargs.get('axis', '')
+        has_time_viewers = any(isinstance(v, TimeScatterView)
+                               for v in jdaviz_application._viewer_store.values())
+        if axis == 'time' or (axis == 'flux' and has_time_viewers):
+            return _get_display_unit(jdaviz_application, *args, **kwargs)
+        return _original_get_display_unit(jdaviz_application, *args, **kwargs)
+
+    jdaviz_application._get_range_subset_bounds = _patched_get_range_subset_bounds
+    jdaviz_application._link_new_data = _patched_link_new_data
+    jdaviz_application._get_display_unit = _patched_get_display_unit
+    jdaviz_application._lcviz_patched = True
+
+    if jdaviz_application.config == 'deconfigged':
+        jdaviz_application.update_tray_items_from_registry()
+        jdaviz_application.update_loaders_from_registry()
+        jdaviz_application.update_new_viewers_from_registry()
+
+    try:
+        about = jdaviz_application.get_tray_item_from_name('about')
+        about.register_downstream_package('lcviz', __version__, abbreviation='lc')
+    except (KeyError, AttributeError):  # pragma: no cover
+        pass
+
+
 class LCviz(ConfigHelper):
     _default_configuration = {
         'settings': {'configuration': 'lcviz',
@@ -112,7 +174,7 @@ class LCviz(ConfigHelper):
                      'context': {'notebook': {'max_height': '600px'}}},
         'toolbar': ['g-data-tools', 'g-subset-tools', 'g-viewer-creator', 'g-coords-info'],
         'tray': ['g-metadata-viewer', 'flux-column',
-                 'plot-options', 'g-subset-tools',
+                 'g-plot-options', 'g-subset-tools',
                  'g-markers', 'time-selector', 'photometric-extraction',
                  'stitch', 'flatten', 'frequency-analysis', 'ephemeris',
                  'binning', 'export', 'logger'],
@@ -121,36 +183,32 @@ class LCviz(ConfigHelper):
     _component_ids = {}
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "LCviz is deprecated and will be removed in a future version. "
+            "Please use jdaviz.open() or jdaviz.loaders instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         super().__init__(*args, **kwargs)
 
         # override jdaviz behavior to support temporal subsets
-        self.app._get_range_subset_bounds = (
-            lambda *args, **kwargs: _get_range_subset_bounds(self.app, *args, **kwargs)
-        )
-
-        self.app._link_new_data = (
-            lambda *args, **kwargs: _link_new_data(self.app, *args, **kwargs)
-        )
-
-        self.app._get_display_unit = (
-            lambda *args, **kwargs: _get_display_unit(self.app, *args, **kwargs)
-        )
+        _apply_lcviz_patches(self._app)
 
         # inject custom css from lcviz_style.vue (on top of jdaviz styles)
-        self.app._add_style((__file__, 'lcviz_style.vue'))
+        self._app._add_style((__file__, 'lcviz_style.vue'))
 
         # enable loaders (currently requires dev-flag in jdaviz)
-        self.app.state.dev_loaders = True
+        self._app.state.dev_loaders = True
         self.load = self._load
 
         # set the link to read the docs
-        self.app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
-        self.app.docs_link = f"https://lcviz.readthedocs.io/en/{self.app.vdocs}"
+        self._app.vdocs = 'latest' if 'dev' in __version__ else 'v'+__version__
+        self._app.docs_link = f"https://lcviz.readthedocs.io/en/{self._app.vdocs}"
         for plugin in self.plugins.values():
             # NOTE that plugins that need to override upstream docs_link should do so in
             # an @observe('vdocs') rather than the init, since plugin instances have
             # already been initialized
-            plugin._obj.vdocs = self.app.vdocs
+            plugin._obj.vdocs = self._app.vdocs
 
     @deprecated(since="1.2", alternative="load")
     def load_data(self, data, data_label=None, extname=None):
@@ -182,7 +240,7 @@ class LCviz(ConfigHelper):
                     'DvTimeSeriesExporter' in header['CREATOR']):
                 kwargs['extension'] = extname
 
-        self.load(data, data_label=data_label, **kwargs)
+        self.load(data, data_label=data_label, format=['Light Curve', 'TPF'], **kwargs)
 
     def get_data(self, data_label=None, cls=LightCurve, subset=None):
         """
@@ -207,7 +265,7 @@ class LCviz(ConfigHelper):
 
     @property
     def default_time_viewer(self):
-        tvs = [viewer for vid, viewer in self.app._viewer_store.items()
+        tvs = [viewer for vid, viewer in self._app._viewer_store.items()
                if isinstance(viewer, TimeScatterView)]
         if not len(tvs):
             raise ValueError("no time viewers exist")
@@ -215,7 +273,7 @@ class LCviz(ConfigHelper):
 
     @property
     def _has_cube_data(self):
-        for data in self.app.data_collection:
+        for data in self._app.data_collection:
             if data.ndim == 3:
                 return True
         return False
@@ -234,4 +292,4 @@ class LCviz(ConfigHelper):
         # for now this is just useful for dev-debugging access to toolbar entries
         from ipywidgets.widgets import widget_serialization
         return {item['name']: widget_serialization['from_json'](item['widget'], None)
-                for item in self.app.state.tool_items}
+                for item in self._app.state.tool_items}

@@ -29,6 +29,26 @@ jobs:
     - name: Check links in docs using tox
       run: tox -e linkcheck
 
+  jdaviz_compat_tests:
+    name: jdaviz tests with lcviz installed
+    runs-on: ubuntu-latest
+    if: github.repository == 'spacetelescope/lcviz'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      with:
+        fetch-depth: 0
+    - name: Set up python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+      with:
+        python-version: '3.11'
+    - name: Install base dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+    - name: Test with tox
+      run: tox -e jdaviz-tests
+
   ci_cron_tests:
     name: Python 3.10 with latest dev versions of key dependencies
     runs-on: ubuntu-latest

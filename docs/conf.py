@@ -13,6 +13,7 @@
 # serve to show the default.
 
 import datetime
+import os
 import sys
 from lcviz import __version__
 
@@ -28,7 +29,6 @@ except ImportError:
 # Configuration for intersphinx
 intersphinx_mapping = {
     'jdaviz': ('https://jdaviz.readthedocs.io/en/latest/', None),
-    'lightkurve': ('https://lightkurve.github.io/lightkurve/', None)
 #     'python': ('https://docs.python.org/3/',
 #                (None, 'http://data.astropy.org/intersphinx/python3.inv')),
 #     'numpy': ('https://numpy.org/doc/stable/',
@@ -56,7 +56,7 @@ extensions = [
     'sphinx_togglebutton']
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ['_templates']
+templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -96,6 +96,8 @@ version = '.'.join(release.split('.')[:2])
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']
+
+suppress_warnings = ['intersphinx.fetch_inventory']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -385,3 +387,177 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 # epub_use_index = True
+
+
+# ---------------------------------------------------------------------------
+# Landing page helpers and directive
+# ---------------------------------------------------------------------------
+
+def scan_directory_for_links(base_path, directory):
+    """Scan a docs subdirectory and return a list of link dicts for the grid."""
+    dir_path = os.path.join(base_path, directory)
+    if not os.path.isdir(dir_path):
+        return []
+
+    links = [{'text': 'Overview', 'href': os.path.join(directory, 'index')}]
+
+    acronyms = {'api': 'API', 'url': 'URL', 'tpf': 'TPF'}
+
+    for filename in sorted(os.listdir(dir_path)):
+        if filename.endswith('.rst') and filename not in ('index.rst', 'extensions.rst'):
+            name = filename[:-4].replace('_', ' ').title()
+            name_words = name.split()
+            for i, word in enumerate(name_words):
+                if word.lower() in acronyms:
+                    name_words[i] = acronyms[word.lower()]
+            name = ' '.join(name_words)
+            rel_path = os.path.join(directory, filename[:-4])
+            links.append({'text': name, 'href': rel_path})
+
+    return links
+
+
+docs_dir = os.path.dirname(__file__)
+
+grid_items_data = [
+    {
+        'title': 'Data Loaders',
+        'description': 'Import light curves and target pixel files into jdaviz',
+        'icon': 'mdi-plus-box',
+        'grid_id': 'grid-loaders',
+        'links': [
+            {'text': 'Overview', 'href': 'loaders/index'},
+            {'text': 'Light Curve', 'href': 'loaders/light_curve'},
+            {'text': 'Target Pixel File', 'href': 'loaders/tpf'},
+        ],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/loaders/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Viewers',
+        'description': 'Visualize light curves in time and phase space',
+        'icon': 'mdi-plus-box',
+        'grid_id': 'grid-viewers',
+        'links': [
+            {'text': 'Overview', 'href': 'viewers/index'},
+            {'text': 'Flux vs Time', 'href': 'viewers/flux_vs_time'},
+            {'text': 'Flux vs Phase', 'href': 'viewers/flux_vs_phase'},
+        ],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/viewers/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Data Analysis Plugins',
+        'description': 'Analyze light curves and TPF data with lcviz-specific plugins',
+        'icon': 'mdi-tune-variant',
+        'grid_id': 'grid-plugins',
+        'links': scan_directory_for_links(docs_dir, 'plugins'),
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/plugins/index.html',
+        'has_toggle': True,
+    },
+    {
+        'title': 'Subsets',
+        'description': 'Select regions of interest in your data, synced across all viewers',
+        'icon': 'mdi-tune-variant',
+        'grid_id': 'grid-subsets',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/subsets/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Export',
+        'description': 'Export generated data, selected subsets, and viewers',
+        'icon': 'mdi-content-save',
+        'grid_id': 'grid-export',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/export/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Flexible Settings & Options',
+        'description': 'Choose how to visualize your data, including display units and plot options',
+        'icon': 'mdi-tune-variant',
+        'grid_id': 'grid-settings',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/settings/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Access to Data Info',
+        'description': 'Interactive access to information about your data and generated results',
+        'icon': 'mdi-tune-variant',
+        'grid_id': 'grid-info',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/info/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Data Menu',
+        'description': 'Control data and subset layer order and visibility for each viewer',
+        'icon': 'mdi-plus-box',
+        'grid_id': 'grid-data-menu',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/data_menu/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'Mouseover Information',
+        'description': 'See information about the data directly below your cursor',
+        'icon': 'mdi-plus-box',
+        'grid_id': 'grid-mouseover',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/mouseover/index.html',
+        'has_toggle': False,
+    },
+    {
+        'title': 'API Access in Notebook',
+        'description': 'Script advanced and reproducible workflows via Python API',
+        'icon': 'mdi-tune-variant',
+        'grid_id': 'grid-userapi',
+        'links': [],
+        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/userapi/index.html',
+        'has_toggle': False,
+    },
+]
+
+html_context['grid_items'] = grid_items_data
+html_context['lcviz_version'] = version if dev else release
+
+
+from docutils import nodes
+from sphinx.util.docutils import SphinxDirective
+
+
+class LcvizLandingPageDirective(SphinxDirective):
+    """Render the lcviz landing page template."""
+
+    def run(self):
+        import jinja2
+
+        template_dir = os.path.join(self.env.srcdir, '_templates')
+        jinja_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_dir)
+        )
+
+        def pathto(otheruri, resource=False):
+            if resource:
+                return otheruri
+            if not otheruri.endswith('.html') and not otheruri.startswith('#'):
+                otheruri = otheruri + '.html'
+            return otheruri
+
+        template = jinja_env.get_template('index.html')
+        app_html_context = self.env.app.config.html_context
+
+        context = {
+            'grid_items': app_html_context.get('grid_items', []),
+            'lcviz_version': app_html_context.get('lcviz_version', ''),
+            'pathto': pathto,
+        }
+        html_content = template.render(context)
+        raw_node = nodes.raw('', html_content, format='html')
+        return [raw_node]
+
+
+def setup(app):
+    app.add_directive('lcvizlanding', LcvizLandingPageDirective)

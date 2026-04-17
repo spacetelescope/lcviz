@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pytest
 from astropy import units as u
@@ -8,7 +10,16 @@ from lcviz import __version__, LCviz
 
 @pytest.fixture
 def helper():
-    return LCviz()
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="LCviz is deprecated",
+                                category=DeprecationWarning)
+        return LCviz()
+
+
+@pytest.fixture
+def deconfigged_helper():
+    import jdaviz
+    return jdaviz.new_app()
 
 
 @pytest.fixture
