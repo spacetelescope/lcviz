@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lcviz - Light Curve Visualization and Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        /* Fix Sphinx theme conflicts */
+        .bd-main .bd-content .bd-article-container {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+
+        .bd-article {
+            padding: 0 !important;
+        }
+
+        #pst-secondary-sidebar {
+            display: none !important;
+        }
+
+        #pst-primary-sidebar,
+        .bd-sidebar-primary {
+            display: none !important;
+        }
+
+        .logo__image.only-dark.pst-js-only,
+        .logo__image.only-light.pst-js-only,
+        .navbar-brand img,
+        .navbar-brand .logo__image {
+            display: none !important;
+        }
+
+        #pst-back-to-top {
+            background-color: var(--button-primary) !important;
+            color: var(--text-color) !important;
+        }
+
+        :root {
+            --pst-color-primary: #007DA4 !important;
+            --pst-color-primary-highlight: #00B4E6 !important;
+            --pst-color-link: #00B4E6 !important;
+            --pst-color-link-hover: #007DA4 !important;
+        }
+
+        /* Theme variables - Dark mode (default) */
+        :root,
+        html[data-theme="dark"] {
+            --bg-gradient-start: #000000;
+            --bg-gradient-end: #00617E;
+            --text-color: #ffffff;
+            --grid-bg: rgba(255, 255, 255, 0.1);
+            --grid-border: rgba(255, 255, 255, 0.3);
+            --description-bg: rgba(255, 255, 255, 0.1);
+            --description-border: rgba(255, 255, 255, 0.3);
+            --sidebar-bg: rgba(0, 97, 126, 0.4);
+            --sidebar-hover: rgba(0, 125, 164, 0.6);
+            --sidebar-active: #007DA4;
+            --button-primary: #007DA4;
+            --button-hover: #C75109;
+            --link-color: #00B4E6;
+            --link-hover: #C75109;
+        }
+
+        /* Light mode */
+        html[data-theme="light"] {
+            --bg-gradient-start: #f0f8ff;
+            --bg-gradient-end: #b3ddef;
+            --text-color: #1a1a1a;
+            --grid-bg: rgba(255, 255, 255, 0.8);
+            --grid-border: rgba(0, 97, 126, 0.3);
+            --description-bg: rgba(255, 255, 255, 0.8);
+            --description-border: rgba(0, 97, 126, 0.3);
+            --sidebar-bg: rgba(0, 125, 164, 0.15);
+            --sidebar-hover: rgba(0, 125, 164, 0.25);
+            --sidebar-active: #007DA4;
+            --button-primary: #007DA4;
+            --button-hover: #C75109;
+            --link-color: #005a7a;
+            --link-hover: #C75109;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            font-family: 'Overpass', sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 0 !important;
+            margin: 0 !important;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            display: block;
+            background: transparent !important;
+        }
+
+        html[data-theme="dark"] .logo {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Description Section */
+        .description-section {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .description-logo {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .description-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+            align-self: end !important;
+        }
+
+        .description-content p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin-bottom: 0 !important;
+        }
+
+        .description-content code {
+            background: var(--sidebar-bg);
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        /* Announcement Banner */
+        .announcement-banner {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #00617E 0%, #007DA4 100%);
+            border: 2px solid var(--grid-border);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .announcement-header {
+            font-size: 28px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .announcement-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #ffffff;
+            margin-bottom: 24px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .announcement-button {
+            display: inline-block;
+            background: var(--sidebar-active);
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 12px 32px;
+            border: 2px solid var(--grid-border);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .announcement-button:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Jupyter Cell */
+        .jupyter-cell-container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--grid-border);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .jupyter-cell-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(0, 59, 77, 0.3);
+            border-bottom: 1px solid var(--grid-border);
+        }
+
+        .jupyter-cell-prompt {
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .jupyter-cell-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #ffffff;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        html[data-theme="light"] .jupyter-cell-container {
+            background: #e8e8e8;
+        }
+
+        html[data-theme="light"] .jupyter-cell-header {
+            background: #a0a0a0;
+        }
+
+        html[data-theme="light"] .jupyter-cell-prompt {
+            color: #1a1a1a;
+            opacity: 0.7;
+        }
+
+        html[data-theme="light"] .jupyter-cell-code {
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        /* Install / Full-width button */
+        .install-section {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .full-width-button {
+            display: inline-block;
+            background: var(--button-primary);
+            color: var(--text-color) !important;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 9px 50px;
+            border: 3px solid var(--grid-border);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .full-width-button:hover {
+            background: var(--button-hover);
+            color: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        html[data-theme="light"] .full-width-button {
+            color: #ffffff !important;
+        }
+
+        /* Grid Section */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 24px;
+            margin-bottom: 24px;
+            max-width: 1500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .grid-item {
+            background: var(--grid-bg);
+            border: 2px solid var(--grid-border);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            max-height: 300px;
+        }
+
+        .grid-item.expanded {
+            max-height: none;
+        }
+
+        .grid-item:hover {
+            border-color: var(--grid-border);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .grid-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            opacity: 0.08;
+            z-index: 0;
+            transition: all 0.6s ease;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .grid-item[data-icon="mdi-plus-box"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M19,19V5H5V19H19M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5C3,3.89 3.9,3 5,3H19M11,7H13V11H17V13H13V17H11V13H7V11H11V7Z" /></svg>');
+        }
+
+        .grid-item[data-icon="mdi-tune-variant"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M8 13C6.14 13 4.59 14.28 4.14 16H2V18H4.14C4.59 19.72 6.14 21 8 21S11.41 19.72 11.86 18H22V16H11.86C11.41 14.28 9.86 13 8 13M8 19C6.9 19 6 18.1 6 17C6 15.9 6.9 15 8 15S10 15.9 10 17C10 18.1 9.1 19 8 19M19.86 6C19.41 4.28 17.86 3 16 3S12.59 4.28 12.14 6H2V8H12.14C12.59 9.72 14.14 11 16 11S19.41 9.72 19.86 8H22V6H19.86M16 9C14.9 9 14 8.1 14 7C14 5.9 14.9 5 16 5S18 5.9 18 7C18 8.1 17.1 9 16 9Z" /></svg>');
+        }
+
+        .grid-item[data-icon="mdi-content-save"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" /></svg>');
+        }
+
+        html[data-theme="light"] .grid-item[data-icon="mdi-plus-box"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%231a1a1a" d="M19,19V5H5V19H19M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5C3,3.89 3.9,3 5,3H19M11,7H13V11H17V13H13V17H11V13H7V11H11V7Z" /></svg>');
+        }
+
+        html[data-theme="light"] .grid-item[data-icon="mdi-tune-variant"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%231a1a1a" d="M8 13C6.14 13 4.59 14.28 4.14 16H2V18H4.14C4.59 19.72 6.14 21 8 21S11.41 19.72 11.86 18H22V16H11.86C11.41 14.28 9.86 13 8 13M8 19C6.9 19 6 18.1 6 17C6 15.9 6.9 15 8 15S10 15.9 10 17C10 18.1 9.1 19 8 19M19.86 6C19.41 4.28 17.86 3 16 3S12.59 4.28 12.14 6H2V8H12.14C12.59 9.72 14.14 11 16 11S19.41 9.72 19.86 8H22V6H19.86M16 9C14.9 9 14 8.1 14 7C14 5.9 14.9 5 16 5S18 5.9 18 7C18 8.1 17.1 9 16 9Z" /></svg>');
+        }
+
+        html[data-theme="light"] .grid-item[data-icon="mdi-content-save"]::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%231a1a1a" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" /></svg>');
+        }
+
+        .grid-item-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .grid-item h3 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            margin-top: 0;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .grid-item h3::before {
+            content: '';
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            flex-shrink: 0;
+        }
+
+        .grid-item[data-icon="mdi-plus-box"] h3::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M19,19V5H5V19H19M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5C3,3.89 3.9,3 5,3H19M11,7H13V11H17V13H13V17H11V13H7V11H11V7Z" /></svg>');
+        }
+
+        .grid-item[data-icon="mdi-tune-variant"] h3::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M8 13C6.14 13 4.59 14.28 4.14 16H2V18H4.14C4.59 19.72 6.14 21 8 21S11.41 19.72 11.86 18H22V16H11.86C11.41 14.28 9.86 13 8 13M8 19C6.9 19 6 18.1 6 17C6 15.9 6.9 15 8 15S10 15.9 10 17C10 18.1 9.1 19 8 19M19.86 6C19.41 4.28 17.86 3 16 3S12.59 4.28 12.14 6H2V8H12.14C12.59 9.72 14.14 11 16 11S19.41 9.72 19.86 8H22V6H19.86M16 9C14.9 9 14 8.1 14 7C14 5.9 14.9 5 16 5S18 5.9 18 7C18 8.1 17.1 9 16 9Z" /></svg>');
+        }
+
+        .grid-item[data-icon="mdi-content-save"] h3::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" /></svg>');
+        }
+
+        html[data-theme="light"] .grid-item h3 {
+            color: #1a1a1a !important;
+        }
+
+        html[data-theme="light"] .grid-item[data-icon="mdi-plus-box"] h3::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%231a1a1a" d="M19,19V5H5V19H19M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5C3,3.89 3.9,3 5,3H19M11,7H13V11H17V13H13V17H11V13H7V11H11V7Z" /></svg>');
+        }
+
+        html[data-theme="light"] .grid-item[data-icon="mdi-tune-variant"] h3::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%231a1a1a" d="M8 13C6.14 13 4.59 14.28 4.14 16H2V18H4.14C4.59 19.72 6.14 21 8 21S11.41 19.72 11.86 18H22V16H11.86C11.41 14.28 9.86 13 8 13M8 19C6.9 19 6 18.1 6 17C6 15.9 6.9 15 8 15S10 15.9 10 17C10 18.1 9.1 19 8 19M19.86 6C19.41 4.28 17.86 3 16 3S12.59 4.28 12.14 6H2V8H12.14C12.59 9.72 14.14 11 16 11S19.41 9.72 19.86 8H22V6H19.86M16 9C14.9 9 14 8.1 14 7C14 5.9 14.9 5 16 5S18 5.9 18 7C18 8.1 17.1 9 16 9Z" /></svg>');
+        }
+
+        html[data-theme="light"] .grid-item[data-icon="mdi-content-save"] h3::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%231a1a1a" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" /></svg>');
+        }
+
+        .grid-item-description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-color);
+            opacity: 0.85;
+            margin-bottom: 16px;
+        }
+
+        .grid-item-links {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .grid-item-link {
+            display: inline-block;
+            background: var(--sidebar-bg);
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .grid-item:hover .grid-item-link {
+            background: var(--sidebar-hover);
+        }
+
+        .grid-item-link:hover {
+            background: var(--button-hover) !important;
+            color: var(--text-color) !important;
+            transform: scale(1.02);
+        }
+
+        .extensions-button {
+            display: inline-block;
+            background: var(--sidebar-bg);
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid var(--grid-border);
+            grid-column: span 2;
+        }
+
+        .extensions-button:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+            border-color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .has-toggle .grid-item-content {
+            margin-bottom: 50px;
+        }
+
+        .toggle-more {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0.9;
+            background: var(--sidebar-active);
+            color: var(--text-color);
+            border: none;
+            border-top: 1px solid var(--grid-border);
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .toggle-more:hover {
+            background: var(--button-hover);
+            opacity: 0.7;
+        }
+
+        a:visited { color: inherit !important; }
+        a:visited:hover { color: inherit !important; }
+        .grid-item-link:visited, .grid-item-link:visited:hover,
+        .extensions-button:visited, .extensions-button:visited:hover,
+        .full-width-button:visited, .full-width-button:visited:hover,
+        .announcement-button:visited, .announcement-button:visited:hover {
+            color: inherit !important;
+        }
+
+        /* Citation Section */
+        .citation-section {
+            width: 90%;
+            max-width: 1000px;
+            margin: 60px auto;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .citation-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-top: 30px;
+            margin-bottom: 16px;
+        }
+
+        .citation-section h2:first-child { margin-top: 0; }
+
+        .citation-section p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin-bottom: 12px;
+        }
+
+        .citation-section a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .citation-section a:hover { color: var(--link-hover); }
+
+        html[data-theme="light"] .announcement-banner,
+        html[data-theme="light"] .announcement-header,
+        html[data-theme="light"] .announcement-text,
+        html[data-theme="light"] .announcement-button {
+            color: #ffffff !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; gap: 20px; }
+            .description-section { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Description Section with embedded logo -->
+        <div class="description-section">
+            <div class="description-logo">
+                <img src="_static/lcviz.svg" alt="lcviz Logo" class="logo"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="description-content">
+                <p>
+                    <code>lcviz</code> is a light curve visualization and analysis tool
+                    within the Jupyter environment, built on top of
+                    <a href="https://jdaviz.readthedocs.io">jdaviz</a> and
+                    <a href="https://lightkurve.github.io/lightkurve/">lightkurve</a>.
+                    It provides tools for the analysis of periodic and semi-periodic variability
+                    from stationary sources in high-cadence photometric data sets from
+                    Kepler, K2, and TESS.
+                </p>
+            </div>
+        </div>
+
+        <!-- Announcement Banner -->
+        <div class="announcement-banner">
+            <h2 class="announcement-header">Introducing lcviz 2.0 + jdaviz 5.0</h2>
+            <p class="announcement-text">
+                lcviz 2.0, powered by jdaviz 5.0, injects lcviz loaders and plugins directly
+                into the generalized jdaviz at runtime. You no longer need a separate
+                <code>LCviz</code> configuration — just <code>import jdaviz as jd</code>,
+                load your light curve or TPF data, and all lcviz capabilities are available
+                alongside the full suite of jdaviz tools.
+            </p>
+            <a href="{{ pathto('configs_deprecated') }}" class="announcement-button">
+                View pre-2.0 (LCviz config) Documentation
+            </a>
+        </div>
+
+        <!-- Jupyter Cell -->
+        <div class="jupyter-cell-container">
+            <div class="jupyter-cell-header">
+                <span class="jupyter-cell-prompt">In [1]:</span>
+            </div>
+            <div class="jupyter-cell-code">
+import jdaviz as jd
+import lcviz
+
+from lightkurve import search_lightcurve
+lc = search_lightcurve("HAT-P-11", mission="Kepler", cadence="long", quarter=10).download()
+
+jd.load(lc, format='Light Curve')
+jd.show()</div>
+        </div>
+
+        <!-- Install Button -->
+        <div class="install-section">
+            <a href="{{ pathto('installation') }}" class="full-width-button">Install lcviz</a>
+        </div>
+
+        <!-- Grid Section -->
+        <div class="grid-container">
+            {% for item in grid_items %}
+            <div class="grid-item {% if item.has_toggle %}has-toggle{% endif %}"
+                 data-icon="{{ item.icon }}"
+                 {% if item.grid_id %}data-grid-id="{{ item.grid_id }}"{% endif %}>
+                <div class="grid-item-content">
+                    <h3>{{ item.title }}</h3>
+                    {% if item.description %}<p class="grid-item-description">{{ item.description }}</p>{% endif %}
+
+                    <div class="grid-item-links">
+                        {% for link in item.links %}
+                        <a href="{{ pathto(link.href) }}" class="grid-item-link">{{ link.text }}</a>
+                        {% endfor %}
+
+                        {% if item.jdaviz_link %}
+                        <a href="{{ item.jdaviz_link }}" class="extensions-button" target="_blank">More from Jdaviz</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if item.has_toggle %}
+                <button class="toggle-more" onclick="toggleGridItem(this)">Show more ▼</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- GitHub Button -->
+        <div class="install-section">
+            <a href="https://github.com/spacetelescope/lcviz" target="_blank" class="full-width-button">
+                GitHub Repository
+            </a>
+        </div>
+
+        <!-- Citation -->
+        <div class="citation-section">
+            <h2>License</h2>
+            <p>This project is Copyright (c) JDADF Developers and licensed under the terms of the BSD 3-Clause license.</p>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleGridItem(btn) {
+            const item = btn.closest('.grid-item');
+            if (item.classList.contains('expanded')) {
+                item.classList.remove('expanded');
+                btn.textContent = 'Show more ▼';
+            } else {
+                item.classList.add('expanded');
+                btn.textContent = 'Show less ▲';
+            }
+        }
+    </script>
+</body>
+</html>
