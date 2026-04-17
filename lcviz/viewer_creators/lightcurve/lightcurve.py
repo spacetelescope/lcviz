@@ -63,7 +63,5 @@ class FluxVsPhaseViewerCreator(BaseViewerCreator, EphemerisSelectMixin):
             self.is_relevant = True
 
     def __call__(self):
-        nv = super().__call__()
         ephem_plg = self._app._jdaviz_helper.plugins['Ephemeris']
-        ephem_plg._obj._set_viewer_to_ephem_component(nv._obj.glue_viewer, self.ephemeris.selected)
-        return nv
+        return ephem_plg.create_phase_viewer(self.ephemeris.selected)
