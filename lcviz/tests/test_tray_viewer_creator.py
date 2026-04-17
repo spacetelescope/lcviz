@@ -29,8 +29,6 @@ def test_tray_viewer_creator(helper, light_curve_like_kepler_quarter):
 @pytest.mark.remote_data
 def test_tpf_viewer_creator(deconfigged_helper):
     from lightkurve import search_targetpixelfile
-    from lcviz.viewer_creators.tpf.tpf import TPFViewerCreator
-    from lcviz.viewers import CubeView
 
     jd = deconfigged_helper
 
@@ -56,5 +54,6 @@ def test_tpf_viewer_creator(deconfigged_helper):
 
     # create an image viewer via the creator
     n_viewers_before = len(jd.viewers)
-    vc_widget()
+    vc = jd.new_viewers['TPF']
+    vc()
     assert len(jd.viewers) == n_viewers_before + 1

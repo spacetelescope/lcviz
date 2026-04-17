@@ -40,7 +40,6 @@ class PhotometricExtraction(SpectralExtraction3D):
         self.docs_description = "Extract light curve from target pixel file cube."  # noqa
         self._plugin_description = 'Extract a light curve from a TPF cube.'
 
-
         def is_tpf(data):
             return len(data.shape) == 3
         self.dataset.filters = [is_tpf]
