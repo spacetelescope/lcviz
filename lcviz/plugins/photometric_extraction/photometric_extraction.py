@@ -38,6 +38,8 @@ class PhotometricExtraction(SpectralExtraction3D):
         super().__init__(*args, **kwargs)
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#photometric-extraction"  # noqa
         self.docs_description = "Extract light curve from target pixel file cube."  # noqa
+        self._plugin_description = 'Extract a light curve from a TPF cube.'
+
 
         def is_tpf(data):
             return len(data.shape) == 3
