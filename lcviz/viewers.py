@@ -258,7 +258,17 @@ class PhaseScatterView(TimeScatterView):
 
     def _set_plot_x_axes(self, dc, component_labels, light_curve):
         # setting of y_att will be handled by ephemeris plugin
-        self.state.x_att = dc[0].components[component_labels.index(f'phase:{self._ephemeris_component}')]  # noqa
+        # only consider light-curve data; TPF/cube data has a 'dt' component
+        # but no phase component, so filtering here avoids a ValueError when
+        # a TPF is the first entry in the data collection.
+        lc_dc = [dci for dci in dc if is_lc(dci)]
+        if not lc_dc:
+            return
+        lc_component_labels = [comp.label for comp in lc_dc[0].components]
+        phase_lbl = f'phase:{self._ephemeris_component}'
+        if phase_lbl not in lc_component_labels:
+            return
+        self.state.x_att = lc_dc[0].components[lc_component_labels.index(phase_lbl)]
         self.figure.axes[0].label = 'phase'
         self.figure.axes[0].num_ticks = 5
 

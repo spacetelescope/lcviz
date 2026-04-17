@@ -141,6 +141,32 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(vc.viewer_types) == 3
 
 
+@pytest.mark.remote_data
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_ephemeris_adopt_period_with_tpf(helper_name, request):
+    """Regression test: adopt_period_at_max_power must not crash when a TPF is
+    in the data collection (TPF data has a 'dt' component but no 'phase:' component,
+    so the phase viewer must filter to light-curve data only)."""
+    helper = request.getfixturevalue(helper_name)
+    from lightkurve import search_targetpixelfile
+    tpf = search_targetpixelfile("KIC 001429092",
+                                 mission="Kepler",
+                                 cadence="long",
+                                 quarter=10).download()
+    ldr = helper.loaders['object']
+    ldr.object = tpf
+    ldr.importer.auto_extract = True
+    ldr.load()
+
+    # data collection should have TPF + extracted LC
+    assert len(helper._app.data_collection) == 2
+
+    ephem = helper.plugins['Ephemeris']
+    # this previously raised ValueError: 'phase:default' is not in list
+    ephem.adopt_period_at_max_power()
+    assert ephem._obj.phase_viewer_exists
+
+
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_ephemeris_queries(helper_name, light_curve_like_kepler_quarter, request):
     helper = request.getfixturevalue(helper_name)
