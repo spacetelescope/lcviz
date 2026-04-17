@@ -9,13 +9,13 @@ def _get_marks_from_viewer(viewer, cls=(LivePreviewBinning)):
 
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
-    helper = request.getfixturevalue(helper_name)
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
 
-    lcviz.load(lc, format='Light Curve')
-    # lcviz.show()
+    jd.load(lc, format='Light Curve')
+    # jd.show()
 
-    binning = lcviz.plugins['Binning']
+    binning = jd.plugins['Binning']
     binning.n_bins = 150
     binned_lc = binning.bin(add_data=True)
     print(binned_lc)

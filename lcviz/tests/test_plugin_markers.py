@@ -22,13 +22,13 @@ def _assert_dict_allclose(dict1, dict2):
 
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
-    helper = request.getfixturevalue(helper_name)
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
 
-    lcviz.load(lc, format='Light Curve')
-    # lcviz.show()
+    jd.load(lc, format='Light Curve')
+    # jd.show()
 
-    markers = lcviz.plugins['Markers']
+    markers = jd.plugins['Markers']
     markers.open_in_tray()
     # interactively mark by mousing over the viewer and pressing "M"
     table = markers.export_table()

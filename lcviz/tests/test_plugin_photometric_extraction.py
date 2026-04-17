@@ -4,17 +4,16 @@ import pytest
 @pytest.mark.remote_data
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_docs_snippets(helper_name, request):
-    helper = request.getfixturevalue(helper_name)
+    jd = request.getfixturevalue(helper_name)
     from lightkurve import search_targetpixelfile
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
                                  cadence="long",
                                  quarter=10).download()
-    lcviz = helper
-    lcviz.load(tpf)
-    # lcviz.show()
+    jd.load(tpf, format='TPF')
+    # jd.show()
 
-    ext = lcviz.plugins['Photometric Extraction']
+    ext = jd.plugins['Photometric Extraction']
     ext.open_in_tray()
 
 

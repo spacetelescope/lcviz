@@ -3,16 +3,16 @@ import pytest
 
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
-    helper = request.getfixturevalue(helper_name)
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
     lc1 = lc
     lc2 = lc.copy()
 
-    lcviz.load(lc1, format='Light Curve', data_label='lc1')
-    lcviz.load(lc2, format='Light Curve', data_label='lc2')
-    # lcviz.show()
+    jd.load(lc1, format='Light Curve', data_label='lc1')
+    jd.load(lc2, format='Light Curve', data_label='lc2')
+    # jd.show()
 
-    stitch = lcviz.plugins['Stitch']
+    stitch = jd.plugins['Stitch']
     stitch.open_in_tray()
     stitch.dataset.select_all()
     stitched_lc = stitch.stitch()
