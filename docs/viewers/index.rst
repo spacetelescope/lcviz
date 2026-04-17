@@ -11,6 +11,7 @@ lcviz registers light-curve-specific viewers into jdaviz's viewer registry.
 
    flux_vs_time
    flux_vs_phase
+   tpf
 
 .. grid:: 1
 
