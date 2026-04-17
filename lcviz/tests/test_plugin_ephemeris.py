@@ -1,4 +1,5 @@
 import pytest
+from lightkurve import search_targetpixelfile
 
 
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
@@ -148,7 +149,6 @@ def test_ephemeris_adopt_period_with_tpf(helper_name, request):
     in the data collection (TPF data has a 'dt' component but no 'phase:' component,
     so the phase viewer must filter to light-curve data only)."""
     helper = request.getfixturevalue(helper_name)
-    from lightkurve import search_targetpixelfile
     tpf = search_targetpixelfile("KIC 001429092",
                                  mission="Kepler",
                                  cadence="long",
@@ -170,7 +170,7 @@ def test_ephemeris_adopt_period_with_tpf(helper_name, request):
     # even though 'flux-vs-phase:default' already exists; the label must
     # auto-increment rather than raise a "label already in use" error.
     vc = helper.new_viewers['Flux vs Phase']
-    nv = vc()
+    _ = vc()
     assert len(ephem._obj._get_phase_viewers()) == 2
 
 
