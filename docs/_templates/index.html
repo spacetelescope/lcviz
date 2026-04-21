@@ -611,6 +611,34 @@ jd.load(lc, format='Light Curve')
 jd.show()</div>
         </div>
 
+        <!-- Wireframe Section (powered by docs-wireframe-demo + jdaviz.ext.wireframe) -->
+        <script src="{{ pathto('_static/jdaviz-conf-settings.js', 1) }}"></script>
+        <div id="lcviz-landing-wireframe"
+             data-wireframe-demo
+             data-wireframe-config='{
+               "htmlSrc": "{{ pathto('_static/jdaviz-wireframe.html', 1) }}",
+               "repeat": true,
+               "initialClass": "show-scroll-to",
+               "steps": [
+                 {"action": "show-sidebar", "value": "loaders", "delay": 1500},
+                 {"action": "select-dropdown", "value": "format:Light Curve", "delay": 1500},
+                 {"action": "click-button", "value": "Load", "delay": 100},
+                 {"action": "viewer-add", "value": "horiz:Flux vs Time", "delay": 3000},
+                 {"action": "show-sidebar", "value": "loaders", "delay": 1500},
+                 {"action": "select-dropdown", "value": "format:TPF", "delay": 1500},
+                 {"action": "click-button", "value": "Load", "delay": 100},
+                 {"action": "viewer-add", "value": "vert:TPF", "delay": 3000},
+                 {"action": "show-sidebar", "value": "plugins", "delay": 3000},
+                 {"action": "show-sidebar", "value": "settings", "delay": 3000},
+                 {"action": "show-sidebar", "value": "subsets", "delay": 1500},
+                 {"action": "viewer-tool-toggle", "value": "Flux vs Time:subset", "delay": 3000},
+                 {"action": "viewer-tool-toggle", "value": "Flux vs Time:subset", "delay": 1500},
+                 {"action": "show-sidebar", "value": "info", "delay": 3000},
+                 {"action": "show-sidebar", "value": "save", "delay": 5000}
+               ]
+             }'>
+        </div>
+
         <!-- Install Button -->
         <div class="install-section">
             <a href="{{ pathto('installation') }}" class="full-width-button">Install lcviz</a>

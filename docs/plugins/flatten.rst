@@ -13,6 +13,15 @@ This plugin allows for flattening the light curve by removing trends.  By defaul
 flattened light curve is "unnormalized" by multiplying the flattened light curve by the median of
 the trend, but this can be disabled through the plugin settings.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"plugins","delay":1500},{"action":"open-panel","value":"Flatten","delay":1000}]
+
 User API
 ========
 

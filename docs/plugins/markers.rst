@@ -17,6 +17,15 @@ displayed in the app toolbar into the table.  The markers remain at that fixed p
 the viewer they were created (regardless of changes to the underlying data or linking) and are only
 visible when the plugin is opened.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"info","delay":1500},{"action":"select-tab","value":"Markers","delay":1000}]
+
 User API
 ========
 

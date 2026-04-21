@@ -12,6 +12,15 @@ Overview
 This plugin allows for combining multiple light curves into a single entry.  It is only
 available if there are at least two light curves loaded into a light curve viewer.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"plugins","delay":1500},{"action":"open-panel","value":"Stitch","delay":1000}]
+
 User API
 ========
 

@@ -17,6 +17,15 @@ slice indicators for linked TPF cube views.
 Multiple light curves can be overlaid in the same viewer.  Additional Flux vs Time viewers
 can be created via the Viewer Creator controls in jdaviz.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"loaders","delay":1500},{"action":"select-tab","value":"Viewer","delay":1500},{"action":"select-dropdown","value":"Viewer Type:Flux vs Time","delay":1500}]
+
 API Access
 ==========
 

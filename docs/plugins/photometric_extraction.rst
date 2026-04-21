@@ -11,6 +11,15 @@ Overview
 
 This plugin is only available if TPF data is loaded into the app.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"plugins","delay":1500},{"action":"open-panel","value":"Photometric Extraction","delay":1000}]
+
 User API
 ========
 

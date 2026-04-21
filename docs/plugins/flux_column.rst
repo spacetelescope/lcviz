@@ -12,6 +12,15 @@ Overview
 This plugin allows choosing which column in the underlying data should be used as the flux column
 (origin) throughout the app (when plotting and in any data analysis plugins).
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"plugins","delay":1500},{"action":"open-panel","value":"Flux Column","delay":1000}]
+
 User API
 ========
 

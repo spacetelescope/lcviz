@@ -13,6 +13,15 @@ The ``lightkurve.read`` parser allows loading any file format supported by
 :func:`lightkurve.read` (Kepler, K2, TESS FITS files, etc.) through jdaviz's
 file-based loaders (file path, URL, file drop).
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"loaders","delay":1500},{"action":"select-dropdown","value":"Format:Lightkurve Parser","delay":1000},{"action":"highlight","target":"#format-select","delay":1500}]
+
 Usage
 =====
 

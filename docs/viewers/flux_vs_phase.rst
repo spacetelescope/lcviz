@@ -17,6 +17,15 @@ for each ephemeris component added.
 The x-axis spans [-0.5, 0.5] in phase units by default, and the viewer stays
 synchronized with the time viewer through the shared ephemeris.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"loaders","delay":1500},{"action":"select-tab","value":"Viewer","delay":1500},{"action":"select-dropdown","value":"Viewer Type:Flux vs Phase","delay":1500}]
+
 API Access
 ==========
 

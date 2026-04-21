@@ -11,6 +11,15 @@ Overview
 
 This plugin exposes the periodogram (in period or frequency space) for an input light curve.
 
+UI Access
+=========
+
+.. wireframe-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action":"show-sidebar","value":"plugins","delay":1500},{"action":"open-panel","value":"Frequency Analysis","delay":1000}]
+
 User API
 ========
 
