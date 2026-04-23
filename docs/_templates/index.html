@@ -625,21 +625,21 @@ jd.show()</div>
                "repeat": true,
                "initialClass": "show-scroll-to",
                "steps": [
-                 {"action": "show-sidebar", "value": "loaders", "delay": 1500},
-                 {"action": "select-dropdown", "value": "format:Light Curve", "delay": 1500},
-                 {"action": "click-button", "value": "Load", "delay": 100},
-                 {"action": "viewer-add", "value": "horiz:Flux vs Time", "delay": 3000},
-                 {"action": "show-sidebar", "value": "loaders", "delay": 1500},
-                 {"action": "select-dropdown", "value": "format:TPF", "delay": 1500},
-                 {"action": "click-button", "value": "Load", "delay": 100},
-                 {"action": "viewer-add", "value": "vert:TPF", "delay": 3000},
-                 {"action": "show-sidebar", "value": "plugins", "delay": 3000},
-                 {"action": "show-sidebar", "value": "settings", "delay": 3000},
-                 {"action": "show-sidebar", "value": "subsets", "delay": 1500},
-                 {"action": "viewer-tool-toggle", "value": "Flux vs Time:subset", "delay": 3000},
+                 {"action": "show-sidebar", "value": "loaders", "delay": 1500, "caption": "Open the data loader"},
+                 {"action": "select-dropdown", "value": "format:Light Curve", "delay": 1500, "caption": "Choose light curve format"},
+                 {"action": "click-button", "value": "Load", "delay": 100, "caption": "Load the data"},
+                 {"action": "viewer-add", "value": "horiz:Flux vs Time", "delay": 3000, "caption": "Flux vs Time viewer added"},
+                 {"action": "show-sidebar", "value": "loaders", "delay": 1500, "caption": "Load another dataset"},
+                 {"action": "select-dropdown", "value": "format:TPF", "delay": 1500, "caption": "Choose target pixel file format"},
+                 {"action": "click-button", "value": "Load", "delay": 100, "caption": "Load the TPF data"},
+                 {"action": "viewer-add", "value": "vert:TPF", "delay": 3000, "caption": "TPF viewer added"},
+                 {"action": "show-sidebar", "value": "plugins", "delay": 3000, "caption": "Browse available plugins"},
+                 {"action": "show-sidebar", "value": "settings", "delay": 3000, "caption": "Configure plot settings"},
+                 {"action": "show-sidebar", "value": "subsets", "delay": 1500, "caption": "Open the subset tools"},
+                 {"action": "viewer-tool-toggle", "value": "Flux vs Time:subset", "delay": 3000, "caption": "Draw a subset on the light curve"},
                  {"action": "viewer-tool-toggle", "value": "Flux vs Time:subset", "delay": 1500},
-                 {"action": "show-sidebar", "value": "info", "delay": 3000},
-                 {"action": "show-sidebar", "value": "save", "delay": 5000}
+                 {"action": "show-sidebar", "value": "info", "delay": 3000, "caption": "View data information and metadata"},
+                 {"action": "show-sidebar", "value": "save", "delay": 5000, "caption": "Save or export your work"}
                ]
              }'>
         </div>
