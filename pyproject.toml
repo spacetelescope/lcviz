@@ -51,7 +51,7 @@ docs = [
     "sphinx-astropy[confv2]>=1.9.1",
     "sphinx_design",
     "sphinx-togglebutton",
-    "docs-wireframe-demo @ git+https://github.com/kecnry/docs-wireframe-demo.git@missing-jdaviz-functionality"
+    "docs-wireframe-demo @ git+https://github.com/spacetelescope/docs-wireframe-demo.git"
 ]
 
 [build-system]
