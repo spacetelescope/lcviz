@@ -18,7 +18,7 @@ UI Access
    :js: jdaviz-wireframe-actions.js
    :css: jdaviz-wireframe.css
    :repeat: false
-   :steps-json: [{"action":"show-sidebar","value":"settings","delay":1500},{"action":"select-tab","value":"Plot Options","delay":1000}]
+   :steps-json: [{"action": "show-sidebar", "value": "settings", "delay": 1500, "caption": "Open the settings sidebar"}, {"action": "select-tab", "value": "Plot Options", "delay": 1000, "caption": "Select the Plot Options tab"}]
 
 User API
 ========
