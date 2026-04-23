@@ -202,12 +202,12 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     def _generate_phase_viewer_id(self, component=None):
         if component is None:
             component = self.component_selected
-        return self.app._jdaviz_helper._get_clone_viewer_reference(f'flux-vs-phase:{component}')
+        return self._app._jdaviz_helper._get_clone_viewer_reference(f'flux-vs-phase:{component}')
 
     def _get_phase_viewers(self, lbl=None):
         if lbl is None:
             lbl = self.component_selected
-        return [viewer for vid, viewer in self.app._viewer_store.items()
+        return [viewer for vid, viewer in self._app._viewer_store.items()
                 if isinstance(viewer, PhaseScatterView)
                 and viewer._ephemeris_component == lbl]
 
@@ -283,7 +283,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
                 self._update_all_phase_arrays(ephem_component=ephem_component)
             return
 
-        dc = self.app.data_collection
+        dc = self._app.data_collection
 
         _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
 
@@ -295,11 +295,14 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
             data_is_folded = '_LCVIZ_EPHEMERIS' in data.meta.keys()
             if data_is_folded:
                 continue
+            if not is_lc(data):
+                # skip non-light curve data (e.g. images, cubes)
+                continue
 
             times = data.get_component('World 0').data
             phases = _times_to_phases(times)
 
-            self.app._jdaviz_helper._set_data_component(
+            self._app._jdaviz_helper._set_data_component(
                 data, _phase_comp_lbl, phases
             )
 
@@ -330,7 +333,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         viewer._ephemeris_component = ephem_component
 
         # set x_att
-        phase_comp = self.app._jdaviz_helper._component_ids[self._phase_comp_lbl(ephem_component)]
+        phase_comp = self._app._jdaviz_helper._component_ids[self._phase_comp_lbl(ephem_component)]
         viewer.state.x_att = phase_comp
 
         # set viewer limits
@@ -350,7 +353,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if ephem_component is None:
             ephem_component = self.component_selected
         _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
-        dc = self.app.data_collection
+        dc = self._app.data_collection
 
         # check to see if this component already has a phase array.  We'll just check the first
         # item in the data-collection since the rest of the logic in this plugin /should/ populate
@@ -360,12 +363,12 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         phase_viewer_id = self._generate_phase_viewer_id(ephem_component)
         # TODO: stack horizontally by default?
-        self.app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
-                                vid=phase_viewer_id, name=phase_viewer_id,
-                                open_data_menu_if_empty=False)
+        self._app._on_new_viewer(NewViewerMessage(PhaseScatterView, data=None, sender=self.app),
+                                 vid=phase_viewer_id, name=phase_viewer_id,
+                                 open_data_menu_if_empty=False)
 
         # access new viewer, set bookkeeping for ephemeris component
-        pv = self.app.get_viewer(phase_viewer_id)
+        pv = self._app.get_viewer(phase_viewer_id)
         pv._ephemeris_component = ephem_component
         # since we couldn't set ephemeris_component right away, _check_if_phase_viewer_exists
         # might be out-of-date
@@ -421,7 +424,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         # this is triggered when the plugin component detects a change to the component name
         self._ephemerides[new_lbl] = self._ephemerides.pop(old_lbl, {})
         for viewer in self._get_phase_viewers(old_lbl):
-            self.app._update_viewer_reference_name(
+            self._app._update_viewer_reference_name(
                 viewer._ref_or_id,
                 viewer._ref_or_id.replace(old_lbl, new_lbl),
                 update_id=True
@@ -430,10 +433,10 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         # update metadata entries so that they can be used for filtering applicable entries in
         # data menus
-        for dc_item in self.app.data_collection:
+        for dc_item in self._app.data_collection:
             if dc_item.meta.get('_LCVIZ_EPHEMERIS', {}).get('ephemeris', None) == old_lbl:
                 dc_item.meta['_LCVIZ_EPHEMERIS']['ephemeris'] = new_lbl
-        for data_item in self.app.state.data_items:
+        for data_item in self._app.state.data_items:
             if data_item.get('meta', {}).get('_LCVIZ_EPHEMERIS', {}).get('ephemeris', None) == old_lbl:  # noqa
                 data_item['meta']['_LCVIZ_EPHEMERIS']['ephemeris'] = new_lbl
 
@@ -445,7 +448,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         _ = self._ephemerides.pop(lbl, {})
         # remove the corresponding viewer(s), if any exist
         for viewer in self._get_phase_viewers(lbl):
-            self.app.vue_destroy_viewer_item(viewer._ref_or_id)
+            self._app.vue_destroy_viewer_item(viewer._ref_or_id)
         self.hub.broadcast(EphemerisComponentChangedMessage(old_lbl=lbl, new_lbl=None,
                                                             sender=self))
 
@@ -620,8 +623,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         if ephem_component is None:
             ephem_component = self.component.selected
 
-        lc = self.app._jdaviz_helper.get_data(dataset)
-        data = next((x for x in self.app.data_collection if x.label == dataset))
+        lc = self._app._jdaviz_helper.get_data(dataset)
+        data = next((x for x in self._app.data_collection if x.label == dataset))
 
         comps = {str(comp): comp for comp in data.components}
         xcomp = f'phase:{ephem_component}'

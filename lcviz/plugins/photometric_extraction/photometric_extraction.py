@@ -10,7 +10,8 @@ from jdaviz.core.user_api import PluginUserApi
 __all__ = ['PhotometricExtraction']
 
 
-@tray_registry('photometric-extraction', label="Photometric Extraction")
+@tray_registry('photometric-extraction', label="Photometric Extraction",
+               category='data:reduction')
 class PhotometricExtraction(SpectralExtraction3D):
     """
     See the :ref:`Photometric Extraction Plugin Documentation <photometric-extraction>`
@@ -37,6 +38,7 @@ class PhotometricExtraction(SpectralExtraction3D):
         super().__init__(*args, **kwargs)
         self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#photometric-extraction"  # noqa
         self.docs_description = "Extract light curve from target pixel file cube."  # noqa
+        self._plugin_description = 'Extract a light curve from a TPF cube.'
 
         def is_tpf(data):
             return len(data.shape) == 3
@@ -65,10 +67,13 @@ class PhotometricExtraction(SpectralExtraction3D):
         else:
             self.irrelevant_msg = ''
 
+    def _get_supported_viewers(self):
+        return [{'label': 'flux-vs-time', 'reference': 'lcviz-time-viewer'}]
+
     def _on_global_display_unit_changed(self, msg=None):
         if msg is None:
-            self.flux_units = str(self.app._get_display_unit('flux'))
-            self.time_units = str(self.app._get_display_unit('time'))
+            self.flux_units = str(self._app._get_display_unit('flux'))
+            self.time_units = str(self._app._get_display_unit('time'))
         elif msg.axis == 'flux':
             self.flux_units = str(msg.unit)
         elif msg.axis == 'time':

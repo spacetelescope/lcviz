@@ -13,7 +13,7 @@ class LightkurveParser(BaseParser):
 
     @property
     def is_valid(self):
-        if self.app.config not in ('deconfigged', 'lcviz'):
+        if self._app.config not in ('deconfigged', 'lcviz'):
             # NOTE: temporary during deconfig process
             return False
         try:

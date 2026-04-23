@@ -1,0 +1,12 @@
+/*
+ * lcviz-wireframe.css
+ * Demo control button theming for the lcviz wireframe demo.
+ */
+
+[data-wireframe-demo] {
+    --wfd-control-bg: rgba(0, 59, 77, 0.9);
+    --wfd-control-bg-hover: rgba(0, 125, 164, 0.9);
+    --wfd-control-border: 2px solid rgba(255, 255, 255, 0.2);
+    --wfd-control-radius: 8px;
+    --wfd-control-size: 44px;
+}
