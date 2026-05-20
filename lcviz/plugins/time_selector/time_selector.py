@@ -115,6 +115,23 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         else:
             super()._on_select_slice_message(msg)
 
+    @property
+    def slice_selection_viewers(self):
+        # Restrict to lcviz CubeView only; avoids picking up CubevizImageView instances
+        # if spectral cubes are also loaded in a deconfigged app.
+        return [v for v in self._app._viewer_store.values() if isinstance(v, CubeView)]
+
+    @property
+    def slice_indicator_viewers(self):
+        # Restrict to lcviz scatter viewers; avoids picking up CubevizProfileView instances
+        # if spectral cubes are also loaded in a deconfigged app.
+        return [v for v in self._app._viewer_store.values()
+                if isinstance(v, (TimeScatterView, PhaseScatterView))]
+
+    def _check_if_cube_viewer_exists(self, *args):
+        # self.viewer.choices includes scatter viewers (to have slice indicator)
+        self.cube_viewer_exists = len(self.slice_selection_viewers) > 0
+
     def _on_ephemeris_changed(self, msg):
         for viewer in self.slice_indicator_viewers:
             if not isinstance(viewer, PhaseScatterView):
