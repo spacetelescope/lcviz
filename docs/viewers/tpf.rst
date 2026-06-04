@@ -23,7 +23,7 @@ controls, which is only shown when TPF data is present in the app.
 UI Access
 =========
 
-.. wireframe-demo:: _static/jdaviz-wireframe.html
+.. guidestar-demo:: _static/jdaviz-wireframe.html
    :js: jdaviz-wireframe-actions.js
    :css: jdaviz-wireframe.css
    :repeat: false

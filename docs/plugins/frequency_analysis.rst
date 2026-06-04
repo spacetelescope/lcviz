@@ -14,7 +14,7 @@ This plugin exposes the periodogram (in period or frequency space) for an input 
 UI Access
 =========
 
-.. wireframe-demo:: _static/jdaviz-wireframe.html
+.. guidestar-demo:: _static/jdaviz-wireframe.html
    :js: jdaviz-wireframe-actions.js
    :css: jdaviz-wireframe.css
    :repeat: false

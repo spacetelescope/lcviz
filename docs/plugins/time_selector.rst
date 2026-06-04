@@ -15,7 +15,7 @@ The time selector plugin allows defining the time indicated in all light curve v
 UI Access
 =========
 
-.. wireframe-demo:: _static/jdaviz-wireframe.html
+.. guidestar-demo:: _static/jdaviz-wireframe.html
    :js: jdaviz-wireframe-actions.js
    :css: jdaviz-wireframe.css
    :repeat: false

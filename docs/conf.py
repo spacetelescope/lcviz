@@ -55,7 +55,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx_design',
     'sphinx_togglebutton',
-    'docs_wireframe_demo',
+    'guidestar',
     'jdaviz.ext.wireframe']
 
 # Add any paths that contain templates here, relative to this directory.

@@ -15,7 +15,7 @@ This plugin allows choosing which column in the underlying data should be used a
 UI Access
 =========
 
-.. wireframe-demo:: _static/jdaviz-wireframe.html
+.. guidestar-demo:: _static/jdaviz-wireframe.html
    :js: jdaviz-wireframe-actions.js
    :css: jdaviz-wireframe.css
    :repeat: false

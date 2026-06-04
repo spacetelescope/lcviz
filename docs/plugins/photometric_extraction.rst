@@ -14,7 +14,7 @@ This plugin is only available if TPF data is loaded into the app.
 UI Access
 =========
 
-.. wireframe-demo:: _static/jdaviz-wireframe.html
+.. guidestar-demo:: _static/jdaviz-wireframe.html
    :js: jdaviz-wireframe-actions.js
    :css: jdaviz-wireframe.css
    :repeat: false
