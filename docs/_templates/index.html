@@ -591,29 +591,14 @@
             <p class="announcement-text">
                 lcviz 2.0, powered by jdaviz 5.0, injects lcviz loaders and plugins directly
                 into the generalized jdaviz at runtime. You no longer need a separate
-                <code>LCviz</code> configuration — just <code>import jdaviz as jd</code>,
+                <code>LCviz</code> configuration — just <code>import jdaviz as jd</code>
+                and then inject lightcurve capabilities with <code>import lcviz</code>. From there, simply
                 load your light curve or TPF data, and all lcviz capabilities are available
                 alongside the full suite of jdaviz tools.
             </p>
             <a href="{{ pathto('configs_deprecated') }}" class="announcement-button">
-                View Deprecation LCViz-Config Documentation
+                View Deprecated LCViz-Config Documentation
             </a>
-        </div>
-
-        <!-- Jupyter Cell -->
-        <div class="jupyter-cell-container">
-            <div class="jupyter-cell-header">
-                <span class="jupyter-cell-prompt">In [1]:</span>
-            </div>
-            <div class="jupyter-cell-code">
-import jdaviz as jd
-import lcviz
-
-from lightkurve import search_lightcurve
-lc = search_lightcurve("HAT-P-11", mission="Kepler", cadence="long", quarter=10).download()
-
-jd.load(lc, format='Light Curve')
-jd.show()</div>
         </div>
 
         <!-- Wireframe Section (powered by guidestar + jdaviz.ext.wireframe) -->
@@ -642,6 +627,23 @@ jd.show()</div>
                  {"action": "show-sidebar", "value": "save", "delay": 5000, "caption": "Save or export your work"}
                ]
              }'>
+        </div>
+
+        <!-- Jupyter Cell -->
+        <div class="jupyter-cell-container">
+            <div class="jupyter-cell-header">
+                <span class="jupyter-cell-prompt">In [1]:</span>
+            </div>
+            <div class="jupyter-cell-code">
+                import jdaviz as jd
+                import lcviz
+
+                from lightkurve import search_lightcurve
+                lc = search_lightcurve("HAT-P-11", mission="Kepler", cadence="long", quarter=10).download()
+
+                jd.load(lc, format='Light Curve')
+                jd.show()
+            </div>
         </div>
 
         <!-- Install Button -->
