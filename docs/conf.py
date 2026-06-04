@@ -167,6 +167,14 @@ html_copy_source = False
 html_theme_options.update(  # noqa: F405
     {
         "github_url": "https://github.com/spacetelescope/lcviz",
+        "navbar_end": ["theme-switcher", "navbar-icon-links"],
+        "icon_links": [
+            {
+                "name": "GitHub Issues",
+                "url": "https://github.com/spacetelescope/lcviz/issues",
+                "icon": "fa-solid fa-circle-question",
+            }
+        ],
         "use_edit_page_button": True,
     }
 )
