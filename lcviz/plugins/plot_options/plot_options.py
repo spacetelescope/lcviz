@@ -51,5 +51,5 @@ PlotOptions.register_user_api(
 PlotOptions._default_tpf_stretch = _default_tpf_stretch
 
 PlotOptions._docs_link_fmt = (
-    'https://lcviz.readthedocs.io/en/{vdocs}/plugins.html#plot-options'
+    'https://lcviz.readthedocs.io/en/{vdocs}/plugins/plot_options.html'
 )

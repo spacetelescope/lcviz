@@ -10,5 +10,5 @@ Undefined.__str__ = lambda x: ''
 
 # Set lcviz-specific docs link without subclassing MetadataViewer.
 MetadataViewer._docs_link_fmt = (
-    'https://lcviz.readthedocs.io/en/{vdocs}/plugins.html#metadata-viewer'
+    'https://lcviz.readthedocs.io/en/{vdocs}/plugins/metadata_viewer.html'
 )

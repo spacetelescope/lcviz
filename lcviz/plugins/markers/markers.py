@@ -16,5 +16,5 @@ Markers._extra_default_values = {
 }
 
 Markers._docs_link_fmt = (
-    'https://lcviz.readthedocs.io/en/{vdocs}/plugins.html#markers'
+    'https://lcviz.readthedocs.io/en/{vdocs}/plugins/markers.html'
 )

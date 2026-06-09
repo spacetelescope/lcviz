@@ -28,4 +28,4 @@ class Export(Export):
 
     @observe('vdocs')
     def _update_docs_link(self, *args):
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#export"
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins/export.html"

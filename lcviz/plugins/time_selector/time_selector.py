@@ -58,7 +58,7 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
 
     @observe('vdocs')
     def _update_docs_link(self, *args):
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#time-selector"
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins/time_selector.html"
 
     @property
     def slice_display_unit_name(self):
