@@ -20,7 +20,7 @@ from .loaders import *  # noqa
 from .viewer_creators import *  # noqa
 
 import jdaviz
-from jdaviz import gca
+from jdaviz import gca, get_all_apps, new_app  # noqa
 from .helper import _apply_lcviz_patches
 
 # Register lcviz patches with jdaviz's hook system so every App instance —
@@ -34,11 +34,23 @@ _expose = ['show', 'load', 'batch_load',
            'toggle_api_hints',
            'plugins',
            'loaders',
-           'viewers']
-_incl = ['App', 'enable_hot_reloading', '__version__']
+           'viewers',
+           'new_viewers',
+           'datasets',
+           'data_labels']
+_incl = ['enable_hot_reloading', '__version__', 'gca', 'get_all_apps', 'new_app']
 _temporary_incl = ['LCviz']
 __all__ = _expose + _incl + _temporary_incl
 
 
 def __dir__():
     return sorted(__all__)
+
+
+def __getattr__(name):
+    if name in _expose:
+        return getattr(gca(), name)
+    if name in globals():
+        return globals()[name]
+    raise AttributeError()
+
