@@ -8,17 +8,10 @@ lcviz provides data loaders for light curve and target pixel file data from the 
 and TESS missions, injected into jdaviz at runtime alongside all built-in jdaviz loaders.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
+   :hidden:
 
-   light_curve
-   tpf
-   lightkurve_parser
+   sources/index
+   formats/index
 
-.. grid:: 1
-
-   .. grid-item-card:: Also includes jdaviz loaders
-      :link: https://jdaviz.readthedocs.io/en/latest/loaders/index.html
-
-      lcviz registers its loaders into jdaviz's unified loader registry alongside all
-      built-in jdaviz sources and formats. See the jdaviz documentation for details on
-      loading from files, URLs, and other sources.
+.. lcviz-grid-item:: grid-loaders

@@ -437,13 +437,14 @@ grid_items_data = [
         'description': 'Import light curves and target pixel files into jdaviz',
         'icon': 'mdi-plus-box',
         'grid_id': 'grid-loaders',
+        'two_column': True,
+        'column_headers': ['Sources:', 'Formats:'],
         'links': [
-            {'text': 'Overview', 'href': 'loaders/index'},
-            {'text': 'Light Curve', 'href': 'loaders/light_curve'},
-            {'text': 'Target Pixel File', 'href': 'loaders/tpf'},
+            scan_directory_for_links(docs_dir, 'loaders/sources'),
+            scan_directory_for_links(docs_dir, 'loaders/formats'),
         ],
         'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/loaders/index.html',
-        'has_toggle': False,
+        'has_toggle': True,
     },
     {
         'title': 'Viewers',
@@ -586,6 +587,70 @@ def _rst_filename_to_title(fn):
     return ' '.join(words)
 
 
+class LcvizGridItemDirective(SphinxDirective):
+    """Render a single grid item from grid_items_data by grid_id.
+
+    Usage::
+
+        .. lcviz-grid-item:: grid-loaders
+    """
+
+    required_arguments = 1  # the grid_id
+
+    def run(self):
+        import jinja2
+
+        grid_id = self.arguments[0]
+        app_html_context = self.env.app.config.html_context
+        grid_items = app_html_context.get('grid_items', [])
+
+        item = next((i for i in grid_items if i.get('grid_id') == grid_id), None)
+        if item is None:
+            return []
+
+        def pathto(otheruri, resource=False):
+            if resource:
+                return otheruri
+            if not otheruri.endswith('.html') and not otheruri.startswith('#'):
+                otheruri = otheruri + '.html'
+            return otheruri
+
+        template_src = """
+<div class="lcviz-grid-item-section">
+{% if item.two_column %}
+  <div class="lcviz-grid-two-columns">
+  {% for col_idx in range(item.links | length) %}
+    <div class="lcviz-grid-column">
+      {% if item.column_headers and col_idx < (item.column_headers | length) %}
+      <strong>{{ item.column_headers[col_idx] }}</strong>
+      {% endif %}
+      <ul>
+      {% for link in item.links[col_idx] %}
+        <li><a href="{{ pathto(link.href) }}">{{ link.text }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+  </div>
+{% else %}
+  <ul>
+  {% for link in item.links %}
+    <li><a href="{{ pathto(link.href) }}">{{ link.text }}</a></li>
+  {% endfor %}
+  </ul>
+{% endif %}
+{% if item.jdaviz_link %}
+<p><a href="{{ item.jdaviz_link }}" target="_blank">Also includes jdaviz loaders ↗</a></p>
+{% endif %}
+</div>
+"""
+        jinja_env = jinja2.Environment()
+        tmpl = jinja_env.from_string(template_src)
+        html_content = tmpl.render(item=item, pathto=pathto)
+        raw_node = nodes.raw('', html_content, format='html')
+        return [raw_node]
+
+
 def _generate_conf_settings_js(app):
     """Generate a JS file exposing build-time settings for the wireframe demo."""
     docs_dir = os.path.dirname(__file__)
@@ -612,5 +677,6 @@ def _generate_conf_settings_js(app):
 
 def setup(app):
     app.add_directive('lcvizlanding', LcvizLandingPageDirective)
+    app.add_directive('lcviz-grid-item', LcvizGridItemDirective)
     app.connect('builder-inited', _generate_conf_settings_js)
     app.add_js_file('jdaviz-conf-settings.js')
