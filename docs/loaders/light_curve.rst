@@ -13,6 +13,15 @@ The Light Curve importer accepts a :class:`lightkurve.LightCurve` object (or any
 FITS file readable as one) and loads it into the data collection, creating a
 time-scatter viewer automatically.
 
+UI Access
+=========
+
+.. guidestar-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action": "show-sidebar", "value": "loaders", "delay": 1500, "caption": "Open the data loader"}, {"action": "select-dropdown", "value": "Format:Light Curve", "delay": 1000, "caption": "Set format to Light Curve"}, {"action": "highlight", "target": "#format-select", "delay": 1500}]
+
 Usage
 =====
 

@@ -1,0 +1,12 @@
+/*
+ * lcviz-wireframe.css
+ * Demo control button theming for the lcviz wireframe demo.
+ */
+
+[data-guidestar] {
+    --gs-control-bg: rgba(0, 59, 77, 0.9);
+    --gs-control-bg-hover: rgba(0, 125, 164, 0.9);
+    --gs-control-border: 2px solid rgba(255, 255, 255, 0.2);
+    --gs-control-radius: 8px;
+    --gs-control-size: 44px;
+}

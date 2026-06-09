@@ -12,6 +12,15 @@ Overview
 The ephemeris plugin allows for setting, finding, and refining the ephemeris or ephemerides used
 for phase-folding.
 
+UI Access
+=========
+
+.. guidestar-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action": "show-sidebar", "value": "plugins", "delay": 1500, "caption": "Open the plugin toolbar"}, {"action": "open-panel", "value": "Ephemeris", "delay": 1000, "caption": "Open the Ephemeris plugin"}]
+
 User API
 ========
 

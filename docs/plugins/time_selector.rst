@@ -12,6 +12,15 @@ Overview
 The time selector plugin allows defining the time indicated in all light curve viewers
 (time and phase viewers) as well as the time at which all image cubes are displayed.
 
+UI Access
+=========
+
+.. guidestar-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action": "show-sidebar", "value": "plugins", "delay": 1500, "caption": "Open the plugin toolbar"}, {"action": "open-panel", "value": "Time Selector", "delay": 1000, "caption": "Open the Time Selector plugin"}]
+
 User API
 ========
 

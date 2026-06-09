@@ -11,6 +11,15 @@ Overview
 
 This plugin is only available if TPF data is loaded into the app.
 
+UI Access
+=========
+
+.. guidestar-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action": "show-sidebar", "value": "plugins", "delay": 1500, "caption": "Open the plugin toolbar"}, {"action": "open-panel", "value": "Photometric Extraction", "delay": 1000, "caption": "Open the Photometric Extraction plugin"}]
+
 User API
 ========
 

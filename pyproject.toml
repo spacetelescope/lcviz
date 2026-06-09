@@ -50,7 +50,8 @@ test = [
 docs = [
     "sphinx-astropy[confv2]>=1.9.1",
     "sphinx_design",
-    "sphinx-togglebutton"
+    "sphinx-togglebutton",
+    "sphinx-guidestar>=0.2.0,<0.3.0"
 ]
 
 [build-system]

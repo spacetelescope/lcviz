@@ -11,6 +11,15 @@ Overview
 
 This plugin allows viewing of any metadata associated with the selected data.
 
+UI Access
+=========
+
+.. guidestar-demo:: _static/jdaviz-wireframe.html
+   :js: jdaviz-wireframe-actions.js
+   :css: jdaviz-wireframe.css
+   :repeat: false
+   :steps-json: [{"action": "show-sidebar", "value": "info", "delay": 1500, "caption": "Open the info sidebar"}, {"action": "select-tab", "value": "Metadata", "delay": 1000, "caption": "Select the Metadata tab"}]
+
 User API
 ========
 
