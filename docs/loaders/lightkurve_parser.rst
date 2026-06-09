@@ -28,6 +28,7 @@ Usage
 .. code-block:: python
 
     import jdaviz as jd
+    import lcviz
 
     # Load a FITS light curve file directly
     jd.load("mytpf.fits", format="lightkurve.read")

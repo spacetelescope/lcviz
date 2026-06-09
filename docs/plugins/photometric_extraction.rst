@@ -31,6 +31,7 @@ User API
     .. code-block:: python
 
       import jdaviz as jd
+      import lcviz
       from lightkurve import search_targetpixelfile
       tpf = search_targetpixelfile("KIC 001429092",
                                    mission="Kepler",

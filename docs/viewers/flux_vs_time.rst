@@ -32,6 +32,7 @@ API Access
 .. code-block:: python
 
     import jdaviz as jd
+    import lcviz
     from lightkurve import search_lightcurve
 
     lc = search_lightcurve("HAT-P-11", mission="Kepler",
