@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "astropy>=5.2",
     # TODO: update to jdaviz>=5.0 once jdaviz 5.0 is released
-    "jdaviz @ git+https://github.com/kecnry/jdaviz.git@wireframe-demo-repo-2",
+    "jdaviz @ git+https://github.com/spacetelescope/jdaviz.git@main",
     "lightkurve>=2.5.1",
     # NOTE: glue-jupyter is also pinned by jdaviz.
     "glue-jupyter>=0.22.2",
