@@ -112,10 +112,10 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         # time indicator.  Messages sent from the programmatic API (sender has no .viewer)
         # are always accepted.
         sender_viewer = getattr(msg.sender, 'viewer', None)
-        if sender_viewer is not None and not isinstance(
-                sender_viewer, (TimeScatterView, PhaseScatterView, CubeView)):
+        if sender_viewer is not None and type(sender_viewer) not in (
+                TimeScatterView, PhaseScatterView, CubeView):
             return
-        if isinstance(sender_viewer, PhaseScatterView):
+        if type(sender_viewer) is PhaseScatterView:
             prev_phase = sender_viewer.times_to_phases(self.value)
             new_phase = msg.value
             self.value = self.value + (new_phase - prev_phase) * sender_viewer.ephemeris.get('period', 1.0)  # noqa
