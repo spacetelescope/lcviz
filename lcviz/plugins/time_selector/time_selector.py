@@ -107,11 +107,18 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         return api
 
     def _on_select_slice_message(self, msg):
-        viewer = msg.sender.viewer
-        if isinstance(viewer, PhaseScatterView):
-            prev_phase = viewer.times_to_phases(self.value)
+        # If the message originated from a tool in a non-lcviz viewer (e.g. the spectral
+        # slice tool in a CubevizProfileView), ignore it so that it does not affect the
+        # time indicator.  Messages sent from the programmatic API (sender has no .viewer)
+        # are always accepted.
+        sender_viewer = getattr(msg.sender, 'viewer', None)
+        if sender_viewer is not None and not isinstance(
+                sender_viewer, (TimeScatterView, PhaseScatterView, CubeView)):
+            return
+        if isinstance(sender_viewer, PhaseScatterView):
+            prev_phase = sender_viewer.times_to_phases(self.value)
             new_phase = msg.value
-            self.value = self.value + (new_phase - prev_phase) * viewer.ephemeris.get('period', 1.0)
+            self.value = self.value + (new_phase - prev_phase) * sender_viewer.ephemeris.get('period', 1.0)  # noqa
         else:
             super()._on_select_slice_message(msg)
 
