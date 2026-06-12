@@ -7,7 +7,7 @@ from lcviz.viewers import CubeView
 __all__ = ['TPFViewerCreator']
 
 
-@viewer_creator_registry('TPF', overwrite=False)
+@viewer_creator_registry('TPF', overwrite=True)
 class TPFViewerCreator(BaseViewerCreator):
     template_file = __file__, "../base_viewer_creator.vue"
 
