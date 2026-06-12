@@ -2,6 +2,8 @@
 ------------------
 
 * Photometric Extraction plugin to extract light curves from TPF cubes. [#115]
+* Update jdaviz requirement to 5.0.  Importing lcviz now injects light curve plugins, viewers, and tools
+  into the generalized jdaviz rather than being an independent application. [#215]
 
 1.2.2 (unreleased)
 ------------------
