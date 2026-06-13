@@ -21,7 +21,7 @@ def test_kepler_via_mast_local_file(helper_name, request):
     )  # 188 KB
 
     path = download_file(url, cache=True, timeout=100)
-    helper.load(path)
+    helper.load(path, format='Light Curve')
 
     data = helper._app.data_collection[0]
     flux_arr = data['flux']
@@ -43,7 +43,7 @@ def test_kepler_via_mast_preparsed(helper_name, request):
     )  # 188 KB
 
     light_curve = kepler.read_kepler_lightcurve(url)
-    helper.load(light_curve)
+    helper.load(light_curve, format='Light Curve')
 
     data = helper._app.data_collection[0]
     flux_arr = data['flux']
@@ -77,8 +77,8 @@ def test_mult_lc_reftime(helper_name, request):
                             cadence="long", quarter=9).download()
     lc2 = search_lightcurve("HAT-P-11", mission="Kepler",
                             cadence="long", quarter=10).download()
-    helper.load(lc1, data_label='Q9')
-    helper.load(lc2, data_label='Q10')
+    helper.load(lc1, data_label='Q9', format='Light Curve')
+    helper.load(lc2, data_label='Q10', format='Light Curve')
     assert helper._app.data_collection[0].meta.get('reference_time') == helper._app.data_collection[1].meta.get('reference_time')  # noqa
 
 

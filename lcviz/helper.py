@@ -140,9 +140,7 @@ def _apply_lcviz_patches(jdaviz_application):
 
     def _patched_get_display_unit(*args, **kwargs):
         axis = args[0] if args else kwargs.get('axis', '')
-        has_time_viewers = any(isinstance(v, TimeScatterView)
-                               for v in jdaviz_application._viewer_store.values())
-        if axis == 'time' or (axis == 'flux' and has_time_viewers):
+        if axis in ('time', 'flux'):
             return _get_display_unit(jdaviz_application, *args, **kwargs)
         return _original_get_display_unit(jdaviz_application, *args, **kwargs)
 
