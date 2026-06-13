@@ -33,33 +33,56 @@ def hdu_is_valid(hdu):
     bool
         True if the HDU is a valid light curve HDU, False otherwise.
     """
-    return (isinstance(hdu, fits.hdu.table.BinTableHDU) and
-            'TIME' in hdu.columns.names and
-            'LC_INIT' in hdu.columns.names and
+    if not isinstance(hdu, fits.hdu.table.BinTableHDU):
+        return False
+    if 'TIME' not in hdu.columns.names:
+        return False
+    # TESS DVT format
+    if ('LC_INIT' in hdu.columns.names and
             'LC_INIT_ERR' in hdu.columns.names and
-            'TUNIT1' in hdu.header)
+            'TUNIT1' in hdu.header):
+        return True
+    # Generic lightkurve FITS format
+    if 'FLUX' in hdu.columns.names:
+        return True
+    return False
 
 
 def hdulist_to_lightcurve(pri_header, hdu):
-    data = Table(hdu.data)
-    # don't load some columns with names that may
-    # conflict with components generated later by lcviz
-    for col in ('PHASE', 'CADENCENO'):
-        if col in data.columns:
-            data.remove_column(col)
-    # Remove rows that have NaN data
-    data = data[~np.isnan(data['LC_INIT'])]
-    time_offset = int(hdu.header['TUNIT1'].split('- ')[1].split(',')[0])
-    data['TIME'] += time_offset
-    lc = LightCurve(data=data,
-                    time=data['TIME'],
-                    flux=data['LC_INIT'],
-                    flux_err=data['LC_INIT_ERR'])
-    lc.meta = dict(pri_header)
-    lc.meta = lc.meta | dict(hdu.header)
-    lc.meta['MISSION'] = 'TESS DVT'
-    lc.meta['FLUX_ORIGIN'] = "LC_INIT"
-    lc.meta['EXTNAME'] = hdu.header['EXTNAME']
+    if 'LC_INIT' in hdu.columns.names:
+        # TESS DVT format
+        data = Table(hdu.data)
+        # don't load some columns with names that may
+        # conflict with components generated later by lcviz
+        for col in ('PHASE', 'CADENCENO'):
+            if col in data.columns:
+                data.remove_column(col)
+        # Remove rows that have NaN data
+        data = data[~np.isnan(data['LC_INIT'])]
+        time_offset = int(hdu.header['TUNIT1'].split('- ')[1].split(',')[0])
+        data['TIME'] += time_offset
+        lc = LightCurve(data=data,
+                        time=data['TIME'],
+                        flux=data['LC_INIT'],
+                        flux_err=data['LC_INIT_ERR'])
+        lc.meta = dict(pri_header)
+        lc.meta = lc.meta | dict(hdu.header)
+        lc.meta['MISSION'] = 'TESS DVT'
+        lc.meta['FLUX_ORIGIN'] = "LC_INIT"
+        lc.meta['EXTNAME'] = hdu.header['EXTNAME']
+    else:
+        # Generic lightkurve FITS format (TIME + FLUX columns)
+        data = Table(hdu.data)
+        for col in ('PHASE', 'CADENCENO'):
+            if col in data.columns:
+                data.remove_column(col)
+        flux_err = data['FLUX_ERR'] if 'FLUX_ERR' in data.columns else None
+        lc = LightCurve(data=data,
+                        time=data['TIME'],
+                        flux=data['FLUX'],
+                        flux_err=flux_err)
+        lc.meta = dict(pri_header)
+        lc.meta = lc.meta | dict(hdu.header)
 
     return lc
 
@@ -123,6 +146,16 @@ class LightCurveImporter(BaseImporterToDataCollection):
             else:
                 self.data_label_default = f"{self.input.meta.get('OBJECT', 'Light curve')} [Q{self.input.meta.get('QUARTER')}]"  # noqa
 
+    def reset_and_check_existing_data_in_dc(self, change={}):
+        # jdaviz 5.0.2's create_data_hash cannot handle a list of LightCurves
+        # (returned by self.output in multiselect HDUList mode), so pre-set
+        # empty hashes to skip duplicate-data detection rather than crash.
+        if not hasattr(self, 'data_hashes'):
+            self.data_hashes = []
+        if not hasattr(self, 'hash_map_to_label'):
+            self.hash_map_to_label = {}
+        super().reset_and_check_existing_data_in_dc(change=change)
+
     @property
     def user_api(self):
         expose = ['create_ephemeris']
@@ -140,11 +173,6 @@ class LightCurveImporter(BaseImporterToDataCollection):
             for hdu in self.input:
                 if hdu_is_valid(hdu):
                     return True
-                # also accept generic lightkurve-written FITS with TIME+FLUX columns
-                if (isinstance(hdu, fits.hdu.table.BinTableHDU) and
-                        'TIME' in hdu.columns.names and
-                        'FLUX' in hdu.columns.names):
-                    return True
         return False
 
     @observe('extension_selected')
@@ -155,10 +183,11 @@ class LightCurveImporter(BaseImporterToDataCollection):
         self._clear_cache('output')
 
         if self.extension_multiselect:
-            self.data_label_default = self.input[0].header.get('OBJECT', 'Light curve')
+            self.data_label_default = self.input[0].header.get('OBJECT') or 'Light curve'
             self.create_ephemeris_available = any([has_ephem(lc) for lc in self.output])
         else:
-            self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected_item['name']}]"  # noqa
+            obj_name = self.input[0].header.get('OBJECT') or 'Light curve'
+            self.data_label_default = f"{obj_name} [{self.extension.selected_item['name']}]"  # noqa
             self.create_ephemeris_available = has_ephem(self.output)
 
     @staticmethod
