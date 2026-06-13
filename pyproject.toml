@@ -124,6 +124,7 @@ filterwarnings = [
     # submodule is not available without oktopus installed, which requires a current version of
     # autograd. See #1452 for details."
     "ignore::UserWarning:lightkurve",
+    "ignore::DeprecationWarning:lightkurve",
     "ignore:COPY_IF_NEEDED is no longer needed.*:astropy.utils.exceptions.AstropyPendingDeprecationWarning",
 ]
 
