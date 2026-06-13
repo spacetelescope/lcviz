@@ -221,3 +221,22 @@ CoordsInfo.register_viewer_class(CubeView, with_marker=False)
 CoordsInfo.register_viewer_update_handler(TimeScatterView, _lc_viewer_update)
 CoordsInfo.register_viewer_update_handler(PhaseScatterView, _lc_viewer_update)
 CoordsInfo.register_viewer_update_handler(CubeView, _lcviz_tpf_image_viewer_update)
+
+# jdaviz 5.0 checks _viewer_update_handlers only in the `else` branch of update_display,
+# after isinstance checks for built-in types.  CubeView inherits CubevizImageView, so it
+# is matched by the built-in branch and the custom handler is never reached.  Patch
+# update_display to check registered handlers first.  This is a no-op once the fix lands
+# in jdaviz (where the handler check is moved before the isinstance checks).
+_original_update_display = CoordsInfo.update_display
+
+
+def _patched_update_display(self, viewer, x, y, mouseevent=True):
+    for vcls, handler in self._viewer_update_handlers.items():
+        if isinstance(viewer, vcls):
+            self._dict = {}
+            handler(self, viewer, x, y, mouseevent=mouseevent)
+            return
+    _original_update_display(self, viewer, x, y, mouseevent=mouseevent)
+
+
+CoordsInfo.update_display = _patched_update_display

@@ -153,6 +153,19 @@ def _apply_lcviz_patches(jdaviz_application):
         jdaviz_application.update_tray_items_from_registry()
         jdaviz_application.update_loaders_from_registry()
         jdaviz_application.update_new_viewers_from_registry()
+    elif not jdaviz_application.state.new_viewer_items:
+        # jdaviz 5.0 only calls update_new_viewers_from_registry for deconfigged;
+        # populate state.new_viewer_items for lcviz config so new_viewers works.
+        import jdaviz.core.viewer_creators  # noqa - ensure built-in creators are registered
+        from jdaviz.core.registries import viewer_creator_registry
+        new_viewer_items = []
+        for vc_registry_member in viewer_creator_registry.members.values():
+            try:
+                item = jdaviz_application._create_new_viewer_item(vc_registry_member)
+            except Exception:  # nosec
+                continue
+            new_viewer_items.append(item)
+        jdaviz_application.state.new_viewer_items = new_viewer_items
 
     try:
         about = jdaviz_application.get_tray_item_from_name('about')
@@ -275,6 +288,13 @@ class LCviz(ConfigHelper):
             if data.ndim == 3:
                 return True
         return False
+
+    @property
+    def new_viewers(self):
+        # jdaviz 5.0 only exposes new_viewers for deconfigged; override to support lcviz config.
+        from ipywidgets.widgets import widget_serialization
+        return {item['label']: widget_serialization['from_json'](item['widget'], None).user_api
+                for item in self._app.state.new_viewer_items if item['is_relevant']}
 
     @property
     def _tray_tools(self):
