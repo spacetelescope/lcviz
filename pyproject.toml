@@ -20,9 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=5.2",
-    # NOTE: if/when we stop pinning a minor version of jdaviz, add jdaviz
-    # to devdeps in tox.ini
-    "jdaviz>=4.5,<4.6",
+    "jdaviz>=5.0.2,<5.1",
     "lightkurve>=2.5.1",
     # NOTE: glue-jupyter is also pinned by jdaviz.
     "glue-jupyter>=0.22.2",
@@ -51,7 +49,8 @@ test = [
 docs = [
     "sphinx-astropy[confv2]>=1.9.1",
     "sphinx_design",
-    "sphinx-togglebutton"
+    "sphinx-togglebutton",
+    "sphinx-guidestar>=0.2.0,<0.3.0"
 ]
 
 [build-system]
@@ -121,10 +120,12 @@ filterwarnings = [
     "ignore:.*The TestRunner class will be deprecated in a future version.*",
     "ignore:.*The TestRunnerBase class will be deprecated in a future version.*",
 
-    # this suppresses a warning from lightkurve that reads: "UserWarning: Warning: the tpfmodel 
+    # this suppresses a warning from lightkurve that reads: "UserWarning: Warning: the tpfmodel
     # submodule is not available without oktopus installed, which requires a current version of
-    # autograd. See #1452 for details." 
-    "ignore::UserWarning:lightkurve",  
+    # autograd. See #1452 for details."
+    "ignore::UserWarning:lightkurve",
+    "ignore::DeprecationWarning:lightkurve",
+    "ignore:COPY_IF_NEEDED is no longer needed.*:astropy.utils.exceptions.AstropyPendingDeprecationWarning",
 ]
 
 [tool.coverage.run]

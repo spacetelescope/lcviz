@@ -33,33 +33,56 @@ def hdu_is_valid(hdu):
     bool
         True if the HDU is a valid light curve HDU, False otherwise.
     """
-    return (isinstance(hdu, fits.hdu.table.BinTableHDU) and
-            'TIME' in hdu.columns.names and
-            'LC_INIT' in hdu.columns.names and
+    if not isinstance(hdu, fits.hdu.table.BinTableHDU):
+        return False
+    if 'TIME' not in hdu.columns.names:
+        return False
+    # TESS DVT format
+    if ('LC_INIT' in hdu.columns.names and
             'LC_INIT_ERR' in hdu.columns.names and
-            'TUNIT1' in hdu.header)
+            'TUNIT1' in hdu.header):
+        return True
+    # Generic lightkurve FITS format
+    if 'FLUX' in hdu.columns.names:
+        return True
+    return False
 
 
 def hdulist_to_lightcurve(pri_header, hdu):
-    data = Table(hdu.data)
-    # don't load some columns with names that may
-    # conflict with components generated later by lcviz
-    for col in ('PHASE', 'CADENCENO'):
-        if col in data.columns:
-            data.remove_column(col)
-    # Remove rows that have NaN data
-    data = data[~np.isnan(data['LC_INIT'])]
-    time_offset = int(hdu.header['TUNIT1'].split('- ')[1].split(',')[0])
-    data['TIME'] += time_offset
-    lc = LightCurve(data=data,
-                    time=data['TIME'],
-                    flux=data['LC_INIT'],
-                    flux_err=data['LC_INIT_ERR'])
-    lc.meta = dict(pri_header)
-    lc.meta = lc.meta | dict(hdu.header)
-    lc.meta['MISSION'] = 'TESS DVT'
-    lc.meta['FLUX_ORIGIN'] = "LC_INIT"
-    lc.meta['EXTNAME'] = hdu.header['EXTNAME']
+    if 'LC_INIT' in hdu.columns.names:
+        # TESS DVT format
+        data = Table(hdu.data)
+        # don't load some columns with names that may
+        # conflict with components generated later by lcviz
+        for col in ('PHASE', 'CADENCENO'):
+            if col in data.columns:
+                data.remove_column(col)
+        # Remove rows that have NaN data
+        data = data[~np.isnan(data['LC_INIT'])]
+        time_offset = int(hdu.header['TUNIT1'].split('- ')[1].split(',')[0])
+        data['TIME'] += time_offset
+        lc = LightCurve(data=data,
+                        time=data['TIME'],
+                        flux=data['LC_INIT'],
+                        flux_err=data['LC_INIT_ERR'])
+        lc.meta = dict(pri_header)
+        lc.meta = lc.meta | dict(hdu.header)
+        lc.meta['MISSION'] = 'TESS DVT'
+        lc.meta['FLUX_ORIGIN'] = "LC_INIT"
+        lc.meta['EXTNAME'] = hdu.header['EXTNAME']
+    else:
+        # Generic lightkurve FITS format (TIME + FLUX columns)
+        data = Table(hdu.data)
+        for col in ('PHASE', 'CADENCENO'):
+            if col in data.columns:
+                data.remove_column(col)
+        flux_err = data['FLUX_ERR'] if 'FLUX_ERR' in data.columns else None
+        lc = LightCurve(data=data,
+                        time=data['TIME'],
+                        flux=data['FLUX'],
+                        flux_err=flux_err)
+        lc.meta = dict(pri_header)
+        lc.meta = lc.meta | dict(hdu.header)
 
     return lc
 
@@ -93,6 +116,19 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         self.input_hdulist = isinstance(self.input, fits.HDUList)
         if self.input_hdulist:
+            # Build ext_options as a list of dicts (required by SelectFileExtensionComponent)
+            ext_options = [{'label': f"{i}: [{hdu.name},{getattr(hdu, 'ver', 1)}]",
+                            'name': hdu.name,
+                            'ver': getattr(hdu, 'ver', 1),
+                            'name_ver': f"{hdu.name},{getattr(hdu, 'ver', 1)}",
+                            'index': i,
+                            'data_hash': None,
+                            'obj': hdu} for i, hdu in enumerate(self.input)]
+
+            def _hdu_filter(item):
+                hdu = item.get('obj')
+                return hdu_is_valid(hdu)
+
             # TODO: allow multiselect and select_all by default,
             # update __call__ logic below to loop and add each independently including ephemerides,
             # modify default data_label logic to inject data_label within loop (and inform user)
@@ -100,8 +136,8 @@ class LightCurveImporter(BaseImporterToDataCollection):
                                                           items='extension_items',
                                                           selected='extension_selected',
                                                           multiselect='extension_multiselect',
-                                                          manual_options=self.input,
-                                                          filters=[hdu_is_valid])
+                                                          manual_options=ext_options,
+                                                          filters=[_hdu_filter])
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
@@ -109,6 +145,16 @@ class LightCurveImporter(BaseImporterToDataCollection):
                 self.data_label_default = self.input.meta.get('OBJECT', 'Light curve')
             else:
                 self.data_label_default = f"{self.input.meta.get('OBJECT', 'Light curve')} [Q{self.input.meta.get('QUARTER')}]"  # noqa
+
+    def reset_and_check_existing_data_in_dc(self, change={}):
+        # jdaviz 5.0.2's create_data_hash cannot handle a list of LightCurves
+        # (returned by self.output in multiselect HDUList mode), so pre-set
+        # empty hashes to skip duplicate-data detection rather than crash.
+        if not hasattr(self, 'data_hashes'):
+            self.data_hashes = []
+        if not hasattr(self, 'hash_map_to_label'):
+            self.hash_map_to_label = {}
+        super().reset_and_check_existing_data_in_dc(change=change)
 
     @property
     def user_api(self):
@@ -119,12 +165,15 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
     @property
     def is_valid(self):
-        if self.app.config not in ('deconfigged', 'lcviz'):
-            # NOTE: temporary during deconfig process
+        if self._app.config not in ('lcviz', 'deconfigged'):
             return False
-        return (isinstance(self.input, LightCurve) or
-                (isinstance(self.input, fits.HDUList)
-                 and len([hdu for hdu in self.input if hdu_is_valid(hdu)])))  # noqa
+        if isinstance(self.input, LightCurve):
+            return True
+        if isinstance(self.input, fits.HDUList):
+            for hdu in self.input:
+                if hdu_is_valid(hdu):
+                    return True
+        return False
 
     @observe('extension_selected')
     def _extension_selected_changed(self, event={}):
@@ -134,10 +183,11 @@ class LightCurveImporter(BaseImporterToDataCollection):
         self._clear_cache('output')
 
         if self.extension_multiselect:
-            self.data_label_default = self.input[0].header.get('OBJECT', 'Light curve')
+            self.data_label_default = self.input[0].header.get('OBJECT') or 'Light curve'
             self.create_ephemeris_available = any([has_ephem(lc) for lc in self.output])
         else:
-            self.data_label_default = f"{self.input[0].header.get('OBJECT', 'Light curve')} [{self.extension.selected_item['name']}]"  # noqa
+            obj_name = self.input[0].header.get('OBJECT') or 'Light curve'
+            self.data_label_default = f"{obj_name} [{self.extension.selected_item['name']}]"  # noqa
             self.create_ephemeris_available = has_ephem(self.output)
 
     @staticmethod
@@ -152,18 +202,20 @@ class LightCurveImporter(BaseImporterToDataCollection):
             # HDUList case
             pri_header = self.input[0].header
             if self.extension_multiselect:
-                lc = [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_hdu]
+                lc = [hdulist_to_lightcurve(pri_header, hdu) for hdu in self.extension.selected_obj]
             else:
-                lc = hdulist_to_lightcurve(pri_header, self.extension.selected_hdu)
+                lc = hdulist_to_lightcurve(pri_header, self.extension.selected_obj)
 
-        flux_origin = lc.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
-        if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(lc, 'columns', [])):  # noqa
-            # then make a copy of this column so it won't be lost when changing with the flux_column
-            # plugin
-            lc['flux:orig'] = lc['flux']
-            if 'flux_err' in lc.columns:
-                lc['flux:orig_err'] = lc['flux_err']
-            lc.meta['FLUX_ORIGIN'] = 'flux:orig'
+        lcs = lc if isinstance(lc, list) else [lc]
+        for single_lc in lcs:
+            flux_origin = single_lc.meta.get('FLUX_ORIGIN', None)  # i.e. PDCSAP or SAP
+            if flux_origin == 'flux' or (flux_origin is None and 'flux' in getattr(single_lc, 'columns', [])):  # noqa
+                # then make a copy of this column so it won't be lost when changing with the
+                # flux_column plugin
+                single_lc['flux:orig'] = single_lc['flux']
+                if 'flux_err' in single_lc.columns:
+                    single_lc['flux:orig_err'] = single_lc['flux_err']
+                single_lc.meta['FLUX_ORIGIN'] = 'flux:orig'
 
         return lc
 
@@ -177,7 +229,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
         if self.input_hdulist and self.extension_multiselect:
             data_label = self.data_label_value
             lcs = self.output
-            with self.app._jdaviz_helper.batch_load():
+            with self._app._jdaviz_helper.batch_load():
                 for lc, ext in zip(lcs, self.extension.selected_name):
                     self.add_to_data_collection(lc, f"{data_label} [{ext}]")
         else:
@@ -185,12 +237,12 @@ class LightCurveImporter(BaseImporterToDataCollection):
             lcs = [self.output]
 
         if self.create_ephemeris_available and self.create_ephemeris \
-                and 'Ephemeris' in self.app._jdaviz_helper.plugins:
+                and 'Ephemeris' in self._app._jdaviz_helper.plugins:
             for lc, ext in zip(lcs, self.extension.selected_name):
                 if not has_ephem(lc):
                     continue
-                ephem = self.app._jdaviz_helper.plugins['Ephemeris']
-                ephem_component = self.app.return_unique_name(ext, ephem.component.choices)
+                ephem = self._app._jdaviz_helper.plugins['Ephemeris']
+                ephem_component = self._app.return_unique_name(ext, ephem.component.choices)
 
                 time_offset = int(lc.meta.get('TUNIT1').split('- ')[1].split(',')[0])
                 period = lc.meta.get('TPERIOD', 1.0)

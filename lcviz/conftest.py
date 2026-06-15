@@ -1,14 +1,24 @@
+import warnings
+
 import numpy as np
 import pytest
 from astropy import units as u
 from lightkurve import LightCurve
 
-from lcviz import __version__, LCviz
-
 
 @pytest.fixture
 def helper():
-    return LCviz()
+    from lcviz import LCviz
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="LCviz is deprecated",
+                                category=DeprecationWarning)
+        return LCviz()
+
+
+@pytest.fixture
+def deconfigged_helper():
+    import jdaviz
+    return jdaviz.new_app()
 
 
 @pytest.fixture
@@ -58,6 +68,7 @@ except ImportError:
 
 
 def pytest_configure(config):
+    from lcviz import __version__
     PYTEST_HEADER_MODULES['astropy'] = 'astropy'
     PYTEST_HEADER_MODULES['glue-core'] = 'glue'
     PYTEST_HEADER_MODULES['glue-astronomy'] = 'glue_astronomy'

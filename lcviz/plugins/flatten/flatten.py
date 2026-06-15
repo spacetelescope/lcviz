@@ -107,7 +107,7 @@ class Flatten(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin):
         trend_marks = {}
         flattened_marks = {}
 
-        for viewer in self.app._viewer_store.values():
+        for viewer in self._app._viewer_store.values():
             needs_trend = isinstance(viewer, TimeScatterView) and not isinstance(viewer, PhaseScatterView)  # noqa
             needs_flattened = isinstance(viewer, (TimeScatterView, PhaseScatterView))
             for mark in viewer.figure.marks:

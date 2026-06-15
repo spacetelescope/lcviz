@@ -50,12 +50,15 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         self.session.hub.subscribe(self, EphemerisChangedMessage,
                                    handler=self._on_ephemeris_changed)
 
+        # Remove the is_slice_selection_viewer filter from parent class since
+        # TimeScatterView/PhaseScatterView use WithSliceIndicator not WithSliceSelection
+        self.viewer.remove_filter('is_slice_selection_viewer')
         self.viewer.add_filter(lambda viewer: isinstance(viewer, (TimeScatterView, PhaseScatterView, CubeView)))  # noqa
         self._set_relevant()
 
     @observe('vdocs')
     def _update_docs_link(self, *args):
-        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins.html#time-selector"
+        self.docs_link = f"https://lcviz.readthedocs.io/en/{self.vdocs}/plugins/time_selector.html"
 
     @property
     def slice_display_unit_name(self):
@@ -65,6 +68,34 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
     @property
     def valid_slice_att_names(self):
         return ["time", "dt"]
+
+    def _initialize_location(self, *args):
+        # override to handle scatter viewers that don't have x_att_pixel
+        # (introduced in jdaviz main for profile viewers)
+        if not self.value_unit:
+            for viewer in self.slice_indicator_viewers:
+                if getattr(viewer.state, 'x_display_unit', None) is not None:
+                    self.value_unit = viewer.state.x_display_unit
+                    break
+
+        if self._indicator_initialized:
+            return
+
+        self._clear_cache()
+        for viewer in self.slice_indicator_viewers:
+            x_att = str(viewer.state.x_att) if viewer.state.x_att is not None else ''
+            x_att_pixel = getattr(viewer.state, 'x_att_pixel', None)
+            x_att_pixel_str = str(x_att_pixel) if x_att_pixel is not None else ''
+            if (x_att not in self.valid_slice_att_names and
+                    x_att_pixel_str not in self.valid_slice_att_names):
+                continue
+            # NOTE: unlike parent class, we don't check for empty display units
+            # because lcviz viewers work with native units
+            slice_values = viewer.slice_values
+            if len(slice_values):
+                self.value = float(slice_values[int(len(slice_values)/2)])
+                self._indicator_initialized = True
+                return
 
     @property
     def user_api(self):
@@ -76,13 +107,37 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         return api
 
     def _on_select_slice_message(self, msg):
-        viewer = msg.sender.viewer
-        if isinstance(viewer, PhaseScatterView):
-            prev_phase = viewer.times_to_phases(self.value)
+        # If the message originated from a tool in a non-lcviz viewer (e.g. the spectral
+        # slice tool in a CubevizProfileView), ignore it so that it does not affect the
+        # time indicator.  Messages sent from the programmatic API (sender has no .viewer)
+        # are always accepted.
+        sender_viewer = getattr(msg.sender, 'viewer', None)
+        if sender_viewer is not None and type(sender_viewer) not in (
+                TimeScatterView, PhaseScatterView, CubeView):
+            return
+        if type(sender_viewer) is PhaseScatterView:
+            prev_phase = sender_viewer.times_to_phases(self.value)
             new_phase = msg.value
-            self.value = self.value + (new_phase - prev_phase) * viewer.ephemeris.get('period', 1.0)
+            self.value = self.value + (new_phase - prev_phase) * sender_viewer.ephemeris.get('period', 1.0)  # noqa
         else:
             super()._on_select_slice_message(msg)
+
+    @property
+    def slice_selection_viewers(self):
+        # Restrict to lcviz CubeView only; avoids picking up CubevizImageView instances
+        # if spectral cubes are also loaded in a deconfigged app.
+        return [v for v in self._app._viewer_store.values() if isinstance(v, CubeView)]
+
+    @property
+    def slice_indicator_viewers(self):
+        # Restrict to lcviz scatter viewers; avoids picking up CubevizProfileView instances
+        # if spectral cubes are also loaded in a deconfigged app.
+        return [v for v in self._app._viewer_store.values()
+                if isinstance(v, (TimeScatterView, PhaseScatterView))]
+
+    def _check_if_cube_viewer_exists(self, *args):
+        # self.viewer.choices includes scatter viewers (to have slice indicator)
+        self.cube_viewer_exists = len(self.slice_selection_viewers) > 0
 
     def _on_ephemeris_changed(self, msg):
         for viewer in self.slice_indicator_viewers:

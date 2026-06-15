@@ -1,30 +1,35 @@
 import pytest
+from lightkurve import search_targetpixelfile
 
 
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
-    # lcviz.show()
+    jd.load(lc, format='Light Curve')
+    # jd.show()
 
-    ephem = lcviz.plugins['Ephemeris']
+    ephem = jd.plugins['Ephemeris']
     ephem.period = 4.88780258
     ephem.t0 = 2.43
     ephem.rename_component('default', 'my component name')
 
 
-def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_ephemeris(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
-    assert len(helper.app.get_viewer_ids()) == 1
+    assert len(helper._app.get_viewer_ids()) == 1
     assert not ephem._obj.phase_viewer_exists
 
     # setting any value in the ephemeris should create a new viewer
     ephem.period = 3.14
-    assert len(helper.app.get_viewer_ids()) == 2
+    assert len(helper._app.get_viewer_ids()) == 2
     assert ephem._obj.phase_viewer_exists
-    assert 'flux-vs-phase:default' in helper.app.get_viewer_ids()
+    assert 'flux-vs-phase:default' in helper._app.get_viewer_ids()
 
     ephem.t0 = 5
     ephem._obj.vue_period_double()
@@ -41,7 +46,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem.add_component('custom component')
     assert not ephem._obj.phase_viewer_exists
     ephem.create_phase_viewer()
-    assert len(helper.app.get_viewer_ids()) == 3
+    assert len(helper._app.get_viewer_ids()) == 3
     assert len(ephem.ephemerides) == 2
     assert 'custom component' in ephem.ephemerides
 
@@ -55,7 +60,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem.rename_component('custom component', 'renamed custom component')
     assert len(ephem.ephemerides) == 2
     assert 'renamed custom component' in ephem.ephemerides
-    assert len(helper.app.get_viewer_ids()) == 3
+    assert len(helper._app.get_viewer_ids()) == 3
 
     assert ephem.component == 'renamed custom component'
     assert ephem.period == 3.14
@@ -67,7 +72,7 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
 
     ephem.remove_component('renamed custom component')
     assert len(ephem.ephemerides) == 1
-    assert len(helper.app.get_viewer_ids()) == 2
+    assert len(helper._app.get_viewer_ids()) == 2
     assert ephem.component == 'default'
     assert ephem.period == 2
 
@@ -81,8 +86,10 @@ def test_plugin_ephemeris(helper, light_curve_like_kepler_quarter):
     ephem.dpdt = 0.005
 
 
-def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_cloned_phase_viewer(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     assert len(ephem._obj._get_phase_viewers()) == 0
@@ -93,17 +100,15 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(helper.viewers) == 3
     assert pv1._obj.glue_viewer.reference_id == 'flux-vs-phase:default'
     assert pv1._obj.glue_viewer._ephemeris_component == 'default'
-    # NOTE: this should be updated once upstream changes to return the JdavizViewerWindow user_api
-    assert pv2._obj.reference_id == 'flux-vs-phase:default[1]'
-    assert pv2._obj._ephemeris_component == 'default'
+    assert pv2._obj.glue_viewer.reference_id == 'flux-vs-phase:default[1]'
+    assert pv2._obj.glue_viewer._ephemeris_component == 'default'
 
     # renaming ephemeris should update both labels
     ephem.rename_component('default', 'renamed')
     assert pv1._obj.glue_viewer.reference_id == 'flux-vs-phase:renamed'
     assert pv1._obj.glue_viewer._ephemeris_component == 'renamed'
-    # NOTE: this should be updated once upstream changes to return the JdavizViewerWindow user_api
-    assert pv2._obj.reference_id == 'flux-vs-phase:renamed[1]'
-    assert pv2._obj._ephemeris_component == 'renamed'
+    assert pv2._obj.glue_viewer.reference_id == 'flux-vs-phase:renamed[1]'
+    assert pv2._obj.glue_viewer._ephemeris_component == 'renamed'
     assert len(ephem._obj._get_phase_viewers()) == 2
 
     ephem.remove_component('renamed')
@@ -111,7 +116,7 @@ def test_cloned_phase_viewer(helper, light_curve_like_kepler_quarter):
 
 
 def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
     vc = helper._tray_tools['g-viewer-creator']
 
@@ -137,8 +142,42 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(vc.viewer_types) == 3
 
 
-def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+@pytest.mark.remote_data
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_ephemeris_adopt_period_with_tpf(helper_name, request):
+    """Regression test: adopt_period_at_max_power must not crash when a TPF is
+    in the data collection (TPF data has a 'dt' component but no 'phase:' component,
+    so the phase viewer must filter to light-curve data only)."""
+    helper = request.getfixturevalue(helper_name)
+    tpf = search_targetpixelfile("KIC 001429092",
+                                 mission="Kepler",
+                                 cadence="long",
+                                 quarter=10).download()
+    ldr = helper.loaders['object']
+    ldr.object = tpf
+    ldr.importer.auto_extract = True
+    ldr.load()
+
+    # data collection should have TPF + extracted LC
+    assert len(helper._app.data_collection) == 2
+
+    ephem = helper.plugins['Ephemeris']
+    # this previously raised ValueError: 'phase:default' is not in list
+    ephem.adopt_period_at_max_power()
+    assert ephem._obj.phase_viewer_exists
+
+    # viewer creator should be able to create an additional phase viewer
+    # even though 'flux-vs-phase:default' already exists; the label must
+    # auto-increment rather than raise a "label already in use" error.
+    vc = helper.new_viewers['Flux vs Phase']
+    _ = vc()
+    assert len(ephem._obj._get_phase_viewers()) == 2
+
+
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_ephemeris_queries(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()
@@ -149,11 +188,13 @@ def test_ephemeris_queries(helper, light_curve_like_kepler_quarter):
     ephem.create_ephemeris_from_query()
 
 
-def test_ephemeris_query_no_name(helper, light_curve_like_kepler_quarter):
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_ephemeris_query_no_name(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
     # test that the query successfully falls back on the RA/Dec:
     light_curve_like_kepler_quarter.meta['OBJECT'] = ''
 
-    helper.load(light_curve_like_kepler_quarter)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
     ephem = helper.plugins['Ephemeris']
 
     ephem.query_for_ephemeris()

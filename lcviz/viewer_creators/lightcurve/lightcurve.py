@@ -50,7 +50,11 @@ class FluxVsPhaseViewerCreator(BaseViewerCreator, EphemerisSelectMixin):
 
     @observe('ephemeris_selected')
     def _ephemeris_selected_changed(self, change):
-        self.viewer_label_default = f'flux-vs-phase:{self.ephemeris.selected}'
+        base_label = f'flux-vs-phase:{self.ephemeris.selected}'
+        if hasattr(self, 'viewer') and base_label in self.viewer.choices:
+            self.viewer_label_default = self._app.return_unique_name(base_label, 'viewer')
+        else:
+            self.viewer_label_default = base_label
 
     def _set_is_relevant(self):
         if not len(self.dataset_items) or not len(self.ephemeris_items):
@@ -59,7 +63,5 @@ class FluxVsPhaseViewerCreator(BaseViewerCreator, EphemerisSelectMixin):
             self.is_relevant = True
 
     def __call__(self):
-        nv = super().__call__()
-        ephem_plg = self.app._jdaviz_helper.plugins['Ephemeris']
-        ephem_plg._obj._set_viewer_to_ephem_component(nv._obj, self.ephemeris.selected)
-        return nv
+        ephem_plg = self._app._jdaviz_helper.plugins['Ephemeris']
+        return ephem_plg.create_phase_viewer(self.ephemeris.selected)

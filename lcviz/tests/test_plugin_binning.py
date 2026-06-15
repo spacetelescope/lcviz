@@ -7,21 +7,25 @@ def _get_marks_from_viewer(viewer, cls=(LivePreviewBinning)):
     return [m for m in viewer.figure.marks if isinstance(m, cls) and m.visible]
 
 
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
-    # lcviz.show()
+    jd.load(lc, format='Light Curve')
+    # jd.show()
 
-    binning = lcviz.plugins['Binning']
+    binning = jd.plugins['Binning']
     binning.n_bins = 150
     binned_lc = binning.bin(add_data=True)
     print(binned_lc)
 
 
-def test_plugin_binning(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer._obj.glue_viewer
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_binning(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
+    tv = helper.viewers['flux-vs-time']._obj.glue_viewer
 
     b = helper.plugins['Binning']
     b._obj.plugin_opened = True

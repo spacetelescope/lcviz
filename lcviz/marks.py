@@ -13,7 +13,20 @@ def _slice_indicator_get_slice_axis(self, data):
     return [] * u.dimensionless_unscaled
 
 
+def _slice_indicator_set_visibility(self):
+    # Override for lcviz: show indicator for 1D light curves, not just 3D cubes
+    for dc in self._viewer.jdaviz_app.data_collection:
+        # Show for 1D light curves (shape length 1) or 3D cubes
+        if len(dc.shape) in (1, 3):
+            self.visible = True
+            self.label.visible = self._show_value
+            return
+    self.visible = False
+    self.label.visible = False
+
+
 SliceIndicatorMarks._get_slice_axis = _slice_indicator_get_slice_axis
+SliceIndicatorMarks._set_visibility = _slice_indicator_set_visibility
 
 
 class WithoutPhaseSupport:

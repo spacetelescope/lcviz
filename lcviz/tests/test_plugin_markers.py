@@ -20,13 +20,15 @@ def _assert_dict_allclose(dict1, dict2):
             assert v == dict2.get(k)
 
 
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
-    # lcviz.show()
+    jd.load(lc, format='Light Curve')
+    # jd.show()
 
-    markers = lcviz.plugins['Markers']
+    markers = jd.plugins['Markers']
     markers.open_in_tray()
     # interactively mark by mousing over the viewer and pressing "M"
     table = markers.export_table()
@@ -34,9 +36,11 @@ def test_docs_snippets(helper, light_curve_like_kepler_quarter):
     markers.clear_table()
 
 
-def test_plugin_markers(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_markers(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
+    tv = helper.viewers['flux-vs-time']
 
     mp = helper.plugins['Markers']
     label_mouseover = mp._obj.coords_info
@@ -51,7 +55,7 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
                                          'Time 5.45833e+00 d',
                                          'Flux 9.67587e-01')
 
-    object_name = helper.app.data_collection[-1].meta['OBJECT']
+    object_name = helper._app.data_collection[-1].meta['OBJECT']
     _assert_dict_allclose(label_mouseover.as_dict(), {'data_label': f'{object_name} [Q10]',
                                                       'time': 5.4583335,
                                                       'time:unit': 'd',
@@ -128,8 +132,10 @@ def test_plugin_markers(helper, light_curve_like_kepler_quarter):
 
 
 @pytest.mark.remote_data
-def test_tpf_markers(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_tpf_markers(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
 
     # TODO: replace with test fixture
     from lightkurve import search_targetpixelfile

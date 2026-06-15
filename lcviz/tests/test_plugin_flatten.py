@@ -1,3 +1,5 @@
+import pytest
+
 import numpy as np
 from numpy.testing import assert_allclose
 
@@ -10,22 +12,26 @@ def _get_marks_from_viewer(viewer, cls=(LivePreviewTrend, LivePreviewFlattened),
             if include_not_visible or m.visible]
 
 
-def test_docs_snippets(helper, light_curve_like_kepler_quarter):
-    lcviz, lc = helper, light_curve_like_kepler_quarter
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_docs_snippets(helper_name, light_curve_like_kepler_quarter, request):
+    jd = request.getfixturevalue(helper_name)
+    lc = light_curve_like_kepler_quarter
 
-    lcviz.load(lc)
-    # lcviz.show()
+    jd.load(lc, format='Light Curve')
+    # jd.show()
 
-    flatten = lcviz.plugins['Flatten']
+    flatten = jd.plugins['Flatten']
     flatten.open_in_tray()
     flatten.polyorder = 4
     flattened_lc = flatten.flatten(add_data=True)
     print(flattened_lc)
 
 
-def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
-    tv = helper.default_time_viewer._obj.glue_viewer
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_plugin_flatten(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
+    tv = helper.viewers['flux-vs-time']._obj.glue_viewer
 
     ephem = helper.plugins['Ephemeris']
     pv = ephem.create_phase_viewer()._obj.glue_viewer
@@ -72,8 +78,10 @@ def test_plugin_flatten(helper, light_curve_like_kepler_quarter):
     assert len(_get_marks_from_viewer(pv)) == 0
 
 
-def test_unnormalize(helper, light_curve_like_kepler_quarter):
-    helper.load(light_curve_like_kepler_quarter)
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_unnormalize(helper_name, light_curve_like_kepler_quarter, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
 
     f = helper.plugins['Flatten']
 
