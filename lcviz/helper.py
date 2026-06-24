@@ -195,8 +195,8 @@ class LCviz(ConfigHelper):
 
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            "LCviz is deprecated and will be removed in a future version. "
-            "Please use jdaviz.open() or jdaviz.loaders instead.",
+            "The LCviz configuration class is deprecated and will be removed in a future release. "
+            "Please use jdaviz.show() instead.",
             DeprecationWarning,
             stacklevel=2
         )
