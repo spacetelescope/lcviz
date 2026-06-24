@@ -388,9 +388,32 @@
         }
 
         .grid-item-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .grid-item-links.two-column {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
+            gap: 8px 12px;
+        }
+
+        .grid-item-links.two-column .column-header {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-color);
+            margin-top: 4px;
+            margin-bottom: 8px;
+            grid-column: span 1;
+        }
+
+        .grid-item-links.two-column .column-content {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
+            grid-column: span 1;
         }
 
         .grid-item-link {
@@ -621,10 +644,25 @@
                     <h3>{{ item.title }}</h3>
                     {% if item.description %}<p class="grid-item-description">{{ item.description }}</p>{% endif %}
 
-                    <div class="grid-item-links">
+                    <div class="grid-item-links {% if item.two_column or (not item.column_headers) %}two-column{% endif %}">
+                        {% if item.two_column and item.column_headers %}
+                        <div class="column-header">{{ item.column_headers[0] }}</div>
+                        <div class="column-header">{{ item.column_headers[1] }}</div>
+                        <div class="column-content">
+                        {% for link in item.links[0] %}
+                        <a href="{{ pathto(link.href) }}" class="grid-item-link">{{ link.text }}</a>
+                        {% endfor %}
+                        </div>
+                        <div class="column-content">
+                        {% for link in item.links[1] %}
+                        <a href="{{ pathto(link.href) }}" class="grid-item-link">{{ link.text }}</a>
+                        {% endfor %}
+                        </div>
+                        {% else %}
                         {% for link in item.links %}
                         <a href="{{ pathto(link.href) }}" class="grid-item-link">{{ link.text }}</a>
                         {% endfor %}
+                        {% endif %}
 
                         {% if item.jdaviz_link %}
                         <a href="{{ item.jdaviz_link }}" class="extensions-button" target="_blank">More from Jdaviz</a>
