@@ -10,7 +10,8 @@ from lightkurve import LightCurve
 def helper():
     from lcviz import LCviz
     with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", message="LCviz is deprecated",
+        warnings.filterwarnings("ignore",
+                                message="The LCviz configuration class is deprecated",
                                 category=DeprecationWarning)
         return LCviz()
 

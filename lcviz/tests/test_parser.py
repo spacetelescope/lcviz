@@ -186,7 +186,8 @@ def test_lc_fits_not_valid_for_image_importer(light_curve_like_kepler_quarter, t
 def test_lcviz_deprecation_warning():
     """Test that instantiating LCviz directly raises a deprecation warning."""
     from lcviz import LCviz
-    with pytest.warns(DeprecationWarning, match="LCviz is deprecated"):
+    with pytest.warns(DeprecationWarning,
+                      match="The LCviz configuration class is deprecated"):
         LCviz()
 
 
