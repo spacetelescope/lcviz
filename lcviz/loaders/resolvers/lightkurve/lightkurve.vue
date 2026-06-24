@@ -54,7 +54,7 @@
             v-model="source"
             :label="api_hints_enabled ? 'ldr.source =' : 'Source/Coordinates'"
             :class="api_hints_enabled ? 'api-hint' : null"
-            hint="Enter a source name or coordinates in degrees to center your query on"
+            hint="Enter a source name or source coordinates in degrees"
             :disabled="viewer_selected !== 'Manual'"
             :rules="[() => !!source || 'This field is required']"
             persistent-hint>
@@ -81,7 +81,7 @@
         label="Coordinate Frame"
         api_hint="ldr.coordframe ="
         :api_hints_enabled="api_hints_enabled"
-        hint="Astronomical Coordinate Frame of the provided Coordinates"
+        hint="Astronomical coordinate frame for the query coordinate"
         :disabled="viewer_selected !== 'Manual'"
       ></plugin-select>
 
