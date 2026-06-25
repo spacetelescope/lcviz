@@ -13,10 +13,30 @@
 # serve to show the default.
 
 import datetime
+import importlib.metadata
 import json
 import os
 import sys
 from lcviz import __version__
+
+
+def _get_jdaviz_docs_base_url():
+    """Return the jdaviz docs URL matching the installed jdaviz version."""
+    try:
+        installed = importlib.metadata.version('jdaviz')
+    except importlib.metadata.PackageNotFoundError:
+        version_slug = 'latest'
+    else:
+        # Use latest docs for development builds, otherwise use the tagged release docs.
+        if any(token in installed for token in ('dev', 'a', 'b', 'rc')):
+            version_slug = 'latest'
+        else:
+            version_slug = installed if installed.startswith('v') else f'v{installed}'
+
+    return f'https://jdaviz.readthedocs.io/en/{version_slug}'
+
+
+JDAVIZ_DOCS_BASE_URL = _get_jdaviz_docs_base_url()
 
 try:
     from sphinx_astropy.conf.v1 import *  # noqa
@@ -29,7 +49,7 @@ except ImportError:
 
 # Configuration for intersphinx
 intersphinx_mapping = {
-    'jdaviz': ('https://jdaviz.readthedocs.io/en/latest/', None),
+    'jdaviz': (f'{JDAVIZ_DOCS_BASE_URL}/', None),
 #     'python': ('https://docs.python.org/3/',
 #                (None, 'http://data.astropy.org/intersphinx/python3.inv')),
 #     'numpy': ('https://numpy.org/doc/stable/',
@@ -443,7 +463,7 @@ grid_items_data = [
             scan_directory_for_links(docs_dir, 'loaders/sources'),
             scan_directory_for_links(docs_dir, 'loaders/formats'),
         ],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/loaders/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/loaders/index.html',
         'has_toggle': True,
     },
     {
@@ -456,7 +476,7 @@ grid_items_data = [
             {'text': 'Flux vs Time', 'href': 'viewers/flux_vs_time'},
             {'text': 'Flux vs Phase', 'href': 'viewers/flux_vs_phase'},
         ],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/viewers/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/viewers/index.html',
         'has_toggle': False,
     },
     {
@@ -465,7 +485,7 @@ grid_items_data = [
         'icon': 'mdi-tune-variant',
         'grid_id': 'grid-plugins',
         'links': scan_directory_for_links(docs_dir, 'plugins'),
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/plugins/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/plugins/index.html',
         'has_toggle': True,
     },
     {
@@ -474,7 +494,7 @@ grid_items_data = [
         'icon': 'mdi-tune-variant',
         'grid_id': 'grid-subsets',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/subsets/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/subsets/index.html',
         'has_toggle': False,
     },
     {
@@ -483,7 +503,7 @@ grid_items_data = [
         'icon': 'mdi-content-save',
         'grid_id': 'grid-export',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/export/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/export/index.html',
         'has_toggle': False,
     },
     {
@@ -492,7 +512,7 @@ grid_items_data = [
         'icon': 'mdi-tune-variant',
         'grid_id': 'grid-settings',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/settings/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/settings/index.html',
         'has_toggle': False,
     },
     {
@@ -501,7 +521,7 @@ grid_items_data = [
         'icon': 'mdi-tune-variant',
         'grid_id': 'grid-info',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/info/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/info/index.html',
         'has_toggle': False,
     },
     {
@@ -510,7 +530,7 @@ grid_items_data = [
         'icon': 'mdi-plus-box',
         'grid_id': 'grid-data-menu',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/data_menu/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/data_menu/index.html',
         'has_toggle': False,
     },
     {
@@ -519,7 +539,7 @@ grid_items_data = [
         'icon': 'mdi-plus-box',
         'grid_id': 'grid-mouseover',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/mouseover/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/mouseover/index.html',
         'has_toggle': False,
     },
     {
@@ -528,7 +548,7 @@ grid_items_data = [
         'icon': 'mdi-tune-variant',
         'grid_id': 'grid-userapi',
         'links': [],
-        'jdaviz_link': 'https://jdaviz.readthedocs.io/en/latest/userapi/index.html',
+        'jdaviz_link': f'{JDAVIZ_DOCS_BASE_URL}/userapi/index.html',
         'has_toggle': False,
     },
 ]
