@@ -1,15 +1,12 @@
-1.3.0 (unreleased)
+2.0.0 (06-25-2026)
 ------------------
 
 * Photometric Extraction plugin to extract light curves from TPF cubes. [#115]
 * Update jdaviz requirement to 5.0.  Importing lcviz now injects light curve plugins, viewers, and tools
-  into the generalized jdaviz rather than being an independent application. [#215]
+  into the generalized jdaviz rather than being an independent application [#215] and supports popping out
+  and showing viewers inline. [#210]
 * Adds a lightkurve loader source for querying and loading light curves from Kepler/K2/TESS. [#220]
 
-1.2.2 (unreleased)
-------------------
-
-* Update jdaviz requirement to 4.5, including support for popping out and showing viewers inline. [#210]
 
 1.2.1 (09-26-2025)
 ------------------
