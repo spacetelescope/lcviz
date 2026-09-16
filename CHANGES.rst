@@ -1,6 +1,9 @@
 2.1.0 (unreleased)
 ------------------
 
+* Update jdaviz requirement to 5.1 to include upstream improvements including: upgrade to vue3, 
+  focus mode. [#230]
+
 2.0.1 (unreleased)
 ------------------
 
