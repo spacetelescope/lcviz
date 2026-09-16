@@ -23,8 +23,6 @@ dependencies = [
     # TODO: update to jdaviz>=5.1 once jdaviz 5.1 is released
     "jdaviz @ git+https://github.com/spacetelescope/jdaviz.git@main",
     "lightkurve>=2.5.1",
-    # NOTE: glue-jupyter is also pinned by jdaviz.
-    "glue-jupyter>=0.22.2",
 ]
 dynamic = [
     "version",
