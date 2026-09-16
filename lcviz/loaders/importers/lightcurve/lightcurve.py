@@ -13,6 +13,7 @@ from jdaviz.core.registries import loader_importer_registry
 from jdaviz.core.loaders.importers import BaseImporterToDataCollection
 from jdaviz.core.template_mixin import SelectFileExtensionComponent
 from jdaviz.core.user_api import ImporterUserApi
+from jdaviz.utils import create_data_hash
 from lcviz.utils import _data_with_reftime
 
 
@@ -116,13 +117,16 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         self.input_hdulist = isinstance(self.input, fits.HDUList)
         if self.input_hdulist:
+            pri_header = self.input[0].header
             # Build ext_options as a list of dicts (required by SelectFileExtensionComponent)
             ext_options = [{'label': f"{i}: [{hdu.name},{getattr(hdu, 'ver', 1)}]",
                             'name': hdu.name,
                             'ver': getattr(hdu, 'ver', 1),
                             'name_ver': f"{hdu.name},{getattr(hdu, 'ver', 1)}",
                             'index': i,
-                            'data_hash': None,
+                            'data_hash': create_data_hash(
+                                hdulist_to_lightcurve(pri_header, hdu)
+                            ) if hdu_is_valid(hdu) else None,
                             'obj': hdu} for i, hdu in enumerate(self.input)]
 
             def _hdu_filter(item):
@@ -138,6 +142,9 @@ class LightCurveImporter(BaseImporterToDataCollection):
                                                           multiselect='extension_multiselect',
                                                           manual_options=ext_options,
                                                           filters=[_hdu_filter])
+            self.data_hashes = self.extension.data_hashes
+            self.hash_map_to_label = dict(zip(self.extension.data_hashes,
+                                              self.extension.labels))
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
