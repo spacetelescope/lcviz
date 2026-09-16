@@ -1,3 +1,5 @@
+.. title:: lcviz documentation
+
 .. _lcviz-index:
 
 .. lcvizlanding::
