@@ -115,4 +115,3 @@ class LightkurveResolver(BaseConeSearchResolver):
             rows.append(clean)
 
         return AstropyTable(rows=rows) if rows else AstropyTable(names=cols)
-
