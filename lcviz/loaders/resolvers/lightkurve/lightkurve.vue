@@ -4,7 +4,7 @@
     :popout_button="popout_button"
     :spinner="spinner"
     :parsed_input_is_query="parsed_input_is_query"
-    :treat_table_as_query.sync="treat_table_as_query"
+    v-model:treat_table_as_query="treat_table_as_query"
     :observation_table="observation_table"
     :observation_table_populated="observation_table_populated"
     :file_table="file_table"
@@ -12,9 +12,9 @@
     :file_cache="file_cache"
     :file_timeout="file_timeout"
     :target_items="target_items"
-    :target_selected.sync="target_selected"
+    v-model:target_selected="target_selected"
     :format_items="format_items"
-    :format_selected.sync="format_selected"
+    v-model:format_selected="format_selected"
     :importer_widget="importer_widget"
     :api_hints_enabled="api_hints_enabled"
     :valid_import_formats="valid_import_formats"
@@ -115,7 +115,7 @@
         <div :style="{ width: '40%' }">
           <plugin-select
             :items="radius_unit_items.map(i => i.label)"
-            :selected.sync="radius_unit_selected"
+            v-model:selected="radius_unit_selected"
             label="Unit"
             api_hint="ldr.radius_unit ="
             :api_hints_enabled="api_hints_enabled"
@@ -128,7 +128,7 @@
       <plugin-select
         :show_if_single_entry="true"
         :items="mission_items.map(i => i.label)"
-        :selected.sync="mission_selected"
+        v-model:selected="mission_selected"
         label="Mission"
         :search="true"
         api_hint="ldr.mission ="
@@ -139,7 +139,7 @@
       <plugin-select
         :show_if_single_entry="true"
         :items="data_type_items.map(i => i.label)"
-        :selected.sync="data_type_selected"
+        v-model:selected="data_type_selected"
         label="Data Type"
         :search="true"
         api_hint="ldr.data_type ="

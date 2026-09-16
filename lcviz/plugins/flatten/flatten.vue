@@ -2,24 +2,24 @@
   <j-tray-plugin
     :config="config"
     plugin_key="Flatten"
-    :api_hints_enabled.sync="api_hints_enabled"
+    v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Flatten input light curve to remove long-term trends.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flatten'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
-    :keep_active.sync="keep_active"
+    v-model:keep_active="keep_active"
     :popout_button="popout_button">
 
     <v-row>
       <v-expansion-panels popout>
         <v-expansion-panel>
-          <v-expansion-panel-header v-slot="{ open }">
+          <v-expansion-panel-title>
             <span style="padding: 6px">Settings</span>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text class="plugin-expansion-panel-content">
             <v-row>
               <plugin-switch
-                :value.sync="show_live_preview"
+                v-model:value="show_live_preview"
                 api_hint="plg.show_live_preview ="
                 :api_hints_enabled="api_hints_enabled"
                 label="Show flattened preview"
@@ -32,7 +32,7 @@
             </v-row>
             <v-row>
               <plugin-switch
-                :value.sync="show_trend_preview"
+                v-model:value="show_trend_preview"
                 api_hint="plg.show_trend_preview ="
                 :api_hints_enabled="api_hints_enabled"
                 label="Show trend preview"
@@ -40,14 +40,14 @@
                 persistent-hint
               />
             </v-row>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
     </v-row>
 
     <plugin-dataset-select
       :items="dataset_items"
-      :selected.sync="dataset_selected"
+      v-model:selected="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
       api_hint="plg.dataset ="
@@ -133,7 +133,7 @@
 
     <v-row>
       <plugin-switch
-        :value.sync="unnormalize"
+        v-model:value="unnormalize"
         label="Un-normalize"
         api_hint="plg.unnormalize ="
         :api_hints_enabled="api_hints_enabled"
@@ -147,9 +147,9 @@
     </v-row>
 
     <plugin-auto-label
-      :value.sync="flux_label_label"
+      v-model:value="flux_label_label"
       :default="flux_label_default"
-      :auto.sync="flux_label_auto"
+      v-model:auto="flux_label_auto"
       :invalid_msg="flux_label_invalid_msg"
       hint="Label for flux column."
       api_hint="plg.flux_label ="
@@ -157,7 +157,7 @@
     ></plugin-auto-label>
 
     <plugin-previews-temp-disabled
-      :previews_temp_disabled.sync="previews_temp_disabled"
+      v-model:previews_temp_disabled="previews_temp_disabled"
       :previews_last_time="previews_last_time"
       :show_live_preview="show_live_preview || show_trend_preview"
       @disable_previews="() => {show_live_preview=false; show_trend_preview=false}"
@@ -181,7 +181,7 @@
     </v-row>
 
     <v-row v-if="flatten_err">
-      <span class="v-messages v-messages__message text--secondary">
+      <span class="v-messages v-messages__message text-medium-emphasis">
         <b style="color: red !important">ERROR:</b> {{flatten_err}}
       </span>
     </v-row>

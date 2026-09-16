@@ -4,16 +4,16 @@
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#photometric-extraction'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
-    :keep_active.sync="keep_active"
+    v-model:keep_active="keep_active"
     :popout_button="popout_button">
 
     <v-row>
       <v-expansion-panels popout>
         <v-expansion-panel>
-          <v-expansion-panel-header v-slot="{ open }">
+          <v-expansion-panel-title>
             <span style="padding: 6px">Settings</span>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text class="plugin-expansion-panel-content">
             <v-row>
               <v-switch
                 v-model="show_live_preview"
@@ -22,28 +22,28 @@
                 persistent-hint
               ></v-switch>
             </v-row>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
     </v-row>
 
     <plugin-dataset-select
       :items="dataset_items"
-      :selected.sync="dataset_selected"
+      v-model:selected="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
       hint="Select the TPF as input."
     />
 
     <plugin-add-results
-      :label.sync="results_label"
+      v-model:label="results_label"
       :label_default="results_label_default"
-      :label_auto.sync="results_label_auto"
+      v-model:label_auto="results_label_auto"
       :label_invalid_msg="results_label_invalid_msg"
       :label_overwrite="results_label_overwrite"
       label_hint="Label for the extracted light curve."
       :add_to_viewer_items="add_to_viewer_items"
-      :add_to_viewer_selected.sync="add_to_viewer_selected"
+      v-model:add_to_viewer_selected="add_to_viewer_selected"
       action_label="Extract"
       action_tooltip="Extract photometry"
       :action_disabled="!apply_enabled"
