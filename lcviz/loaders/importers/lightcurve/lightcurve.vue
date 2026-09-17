@@ -4,6 +4,8 @@
       <j-tooltip tooltipcontent='Toggle multiselect for extension.'>
         <v-btn
           icon
+          density="compact"
+          variant="text"
           style="opacity: 0.7"
           @click="extension_multiselect = !extension_multiselect"
         >
@@ -14,7 +16,7 @@
     <plugin-select
       v-if="input_hdulist"
       :items="extension_items.map(i => i.label)"
-      :selected.sync="extension_selected"
+      v-model:selected="extension_selected"
       :multiselect="extension_multiselect"
       :show_if_single_entry="true"
       label="Extension"
@@ -23,9 +25,9 @@
       hint="Extension to use from the FITS HDUList."
     />
     <plugin-auto-label
-      :value.sync="data_label_value"
+      v-model:value="data_label_value"
       :default="data_label_default"
-      :auto.sync="data_label_auto"
+      v-model:auto="data_label_auto"
       :invalid_msg="data_label_invalid_msg"
       :label="extension_multiselect ? 'Base Data Label' : 'Data Label'"
       api_hint="ldr.importer.data_label ="
@@ -35,12 +37,12 @@
 
     <plugin-viewer-create-new
       :items="viewer_items"
-      :selected.sync="viewer_selected"
+      v-model:selected="viewer_selected"
       :create_new_items="viewer_create_new_items"
-      :create_new_selected.sync="viewer_create_new_selected"
-      :new_label_value.sync="viewer_label_value"
+      v-model:create_new_selected="viewer_create_new_selected"
+      v-model:new_label_value="viewer_label_value"
       :new_label_default="viewer_label_default"
-      :new_label_auto.sync="viewer_label_auto"
+      v-model:new_label_auto="viewer_label_auto"
       :new_label_invalid_msg="viewer_label_invalid_msg"
       :multiselect="viewer_multiselect"
       :show_multiselect_toggle="false"
@@ -53,7 +55,7 @@
 
     <plugin-switch
       v-if="create_ephemeris_available"
-      :value.sync="create_ephemeris"
+      v-model:value="create_ephemeris"
       :label="extension_multiselect && extension_selected.length > 1 ? 'Create Ephemerides': 'Create Ephemeris'"
       api_hint="ldr.importer.create_ephemeris = "
       :api_hints_enabled="api_hints_enabled"

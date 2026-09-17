@@ -11,15 +11,11 @@ __all__ = ['LightkurveParser']
 @loader_parser_registry('lightkurve.read')
 class LightkurveParser(BaseParser):
 
-    @property
-    def is_valid(self):
+    def _check_is_valid(self):
         if self._app.config not in ('lcviz', 'deconfigged'):
-            return False
-        try:
-            self.output
-        except Exception:
-            return False
-        return True
+            return f'lightkurve.read format is not supported in {self._app.config}.'
+        self.output
+        return ''
 
     @cached_property
     def output(self):

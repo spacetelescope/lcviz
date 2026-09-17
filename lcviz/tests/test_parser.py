@@ -178,6 +178,7 @@ def test_lc_fits_not_valid_for_image_importer(light_curve_like_kepler_quarter, t
 
     # Light Curve should be a valid format
     assert 'Light Curve' in format_choices
+    assert all(data_hash is not None for data_hash in ldr.importer._obj.data_hashes)
 
     # Image should NOT be a valid format for light curve FITS files
     assert 'Image' not in format_choices
