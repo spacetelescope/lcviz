@@ -169,10 +169,7 @@ def test_ephemeris_adopt_period_with_tpf(helper_name, request):
     # viewer creator should be able to create an additional phase viewer
     # even though 'flux-vs-phase:default' already exists; the label must
     # auto-increment rather than raise a "label already in use" error.
-    if helper_name == 'deconfigged_helper':
-        helper.new_viewers['Flux vs Phase']()
-    else:
-        helper._tray_tools['g-viewer-creator'].vue_create_viewer('flux-vs-phase:default')
+    helper.new_viewers['Flux vs Phase']()
     assert len(ephem._obj._get_phase_viewers()) == 2
 
 
