@@ -15,7 +15,7 @@ from jdaviz.configs.default.plugins.viewers import JdavizViewerWindow
 from jdaviz.core.helpers import ConfigHelper
 
 from lcviz import __version__
-from lcviz.viewers import TimeScatterView
+from lcviz.viewers import TimeScatterView, PhaseScatterView
 
 __all__ = ['LCviz']
 
@@ -140,7 +140,12 @@ def _apply_lcviz_patches(jdaviz_application):
 
     def _patched_get_display_unit(*args, **kwargs):
         axis = args[0] if args else kwargs.get('axis', '')
-        if axis in ('time', 'flux'):
+        # only divert to lcviz's lookup for the axes of an actual time/phase viewer,
+        # otherwise 'flux' and 'time' can collide with unrelated attribute names
+        # like image viewer component labels
+        if axis in ('time', 'flux') and any(
+                isinstance(v, (TimeScatterView, PhaseScatterView))
+                for v in jdaviz_application._viewer_store.values()):
             return _get_display_unit(jdaviz_application, *args, **kwargs)
         return _original_get_display_unit(jdaviz_application, *args, **kwargs)
 
