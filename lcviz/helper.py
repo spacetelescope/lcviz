@@ -15,7 +15,7 @@ from jdaviz.configs.default.plugins.viewers import JdavizViewerWindow
 from jdaviz.core.helpers import ConfigHelper
 
 from lcviz import __version__
-from lcviz.viewers import TimeScatterView
+from lcviz.viewers import TimeScatterView, PhaseScatterView
 
 __all__ = ['LCviz']
 
@@ -120,7 +120,7 @@ def _apply_lcviz_patches(jdaviz_application):
     if getattr(jdaviz_application, '_lcviz_patched', False):
         return
 
-    from lcviz.utils import TimeCoordinates
+    from lcviz.utils import PaddedTimeWCS, TimeCoordinates
 
     _original_get_range_subset_bounds = type(jdaviz_application)._get_range_subset_bounds
     _original_get_display_unit = type(jdaviz_application)._get_display_unit
@@ -140,7 +140,17 @@ def _apply_lcviz_patches(jdaviz_application):
 
     def _patched_get_display_unit(*args, **kwargs):
         axis = args[0] if args else kwargs.get('axis', '')
-        if axis in ('time', 'flux'):
+        # only divert to lcviz's lookup if lcviz (light curve/TPF) data/viewers are present,
+        # otherwise 'flux' and 'time' can collide with unrelated attribute names
+        # like image viewer component labels. Data-collection is checked in addition to
+        # viewers since this can be called before any viewer exists.
+        has_lcviz_data = any(
+            isinstance(data.coords, (TimeCoordinates, PaddedTimeWCS))
+            for data in jdaviz_application.data_collection)
+        has_lcviz_viewer = any(
+            isinstance(v, (TimeScatterView, PhaseScatterView))
+            for v in jdaviz_application._viewer_store.values())
+        if axis in ('time', 'flux') and (has_lcviz_data or has_lcviz_viewer):
             return _get_display_unit(jdaviz_application, *args, **kwargs)
         return _original_get_display_unit(jdaviz_application, *args, **kwargs)
 
