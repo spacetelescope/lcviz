@@ -13,9 +13,6 @@ all built-in jdaviz plugins.
 
    metadata_viewer
    flux_column
-   plot_options
-   subset_tools
-   markers
    time_selector
    photometric_extraction
    stitch
@@ -23,7 +20,6 @@ all built-in jdaviz plugins.
    frequency_analysis
    ephemeris
    binning
-   export
 
 .. grid:: 1
 
