@@ -83,11 +83,12 @@ class TPFImporter(BaseImporterToDataCollection):
         expose = ['auto_extract', 'ext_data_label']
         return ImporterUserApi(self, expose)
 
-    @property
-    def is_valid(self):
+    def _check_is_valid(self):
         if self._app.config not in ('lcviz', 'deconfigged'):
-            return False
-        return isinstance(self.input, (KeplerTargetPixelFile, TessTargetPixelFile))
+            return f'TPF importer is not supported in {self._app.config}.'
+        if not isinstance(self.input, (KeplerTargetPixelFile, TessTargetPixelFile)):
+            return 'Input must be a KeplerTargetPixelFile or TessTargetPixelFile.'
+        return ''
 
     @staticmethod
     def _get_supported_viewers():

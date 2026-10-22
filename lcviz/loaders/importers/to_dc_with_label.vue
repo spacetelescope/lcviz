@@ -1,9 +1,9 @@
 <template>
   <v-container>
     <plugin-auto-label
-      :value.sync="data_label_value"
+      v-model:value="data_label_value"
       :default="data_label_default"
-      :auto.sync="data_label_auto"
+      v-model:auto="data_label_auto"
       :invalid_msg="data_label_invalid_msg"
       label="Data Label"
       api_hint="ldr.importer.data_label ="

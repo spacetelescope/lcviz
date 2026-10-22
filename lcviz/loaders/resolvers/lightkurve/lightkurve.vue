@@ -4,7 +4,7 @@
     :popout_button="popout_button"
     :spinner="spinner"
     :parsed_input_is_query="parsed_input_is_query"
-    :treat_table_as_query.sync="treat_table_as_query"
+    v-model:treat_table_as_query="treat_table_as_query"
     :observation_table="observation_table"
     :observation_table_populated="observation_table_populated"
     :file_table="file_table"
@@ -12,9 +12,9 @@
     :file_cache="file_cache"
     :file_timeout="file_timeout"
     :target_items="target_items"
-    :target_selected.sync="target_selected"
+    v-model:target_selected="target_selected"
     :format_items="format_items"
-    :format_selected.sync="format_selected"
+    v-model:format_selected="format_selected"
     :importer_widget="importer_widget"
     :api_hints_enabled="api_hints_enabled"
     :valid_import_formats="valid_import_formats"
@@ -29,61 +29,77 @@
     <v-form v-model="all_fields_filled">
       <j-plugin-section-header>Source Selection</j-plugin-section-header>
 
-      <plugin-viewer-select
-        :items="viewer_items"
-        :selected.sync="viewer_selected"
-        :show_if_single_entry="false"
-        label="Viewer"
-        api_hint="ldr.viewer ="
+      <plugin-select
+        :items="search_input_items.map(i => i.label)"
+        v-model:selected="search_input_selected"
+        label="Input"
+        api_hint="ldr.search_input ="
         :api_hints_enabled="api_hints_enabled"
-        hint="Select a viewer to retrieve center coordinates, or Manual for manual coordinate entry."
-      />
+        hint="Select the source of cone-search coordinates."
+      ></plugin-select>
 
-      <v-row v-if="viewer_selected !== 'Manual'">
-        <v-switch
-          v-model="coord_follow_viewer_pan"
-          label="Follow Viewer Center"
-          hint="Automatically adjust coordinates as viewer pans and zooms"
-          persistent-hint
-        ></v-switch>
-      </v-row>
-
-      <v-row>
-        <div :style="!(viewer_selected !== 'Manual' && !coord_follow_viewer_pan) ? 'width: 100%' : 'width: calc(100% - 32px)'">
+      <div v-if="search_input_selected === 'Source'">
+        <v-row>
           <v-text-field
             v-model="source"
             :label="api_hints_enabled ? 'ldr.source =' : 'Source/Coordinates'"
             :class="api_hints_enabled ? 'api-hint' : null"
-            hint="Enter a source name or source coordinates in degrees"
-            :disabled="viewer_selected !== 'Manual'"
+            hint="Enter a source name or coordinate pair in degrees to center your query on."
             :rules="[() => !!source || 'This field is required']"
             persistent-hint>
           </v-text-field>
-        </div>
-        <div v-if="viewer_selected !== 'Manual' && !coord_follow_viewer_pan" style="line-height:64px; width:32px">
-          <j-tooltip :tipid="viewer_centered ? 'plugin-vo-autocenter-centered' : 'plugin-vo-autocenter-not-centered'">
-            <v-btn
-              id="autocenterbtn"
-              @click="center_on_data"
-              :disabled="viewer_centered"
-              icon>
-              <v-icon>
-                {{ viewer_centered ? 'mdi-crosshairs-gps' : 'mdi-crosshairs' }}
-              </v-icon>
-            </v-btn>
-          </j-tooltip>
-        </div>
-      </v-row>
+        </v-row>
 
-      <plugin-select
-        :items="coordframe_choices.map(i => i.label)"
-        :selected.sync="coordframe_selected"
-        label="Coordinate Frame"
-        api_hint="ldr.coordframe ="
-        :api_hints_enabled="api_hints_enabled"
-        hint="Astronomical coordinate frame for the query coordinate"
-        :disabled="viewer_selected !== 'Manual'"
-      ></plugin-select>
+        <plugin-select
+          :items="coordframe_choices.map(i => i.label)"
+          v-model:selected="coordframe_selected"
+          label="Coordinate Frame"
+          api_hint="ldr.coordframe ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Astronomical coordinate frame for the query coordinate"
+        ></plugin-select>
+      </div>
+
+      <div v-if="search_input_selected === 'Viewer'">
+        <plugin-viewer-select
+          :items="viewer_items"
+          v-model:selected="viewer_selected"
+          :show_if_single_entry="false"
+          label="Viewer"
+          api_hint="ldr.viewer ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Select a viewer to retrieve center coordinates."
+        />
+
+        <v-row>
+          <v-switch
+            v-model="coord_follow_viewer_pan"
+            label="Follow Viewer Center"
+            hint="Automatically adjust coordinates as viewer pans and zooms"
+            persistent-hint
+          ></v-switch>
+        </v-row>
+
+        <v-row>
+          <v-text-field
+            v-model="source"
+            label="Source/Coordinates"
+            hint="Coordinates at the viewer center"
+            disabled
+            persistent-hint>
+          </v-text-field>
+        </v-row>
+
+        <plugin-select
+          :items="coordframe_choices.map(i => i.label)"
+          v-model:selected="coordframe_selected"
+          label="Coordinate Frame"
+          api_hint="ldr.coordframe ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Astronomical coordinate frame for the query coordinate"
+          :disabled="true"
+        ></plugin-select>
+      </div>
 
       <v-row justify="space-between">
         <div :style="{ width: '55%' }">
@@ -99,7 +115,7 @@
         <div :style="{ width: '40%' }">
           <plugin-select
             :items="radius_unit_items.map(i => i.label)"
-            :selected.sync="radius_unit_selected"
+            v-model:selected="radius_unit_selected"
             label="Unit"
             api_hint="ldr.radius_unit ="
             :api_hints_enabled="api_hints_enabled"
@@ -112,7 +128,7 @@
       <plugin-select
         :show_if_single_entry="true"
         :items="mission_items.map(i => i.label)"
-        :selected.sync="mission_selected"
+        v-model:selected="mission_selected"
         label="Mission"
         :search="true"
         api_hint="ldr.mission ="
@@ -123,7 +139,7 @@
       <plugin-select
         :show_if_single_entry="true"
         :items="data_type_items.map(i => i.label)"
-        :selected.sync="data_type_selected"
+        v-model:selected="data_type_selected"
         label="Data Type"
         :search="true"
         api_hint="ldr.data_type ="

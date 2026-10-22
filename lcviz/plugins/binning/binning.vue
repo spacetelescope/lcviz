@@ -2,24 +2,24 @@
   <j-tray-plugin
     :config="config"
     plugin_key="Binning"
-    :api_hints_enabled.sync="api_hints_enabled"
+    v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Bin input light curve in time or phase-space.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#binning'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
-    :keep_active.sync="keep_active"
+    v-model:keep_active="keep_active"
     :popout_button="popout_button">
 
     <v-row>
       <v-expansion-panels popout>
         <v-expansion-panel>
-          <v-expansion-panel-header v-slot="{ open }">
+          <v-expansion-panel-title>
             <span style="padding: 6px">Settings</span>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text class="plugin-expansion-panel-content">
             <v-row>
               <plugin-switch
-                :value.sync="show_live_preview"
+                v-model:value="show_live_preview"
                 label="Show live preview"
                 api_hint="plg.show_live_preview ="
                 :api_hints_enabled="api_hints_enabled"
@@ -27,14 +27,14 @@
                 persistent-hint
               />
             </v-row>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
     </v-row>
 
     <plugin-dataset-select
       :items="dataset_items"
-      :selected.sync="dataset_selected"
+      v-model:selected="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
       api_hint="plg.dataset ="
@@ -44,7 +44,7 @@
 
     <plugin-ephemeris-select
       :items="ephemeris_items"
-      :selected.sync="ephemeris_selected"
+      v-model:selected="ephemeris_selected"
       :show_if_single_entry="false"
       label="Ephemeris"
       api_hint="plg.ephemeris ="
@@ -68,20 +68,20 @@
     </v-row>
 
     <plugin-previews-temp-disabled
-      :previews_temp_disabled.sync="previews_temp_disabled"
+      v-model:previews_temp_disabled="previews_temp_disabled"
       :previews_last_time="previews_last_time"
-      :show_live_preview.sync="show_live_preview"
+      v-model:show_live_preview="show_live_preview"
     />
 
     <plugin-add-results
-      :label.sync="results_label"
+      v-model:label="results_label"
       :label_default="results_label_default"
-      :label_auto.sync="results_label_auto"
+      v-model:label_auto="results_label_auto"
       :label_invalid_msg="results_label_invalid_msg"
       :label_overwrite="results_label_overwrite"
       label_hint="Label for the binned data."
       :add_to_viewer_items="add_to_viewer_items"
-      :add_to_viewer_selected.sync="add_to_viewer_selected"
+      v-model:add_to_viewer_selected="add_to_viewer_selected"
       action_label="Bin"
       action_tooltip="Bin data"
       :action_disabled="!bin_enabled"
