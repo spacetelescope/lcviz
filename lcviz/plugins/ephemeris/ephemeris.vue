@@ -2,16 +2,16 @@
   <j-tray-plugin
     :config="config"
     plugin_key="Ephemeris"
-    :api_hints_enabled.sync="api_hints_enabled"
+    v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Find and refine ephemerides for phase-folding.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
     :popout_button="popout_button">
 
     <plugin-editable-select
-      :mode.sync="component_mode"
-      :edit_value.sync="component_edit_value"
+      v-model:mode="component_mode"
+      v-model:edit_value="component_edit_value"
       :items="component_items"
-      :selected.sync="component_selected"
+      v-model:selected="component_selected"
       label="Component"
       api_hint="plg.component ="
       api_hint_add="plg.add_component"
@@ -25,7 +25,7 @@
     <v-row justify="end">
       <v-btn
         color="primary" 
-        text
+        variant="text"
         :class="api_hints_enabled ? 'api-hint' : null"
         @click="create_phase_viewer"
         :disabled="phase_viewer_exists || component_selected.length == 0"
@@ -69,7 +69,7 @@
           :rules="[() => period!=='' || 'This field is required',
                    () => period > 0 || 'Period must be greater than zero']"
         >
-          <template v-slot:append>
+          <template v-slot:append-inner>
             <j-tooltip tooltipcontent="halve period">
               <v-icon style="cursor: pointer" @click="period_halve">mdi-division</v-icon>
             </j-tooltip>
@@ -112,7 +112,7 @@
 
       <plugin-dataset-select
         :items="dataset_items"
-        :selected.sync="dataset_selected"
+        v-model:selected="dataset_selected"
         :show_if_single_entry="false"
         label="Data"
         api_hint="plg.dataset ="
@@ -122,7 +122,7 @@
 
       <plugin-select
         :items="method_items.map(i => i.label)"
-        :selected.sync="method_selected"
+        v-model:selected="method_selected"
         label="Algorithm/Method"
         api_hint="plg.method ="
         :api_hints_enabled="api_hints_enabled"
@@ -138,7 +138,7 @@
           <v-row v-else>
             <j-tooltip :tooltipcontent="'adopt period into '+component_selected+' ephemeris.'">
               <v-btn
-                text
+                variant="text"
                 color='primary'
                 :class="api_hints_enabled ? 'api-hint' : null"
                 @click='adopt_period_at_max_power'
@@ -174,7 +174,7 @@
 
       <j-plugin-section-header>Query NASA Exoplanet Archive</j-plugin-section-header>
       <v-row>
-        <span class="v-messages v-messages__message text--secondary">
+        <span class="v-messages v-messages__message text-medium-emphasis">
           Query the
           <a href="https://exoplanetarchive.ipac.caltech.edu/docs/pscp_about.html" target="_blank">
           Planetary Systems Composite Data</a> table from
@@ -250,45 +250,49 @@
       <div v-if="query_result_items.length > 0">
         <v-row>
           <v-select
-            :menu-props="{ left: true }"
+            :menu-props="{ location: 'bottom start' }"
             attach
             :items="query_result_items"
-            :item-value="item => item.label"
-            v-model="query_result_selected"
+            item-title="label"
+            item-value="label"
+            :model-value="query_result_selected"
+            @update:modelValue="query_result_selected = $event"
             :label="api_hints_enabled ? 'plg.query_result =' : 'Ephemerides available'"
             :class="api_hints_enabled ? 'api-hint' : null"
             :hint="'Ephemeris parameters from ' + query_result_items.length + ' available query result(s)'"
             persistent-hint
-            dense
+            density="compact"
           >
 
           <template v-slot:selection="{ item }">
             <span v-if="api_hints_enabled" class="api-hint">
-              '{{ item.label }}'
+              '{{ item.raw.label }}'
             </span>
             <span v-else>
-              {{ item.label }}
+              {{ item.raw.label }}
             </span>
           </template>
-          <template v-slot:item="{ item }">
-            <span style="margin-top: 8px; margin-bottom: 0px">
+          <template v-slot:item="{ props, item }">
+            <v-list-item v-bind="props" :title="undefined">
+              <span style="margin-top: 8px; margin-bottom: 0px">
               <span v-if="api_hints_enabled" class="api-hint">
-                '{{ item.label }}'
+                '{{ item.raw.label }}'
               </span>
               <span v-else>
-                {{ item.label }}
+                {{ item.raw.label }}
               </span>
               <v-row style="line-height: 1.0; margin: 0px; opacity: 0.85; font-size: 8pt">
-                Period: {{ item.period }} d, Epoch: {{ item.epoch }} d
+                Period: {{ item.raw.period }} d, Epoch: {{ item.raw.epoch }} d
               </v-row>
-            </span>
+              </span>
+            </v-list-item>
           </template>
 
           </v-select>
         </v-row>
 
         <v-row v-if="query_result_selected !== ''">
-          <span class="v-messages v-messages__message text--secondary">
+          <span class="v-messages v-messages__message text-medium-emphasis">
             Period: {{period_from_catalog}} d, Epoch: {{t0_from_catalog}} d
           </span>
           <j-tooltip :tooltipcontent="'Adopt period and epoch into '+component_selected+' ephemeris.'">
@@ -315,7 +319,7 @@
 </template>
 
 <script>
-module.exports = {
+export default {
   computed: {
     wrap_at_range() {
       const lower = this.wrap_at - 1

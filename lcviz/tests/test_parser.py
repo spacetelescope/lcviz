@@ -15,10 +15,7 @@ from lcviz.utils import TimeCoordinates
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_kepler_via_mast_local_file(helper_name, request):
     helper = request.getfixturevalue(helper_name)
-    url = (
-        'https://archive.stsci.edu/pub/kepler/'
-        'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
-    )  # 188 KB
+    url = 'https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:KEPLER/url/missions/kepler/lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits' # noqa 188 KB
 
     path = download_file(url, cache=True, timeout=100)
     helper.load(path, format='Light Curve')
@@ -35,12 +32,27 @@ def test_kepler_via_mast_local_file(helper_name, request):
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_kepler_via_mast_uri(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
+    uri = 'mast:KEPLER/url/missions/kepler/lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'  # noqa
+
+    helper.load(uri, format='Light Curve')
+
+    data = helper._app.data_collection[0]
+    flux_arr = data['flux']
+    flux_unit = u.Unit(data.get_component('flux').units)
+    flux = flux_arr * flux_unit
+
+    assert isinstance(data.coords, TimeCoordinates)
+    assert isinstance(flux, u.Quantity)
+    assert flux.unit.is_equivalent(u.electron / u.s)
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_kepler_via_mast_preparsed(helper_name, request):
     helper = request.getfixturevalue(helper_name)
-    url = (
-     'https://archive.stsci.edu/pub/kepler/'
-     'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
-    )  # 188 KB
+    url = 'https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:KEPLER/url/missions/kepler/lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'  # noqa 188 KB
 
     light_curve = kepler.read_kepler_lightcurve(url)
     helper.load(light_curve, format='Light Curve')
@@ -178,6 +190,7 @@ def test_lc_fits_not_valid_for_image_importer(light_curve_like_kepler_quarter, t
 
     # Light Curve should be a valid format
     assert 'Light Curve' in format_choices
+    assert all(data_hash is not None for data_hash in ldr.importer._obj.data_hashes)
 
     # Image should NOT be a valid format for light curve FITS files
     assert 'Image' not in format_choices

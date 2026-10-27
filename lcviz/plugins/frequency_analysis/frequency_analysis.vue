@@ -2,14 +2,14 @@
   <j-tray-plugin
     :config="config"
     plugin_key="Frequency Analysis"
-    :api_hints_enabled.sync="api_hints_enabled"
+    v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
     :popout_button="popout_button">
 
     <plugin-dataset-select
       :items="dataset_items"
-      :selected.sync="dataset_selected"
+      v-model:selected="dataset_selected"
       :show_if_single_entry="false"
       label="Data"
       api_hint="plg.dataset ="
@@ -19,7 +19,7 @@
 
     <plugin-select
       :items="method_items.map(i => i.label)"
-      :selected.sync="method_selected"
+      v-model:selected="method_selected"
       label="Algorithm/Method"
       api_hint="plg.method ="
       :api_hints_enabled="api_hints_enabled"
@@ -28,7 +28,7 @@
 
     <plugin-select
       :items="xunit_items.map(i => i.label)"
-      :selected.sync="xunit_selected"
+      v-model:selected="xunit_selected"
       label="X Units"
       api_hint="plg.xunit ="
       :api_hints_enabled="api_hints_enabled"
@@ -37,7 +37,7 @@
 
     <v-row>
       <plugin-switch
-        :value.sync="auto_range"
+        v-model:value="auto_range"
         :label="'Auto '+xunit_selected+' range'"
         api_hint="plg.auto_range ="
         :api_hints_enabled="api_hints_enabled"
