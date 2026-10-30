@@ -4,14 +4,16 @@
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#stitch'"
     :popout_button="popout_button">
 
-    <plugin-dataset-select
-      :items="dataset_items"
-      v-model:selected="dataset_selected"
-      :show_if_single_entry="true"
-      :multiselect="true"
-      label="Data"
-      hint="Select the light curves as input."
-    />
+    <div style="margin-bottom: 18px">
+      <plugin-dataset-select
+        :items="dataset_items"
+        v-model:selected="dataset_selected"
+        :show_if_single_entry="true"
+        :multiselect="true"
+        label="Data"
+        hint="Select the light curves as input."
+      />
+    </div>
 
     <v-row v-if="dataset_selected.length < 2">
       <span class="v-messages v-messages__message text-medium-emphasis">

@@ -57,6 +57,7 @@
 
     <v-row>
       <v-text-field
+        variant="underlined"
         :label="api_hints_enabled ? 'plg.window_length =' : 'Window length'"
         :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
@@ -72,6 +73,7 @@
 
     <v-row>
       <v-text-field
+        variant="underlined"
         :label="api_hints_enabled ? 'plg.polyorder =' : 'Order'"
         :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
@@ -88,6 +90,7 @@
 
     <v-row>
       <v-text-field
+        variant="underlined"
         :label="api_hints_enabled ? 'plg.break_tolerance =' : 'Break tolerance'"
         :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
@@ -103,6 +106,7 @@
 
     <v-row>
       <v-text-field
+        variant="underlined"
         :label="api_hints_enabled ? 'plg.niters =' : 'Iterations'"
         :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
@@ -118,6 +122,7 @@
 
     <v-row>
       <v-text-field
+        variant="underlined"
         :label="api_hints_enabled ? 'plg.sigma =' : 'Sigma'"
         :class="api_hints_enabled ? 'api-hint' : null"
         type="number"

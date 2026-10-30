@@ -52,8 +52,9 @@
       hint="Select the phase-folding as input."
     />
 
-    <v-row>
+    <j-flex-row>
       <v-text-field
+        variant="underlined"
         :label="api_hints_enabled ? 'plg.n_bins =' : 'N Bins'"
         :class="api_hints_enabled ? 'api-hint' : null"
         type="number"
@@ -65,7 +66,7 @@
         persistent-hint
       >
       </v-text-field>
-    </v-row>
+    </j-flex-row>
 
     <plugin-previews-temp-disabled
       v-model:previews_temp_disabled="previews_temp_disabled"
