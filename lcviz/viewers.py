@@ -27,6 +27,8 @@ __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
 class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
+    _slice_tool_label = 'time'
+
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -34,7 +36,8 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
                     ['jdaviz:panzoom', 'jdaviz:panzoom_x', 'jdaviz:panzoom_y'],
                     ['bqplot:xrange', 'bqplot:yrange', 'bqplot:rectangle'],
                     ['jdaviz:selectslice'],
-                    ['jdaviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['jdaviz:viewer_focus_toggle', 'jdaviz:viewer_clone',
+                     'jdaviz:viewer_popout']
                 ]
     default_class = LightCurve
     _state_cls = ScatterViewerState
@@ -243,6 +246,7 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
 
 @viewer_registry("lcviz-phase-viewer", label="flux-vs-phase")
 class PhaseScatterView(TimeScatterView):
+    _slice_tool_label = 'phase'
     _clone_attrs = ('_ephemeris_component',)
 
     def __init__(self, *args, **kwargs):
@@ -292,7 +296,8 @@ class CubeView(CubevizImageView, WithSliceSelection):
                     ['jdaviz:boxzoom'],
                     ['jdaviz:panzoom'],
                     ['bqplot:rectangle'],
-                    ['jdaviz:viewer_clone', 'jdaviz:sidebar_plot', 'jdaviz:sidebar_export']
+                    ['jdaviz:viewer_focus_toggle', 'jdaviz:viewer_clone',
+                     'jdaviz:viewer_popout']
                 ]
     # TODO: can we vary this default_class based on Kepler vs TESS, etc?
     # see https://github.com/spacetelescope/lcviz/pull/81#discussion_r1469721009

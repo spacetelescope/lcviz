@@ -21,7 +21,7 @@ to avoid version conflicts with other packages you may have installed, for examp
 
 .. code-block:: bash
 
-    conda create -n lcviz-env python=3.11
+    conda create -n lcviz-env python=3.13
     conda activate lcviz-env
 
 Pip Install
@@ -36,7 +36,7 @@ To install the latest stable release:
 Common Issues
 ^^^^^^^^^^^^^
 
-Note that ``lcviz`` requires Python 3.10 or newer. If your ``pip`` corresponds to an older version of
+Note that ``lcviz`` requires Python 3.12 or newer. If your ``pip`` corresponds to an older version of
 Python, it will raise an error that it cannot find a valid package.
 
 Users occasionally encounter problems running the pure ``pip`` install above. For those

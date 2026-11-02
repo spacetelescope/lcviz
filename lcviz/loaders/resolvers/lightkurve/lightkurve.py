@@ -1,6 +1,5 @@
 import numpy as np
 
-from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.table import Table as AstropyTable
 
@@ -9,13 +8,9 @@ from lightkurve import search_lightcurve, search_targetpixelfile
 from traitlets import Unicode, List
 
 from jdaviz.core.registries import loader_resolver_registry
-from jdaviz.core.template_mixin import (
-    SelectPluginComponent,
-    with_spinner,
-)
+from jdaviz.core.template_mixin import SelectPluginComponent
 from jdaviz.core.loaders.resolvers import BaseConeSearchResolver
 from jdaviz.core.user_api import LoaderUserApi
-from jdaviz.core.events import SnackbarMessage
 
 __all__ = ["LightkurveResolver"]
 
@@ -32,6 +27,8 @@ class LightkurveResolver(BaseConeSearchResolver):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.search_input.add_filter(lambda item: item['label'] != 'Catalog')
 
         self.mission = SelectPluginComponent(
             self, items="mission_items", selected="mission_selected",
@@ -51,7 +48,7 @@ class LightkurveResolver(BaseConeSearchResolver):
         return LoaderUserApi(
             self,
             expose=[
-                "viewer", "coordframe", "radius", "radius_unit",
+                "search_input", "viewer", "coordframe", "radius", "radius_unit",
                 "source",
                 "mission", "data_type",
                 "max_results",
@@ -59,56 +56,31 @@ class LightkurveResolver(BaseConeSearchResolver):
             ],
         )
 
-    @with_spinner(spinner_traitlet="results_loading")
-    def query_archive(self):
-        try:
-            skycoord_center = SkyCoord.from_name(self.source, frame=self.coordframe.selected)
-        except Exception as e:
-            self.hub.broadcast(SnackbarMessage(
-                f"Unable to resolve source coordinates: {self.source}",
-                sender=self, color="error", traceback=e
-            ))
-            return
+    @property
+    def _query_archive_label(self):
+        return f"Lightkurve {self.mission.selected}"
 
+    def _query_single_coord(self, skycoord_center):
         radius = self.radius * u.Unit(self.radius_unit.selected)
 
-        try:
-            if self.data_type.selected == 'Light Curve':
-                output = search_lightcurve(
-                    target=skycoord_center,
-                    radius=radius,
-                    mission=self.mission.selected,
-                    limit=self.max_results,
-                )
-            elif self.data_type.selected == 'Target Pixel File':
-                output = search_targetpixelfile(
-                    target=skycoord_center,
-                    radius=radius,
-                    mission=self.mission.selected,
-                    limit=self.max_results,
-                )
-            else:
-                raise NotImplementedError("Data type not recognized.")
-        except Exception as e:
-            self.hub.broadcast(SnackbarMessage(
-                f"Lightkurve archive query failed: {e}",
-                sender=self, color="error", traceback=e
-            ))
-            return
+        if self.data_type.selected == 'Light Curve':
+            output = search_lightcurve(
+                target=skycoord_center,
+                radius=radius,
+                mission=self.mission.selected,
+                limit=self.max_results,
+            )
+        elif self.data_type.selected == 'Target Pixel File':
+            output = search_targetpixelfile(
+                target=skycoord_center,
+                radius=radius,
+                mission=self.mission.selected,
+                limit=self.max_results,
+            )
+        else:
+            raise NotImplementedError("Data type not recognized.")
 
-        if len(output) == 0:
-            self.returned_no_results = True
-            self.hub.broadcast(SnackbarMessage(
-                f"No results found for {self.source}.",
-                sender=self, color="warning"
-            ))
-            return
-
-        self.returned_no_results = False
-        self.returned_max_results = len(output) >= self.max_results
-        self._output = self._search_result_to_table(output)
-
-        self._resolver_input_updated()
+        return self._search_result_to_table(output)
 
     @staticmethod
     def _search_result_to_table(search_result):
@@ -143,9 +115,3 @@ class LightkurveResolver(BaseConeSearchResolver):
             rows.append(clean)
 
         return AstropyTable(rows=rows) if rows else AstropyTable(names=cols)
-
-    def vue_query_archive(self, _=None):
-        self.query_archive()
-
-    def parse_input(self):
-        return self._output

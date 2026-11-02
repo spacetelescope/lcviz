@@ -2,16 +2,16 @@
   <j-tray-plugin
     :config="config"
     plugin_key="Ephemeris"
-    :api_hints_enabled.sync="api_hints_enabled"
+    v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Find and refine ephemerides for phase-folding.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
     :popout_button="popout_button">
 
     <plugin-editable-select
-      :mode.sync="component_mode"
-      :edit_value.sync="component_edit_value"
+      v-model:mode="component_mode"
+      v-model:edit_value="component_edit_value"
       :items="component_items"
-      :selected.sync="component_selected"
+      v-model:selected="component_selected"
       label="Component"
       api_hint="plg.component ="
       api_hint_add="plg.add_component"
@@ -22,10 +22,10 @@
       >
     </plugin-editable-select>
 
-    <v-row justify="end">
+    <j-flex-row justify="end">
       <v-btn
         color="primary" 
-        text
+        variant="text"
         :class="api_hints_enabled ? 'api-hint' : null"
         @click="create_phase_viewer"
         :disabled="phase_viewer_exists || component_selected.length == 0"
@@ -36,13 +36,14 @@
           'Show Phase Viewer'
         }}
       </v-btn>
-    </v-row>
+    </j-flex-row>
 
     <div v-if="component_items.length > 0">
       <j-plugin-section-header>Ephemeris</j-plugin-section-header>
 
-      <v-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="t0"
           type="number"
           :label="api_hints_enabled ? 'plg.t0 =' : 'Zeropoint (t0)'"
@@ -54,10 +55,11 @@
           persistent-hint
           :rules="[() => t0!=='' || 'This field is required']"
         ></v-text-field>
-      </v-row>
+      </j-flex-row>
 
-      <v-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="period"
           type="number"
           :label="api_hints_enabled ? 'plg.period =' : 'Period'"
@@ -69,7 +71,7 @@
           :rules="[() => period!=='' || 'This field is required',
                    () => period > 0 || 'Period must be greater than zero']"
         >
-          <template v-slot:append>
+          <template v-slot:append-inner>
             <j-tooltip tooltipcontent="halve period">
               <v-icon style="cursor: pointer" @click="period_halve">mdi-division</v-icon>
             </j-tooltip>
@@ -78,10 +80,11 @@
             </j-tooltip>
           </template>
         </v-text-field>
-      </v-row>
+      </j-flex-row>
 
-      <v-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="dpdt"
           type="number"
           :label="api_hints_enabled ? 'plg.dpdt =' : 'Period derivative'"
@@ -92,10 +95,11 @@
           persistent-hint
           :rules="[() => dpdt!=='' || 'This field is required']"
         ></v-text-field>
-      </v-row>
+      </j-flex-row>
 
-      <v-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="wrap_at"
           type="number"
           :label="api_hints_enabled ? 'plg.wrap_at =' : 'Wrapping phase'"
@@ -106,13 +110,13 @@
           persistent-hint
           :rules="[() => wrap_at!=='' || 'This field is required']"
         ></v-text-field>
-      </v-row>
+      </j-flex-row>
 
       <j-plugin-section-header>Period Finding/Refining</j-plugin-section-header>
 
       <plugin-dataset-select
         :items="dataset_items"
-        :selected.sync="dataset_selected"
+        v-model:selected="dataset_selected"
         :show_if_single_entry="false"
         label="Data"
         api_hint="plg.dataset ="
@@ -122,7 +126,7 @@
 
       <plugin-select
         :items="method_items.map(i => i.label)"
-        :selected.sync="method_selected"
+        v-model:selected="method_selected"
         label="Algorithm/Method"
         api_hint="plg.method ="
         :api_hints_enabled="api_hints_enabled"
@@ -132,13 +136,13 @@
       <div style="display: grid"> <!-- overlay container -->
         <div style="grid-area: 1/1">
 
-          <v-row v-if="method_err.length > 0">
+          <j-flex-row v-if="method_err.length > 0">
             <v-alert color="warning">{{ method_err }}</v-alert>
-          </v-row>
-          <v-row v-else>
+          </j-flex-row>
+          <j-flex-row v-else>
             <j-tooltip :tooltipcontent="'adopt period into '+component_selected+' ephemeris.'">
               <v-btn
-                text
+                variant="text"
                 color='primary'
                 :class="api_hints_enabled ? 'api-hint' : null"
                 @click='adopt_period_at_max_power'
@@ -152,7 +156,7 @@
                 
               </v-btn>
             </j-tooltip>
-          </v-row>
+          </j-flex-row>
 
         </div>
         <div v-if="method_spinner"
@@ -173,8 +177,8 @@
       </div>
 
       <j-plugin-section-header>Query NASA Exoplanet Archive</j-plugin-section-header>
-      <v-row>
-        <span class="v-messages v-messages__message text--secondary">
+      <j-flex-row>
+        <span class="v-messages v-messages__message text-medium-emphasis">
           Query the
           <a href="https://exoplanetarchive.ipac.caltech.edu/docs/pscp_about.html" target="_blank">
           Planetary Systems Composite Data</a> table from
@@ -182,10 +186,11 @@
           NASA Exoplanet Archive</a>. Queries first by name, then falls back on
           coordinates if the object name is not recognized.
         </span>
-      </v-row>
+      </j-flex-row>
 
-      <v-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="query_name"
           type="string"
           :label="api_hints_enabled ? 'plg.query_name =' : 'Object name'"
@@ -194,9 +199,10 @@
           hint="Object name."
           persistent-hint
         ></v-text-field>
-      </v-row>
-      <v-row>
+      </j-flex-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="query_ra"
           type="number"
           :label="api_hints_enabled ? 'plg.query_ra =' : 'RA (degrees)'"
@@ -206,9 +212,10 @@
           hint="Object right ascension."
           persistent-hint
         ></v-text-field>
-      </v-row>
-      <v-row>
+      </j-flex-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="query_dec"
           type="number"
           :label="api_hints_enabled ? 'plg.query_dec =' : 'Dec (degrees)'"
@@ -218,9 +225,10 @@
           hint="Object declination."
           persistent-hint
         ></v-text-field>
-      </v-row>
-      <v-row>
+      </j-flex-row>
+      <j-flex-row>
         <v-text-field
+          variant="underlined"
           ref="query_radius"
           type="number"
           :label="api_hints_enabled ? 'plg.query_radius =' : 'Radius (arcseconds)'"
@@ -230,9 +238,9 @@
           hint="Radius around the query coordinate."
           persistent-hint
         ></v-text-field>
-      </v-row>
+      </j-flex-row>
 
-      <v-row justify="end">
+      <j-flex-row justify="end">
         <j-tooltip tooltipcontent="Query for this object.">
           <plugin-action-button
             :spinner="query_spinner"
@@ -246,53 +254,57 @@
               }} 
           </plugin-action-button>
         </j-tooltip>
-      </v-row>
+      </j-flex-row>
       <div v-if="query_result_items.length > 0">
-        <v-row>
+        <j-flex-row>
           <v-select
-            :menu-props="{ left: true }"
+            :menu-props="{ location: 'bottom start' }"
             attach
             :items="query_result_items"
-            :item-value="item => item.label"
-            v-model="query_result_selected"
+            item-title="label"
+            item-value="label"
+            :model-value="query_result_selected"
+            @update:modelValue="query_result_selected = $event"
             :label="api_hints_enabled ? 'plg.query_result =' : 'Ephemerides available'"
             :class="api_hints_enabled ? 'api-hint' : null"
             :hint="'Ephemeris parameters from ' + query_result_items.length + ' available query result(s)'"
             persistent-hint
-            dense
+            density="compact"
           >
 
           <template v-slot:selection="{ item }">
             <span v-if="api_hints_enabled" class="api-hint">
-              '{{ item.label }}'
+              '{{ item.raw.label }}'
             </span>
             <span v-else>
-              {{ item.label }}
+              {{ item.raw.label }}
             </span>
           </template>
-          <template v-slot:item="{ item }">
-            <span style="margin-top: 8px; margin-bottom: 0px">
+          <template v-slot:item="{ props, item }">
+            <v-list-item v-bind="props" :title="undefined">
+              <span style="margin-top: 8px; margin-bottom: 0px">
               <span v-if="api_hints_enabled" class="api-hint">
-                '{{ item.label }}'
+                '{{ item.raw.label }}'
               </span>
               <span v-else>
-                {{ item.label }}
+                {{ item.raw.label }}
               </span>
-              <v-row style="line-height: 1.0; margin: 0px; opacity: 0.85; font-size: 8pt">
-                Period: {{ item.period }} d, Epoch: {{ item.epoch }} d
-              </v-row>
-            </span>
+              <j-flex-row style="line-height: 1.0; margin: 0px; opacity: 0.85; font-size: 8pt">
+                Period: {{ item.raw.period }} d, Epoch: {{ item.raw.epoch }} d
+              </j-flex-row>
+              </span>
+            </v-list-item>
           </template>
 
           </v-select>
-        </v-row>
+        </j-flex-row>
 
-        <v-row v-if="query_result_selected !== ''">
-          <span class="v-messages v-messages__message text--secondary">
+        <j-flex-row v-if="query_result_selected !== ''">
+          <span class="v-messages v-messages__message text-medium-emphasis">
             Period: {{period_from_catalog}} d, Epoch: {{t0_from_catalog}} d
           </span>
           <j-tooltip :tooltipcontent="'Adopt period and epoch into '+component_selected+' ephemeris.'">
-            <v-row justify="end">
+            <j-flex-row justify="end">
             <v-col>
               <plugin-action-button
                 @click="create_ephemeris_from_query"
@@ -305,9 +317,9 @@
                    }}  
               </plugin-action-button>
             </v-col>
-            </v-row>
+            </j-flex-row>
           </j-tooltip>
-        </v-row>
+        </j-flex-row>
       </div>
     </div>
 
@@ -315,7 +327,7 @@
 </template>
 
 <script>
-module.exports = {
+export default {
   computed: {
     wrap_at_range() {
       const lower = this.wrap_at - 1

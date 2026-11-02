@@ -120,10 +120,19 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     ephem = helper.plugins['Ephemeris']
     vc = helper._tray_tools['g-viewer-creator']
 
+    time_viewer = helper.viewers['flux-vs-time']._obj.glue_viewer
+    slice_tool = time_viewer.toolbar.tools['jdaviz:selectslice']
+    assert slice_tool.action_text == 'Select time'
+    assert time_viewer.toolbar.tools_data['jdaviz:selectslice']['tooltip'] == 'Select time'
+
     assert len(vc.viewer_types) == 2  # time viewer, phase viewer for default
     ephem.adopt_period_at_max_power()
     assert len(vc.viewer_types) == 2  # time viewer, phase viewer at default
     assert len(ephem._obj._get_phase_viewers()) == 1
+    phase_viewer = ephem._obj._get_phase_viewers()[0]
+    slice_tool = phase_viewer.toolbar.tools['jdaviz:selectslice']
+    assert slice_tool.action_text == 'Select phase'
+    assert phase_viewer.toolbar.tools_data['jdaviz:selectslice']['tooltip'] == 'Select phase'
 
     vc.vue_create_viewer('flux-vs-phase:default')
     assert len(ephem._obj._get_phase_viewers()) == 2
@@ -169,8 +178,7 @@ def test_ephemeris_adopt_period_with_tpf(helper_name, request):
     # viewer creator should be able to create an additional phase viewer
     # even though 'flux-vs-phase:default' already exists; the label must
     # auto-increment rather than raise a "label already in use" error.
-    vc = helper.new_viewers['Flux vs Phase']
-    _ = vc()
+    helper.new_viewers['Flux vs Phase']()
     assert len(ephem._obj._get_phase_viewers()) == 2
 
 
