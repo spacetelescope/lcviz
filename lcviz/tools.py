@@ -14,7 +14,14 @@ def _selectslice_is_visible(self):
     return False
 
 
+def _selectslice_label(self):
+    viewer_label = getattr(self.viewer, '_slice_tool_label', 'cube slice')
+    return f'Select {viewer_label}'
+
+
 SelectSlice.is_visible = _selectslice_is_visible
+SelectSlice.action_text = property(_selectslice_label)
+SelectSlice.tool_tip = property(_selectslice_label)
 
 
 __all__ = []

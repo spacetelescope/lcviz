@@ -27,6 +27,8 @@ __all__ = ['TimeScatterView', 'PhaseScatterView', 'CubeView']
 
 @viewer_registry("lcviz-time-viewer", label="flux-vs-time")
 class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
+    _slice_tool_label = 'time'
+
     # categories: zoom resets, zoom, pan, subset, select tools, shortcuts
     tools_nested = [
                     ['jdaviz:homezoom', 'jdaviz:prevzoom'],
@@ -244,6 +246,7 @@ class TimeScatterView(JdavizViewerMixin, WithSliceIndicator, BqplotScatterView):
 
 @viewer_registry("lcviz-phase-viewer", label="flux-vs-phase")
 class PhaseScatterView(TimeScatterView):
+    _slice_tool_label = 'phase'
     _clone_attrs = ('_ephemeris_component',)
 
     def __init__(self, *args, **kwargs):
