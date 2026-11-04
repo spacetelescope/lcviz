@@ -1,9 +1,12 @@
 import os
+import h5py
 import numpy as np
 from functools import cached_property
 from traitlets import Any, Bool, List, Unicode, observe
 from astropy.io import fits
+from astropy import units as u
 from astropy.table import Table
+from astropy.time import Time
 from lightkurve import LightCurve
 
 from glue_jupyter.common.toolbar_vuetify import read_icon
@@ -94,6 +97,65 @@ def has_ephem(lc):
             'TUNIT1' in lc.meta)
 
 
+def _decode_hdf5_metadata(value):
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    if isinstance(value, np.ndarray):
+        return _decode_hdf5_metadata(value.tolist())
+    if isinstance(value, list):
+        return [_decode_hdf5_metadata(item) for item in value]
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
+
+
+def hdf5_to_lightcurve(data):
+    """Combine the visits in a Rocky Worlds light curve into one time series."""
+    if _decode_hdf5_metadata(data.attrs.get('HLSPID', '')) != 'Rocky-Worlds':
+        raise ValueError('HDF5 light curves must use the Rocky-Worlds schema.')
+    for name in ('time', 'visit', 'rawFlux', 'rawFluxErr'):
+        if name not in data or not isinstance(data[name], h5py.Dataset):
+            raise ValueError(f'Rocky-Worlds light curve is missing dataset {name!r}.')
+
+    times = data['time'][:]
+    visits = data['visit']
+    if times.ndim != 1 or not times.size or not np.all(np.isfinite(times)):
+        raise ValueError('Rocky-Worlds time must be a nonempty, finite 1D array.')
+    if visits.ndim != 1 or not visits.size:
+        raise ValueError('Rocky-Worlds visit must be a nonempty 1D array.')
+    if _decode_hdf5_metadata(data['time'].attrs.get('units', '')) != 'BJD_TDB':
+        raise ValueError('Rocky-Worlds time units must be BJD_TDB.')
+
+    columns = {}
+    shape = (visits.size, times.size)
+    for name, dataset in data.items():
+        if 'flux' not in name.lower() or not isinstance(dataset, h5py.Dataset):
+            continue
+        if dataset.shape != shape or dataset.dtype.kind not in 'fiu':
+            raise ValueError(f'Flux dataset {name!r} must be a numeric array of shape {shape}.')
+        unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
+        unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)
+        column_name = name[:-3] + '_err' if name.endswith('Err') else name
+        if column_name in columns:
+            raise ValueError(f'Duplicate flux column {column_name!r}.')
+        columns[column_name] = dataset[:].reshape(-1) * unit
+
+    # NetCDF outer alignment can pad visits with rows missing every flux and uncertainty.
+    present = np.any([np.isfinite(column.value) for column in columns.values()], axis=0)
+    if not np.any(present):
+        raise ValueError('Rocky-Worlds light curve contains no finite fluxes or uncertainties.')
+    time = np.tile(times, visits.size)[present]
+    order = np.argsort(time, kind='stable')
+    columns = {name: column[present][order] for name, column in columns.items()}
+    meta = {name: _decode_hdf5_metadata(value) for name, value in data.attrs.items()
+            if not name.startswith('_')}
+    meta['OBJECT'] = meta.get('HLSPTARG') or meta.get('STAR') or 'Light curve'
+    meta['FLUX_ORIGIN'] = 'rawFlux'
+    return LightCurve(time=Time(time[order], format='jd', scale='tdb'),
+                      flux=columns['rawFlux'], flux_err=columns['rawFlux_err'],
+                      data=columns, meta=meta)
+
+
 @loader_importer_registry('Light Curve')
 class LightCurveImporter(BaseImporterToDataCollection):
     template_file = __file__, "./lightcurve.vue"
@@ -148,10 +210,11 @@ class LightCurveImporter(BaseImporterToDataCollection):
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
-            if self.input.meta.get('QUARTER', None) is None:
-                self.data_label_default = self.input.meta.get('OBJECT', 'Light curve')
+            meta = self.output.meta if isinstance(self.input, h5py.File) else self.input.meta
+            if meta.get('QUARTER', None) is None:
+                self.data_label_default = meta.get('OBJECT', 'Light curve')
             else:
-                self.data_label_default = f"{self.input.meta.get('OBJECT', 'Light curve')} [Q{self.input.meta.get('QUARTER')}]"  # noqa
+                self.data_label_default = f"{meta.get('OBJECT', 'Light curve')} [Q{meta.get('QUARTER')}]"  # noqa
 
     @property
     def user_api(self):
@@ -165,11 +228,15 @@ class LightCurveImporter(BaseImporterToDataCollection):
             return f'Light Curve importer is not supported in {self._app.config}.'
         if isinstance(self.input, LightCurve):
             return ''
+        if isinstance(self.input, h5py.File):
+            self.output
+            return ''
         if isinstance(self.input, fits.HDUList):
             for hdu in self.input:
                 if hdu_is_valid(hdu):
                     return ''
-        return 'Input must be a LightCurve or a HDUList with a valid light curve extension.'
+        return ('Input must be a LightCurve, a HDUList with a valid light curve extension, '
+                'or a Rocky-Worlds HDF5 light curve.')
 
     @observe('extension_selected')
     def _extension_selected_changed(self, event={}):
@@ -194,6 +261,8 @@ class LightCurveImporter(BaseImporterToDataCollection):
     def output(self):
         if isinstance(self.input, LightCurve):
             lc = self.input
+        elif isinstance(self.input, h5py.File):
+            lc = hdf5_to_lightcurve(self.input)
         else:
             # HDUList case
             pri_header = self.input[0].header

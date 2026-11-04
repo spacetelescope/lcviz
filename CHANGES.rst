@@ -4,6 +4,8 @@
 * Update jdaviz requirement to 5.1 and python to 3.12 to include upstream improvements including: upgrade to vue3, 
   focus mode. [#230]
 
+* Adds support to parse Rocky Worlds HDF5 light curve files. [#236]
+
 2.0.1 (unreleased)
 ------------------
 
