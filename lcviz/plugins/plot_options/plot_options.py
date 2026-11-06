@@ -22,9 +22,10 @@ def _default_tpf_stretch(self, vmin_percentile=5, vmax_percentile=99,
 def _lcviz_layer_filter_factory(plugin):
     """Layer filter factory: exclude spatial subsets in scatter viewers unless CubeView active."""
     from lcviz.viewers import CubeView
+    from jdaviz.configs.imviz.plugins.viewers import ImvizImageView
 
     def _filter(lyr):
-        if np.any([isinstance(v, CubeView) for v in plugin.layer.viewer_objs]):
+        if np.any([isinstance(v, (CubeView, ImvizImageView)) for v in plugin.layer.viewer_objs]):
             return True
         return get_subset_type(lyr) != 'spatial'
 
