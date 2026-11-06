@@ -44,8 +44,7 @@ PlotOptions.register_user_api(
         'marker_color_mode', 'marker_color', 'marker_color_col',
         'marker_colormap', 'marker_colormap_vmin', 'marker_colormap_vmax',
         'line_visible', 'line_width',
-    ],
-    remove=['apply_RGB_presets', 'line_as_steps', 'uncertainty_visible'],
+    ]
 )
 
 # Convenience method injected onto the plugin class for TPF stretch setup.
