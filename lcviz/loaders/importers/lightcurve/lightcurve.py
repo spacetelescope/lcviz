@@ -118,7 +118,6 @@ def hdf5_to_lightcurve(data, model=None):
     visits = data['visit']
 
     columns = {}
-    shape = (visits.size, times.size)
     for name, dataset in data.items():
         unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
         unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)

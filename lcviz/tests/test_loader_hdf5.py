@@ -88,8 +88,6 @@ def test_hdf5_overlapping_visits(rocky_worlds_file):
     np.testing.assert_allclose(lc.flux_err[:2].value, [0.01, 0.02])
 
 
-
-
 def test_hdf5_parser_cleanup(rocky_worlds_file):
     parser = HDF5Parser(SimpleNamespace(config='deconfigged'), str(rocky_worlds_file()))
     assert parser.is_valid
@@ -261,5 +259,3 @@ def test_hdf5_model_names(rocky_worlds_file, deconfigged_helper):
     loader.importer.extension = 'fluxMODEL'
     loader.load()
     np.testing.assert_allclose(deconfigged_helper._app.data_collection[0]['flux'], 0.99)
-
-
