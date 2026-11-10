@@ -35,7 +35,9 @@ def rocky_worlds_file(tmp_path):
             for name, array in arrays.items():
                 data[name] = array[:, ::-1]
                 data[name].attrs['units'] = np.bytes_('None (normalized)')
-            data['astroModel'] = np.ones((nvisits, size))
+            data['astroModel'] = np.where(np.isfinite(arrays['rawFluxErr'][:, ::-1]),
+                                          0.99, np.nan)
+            data['astroModel'].attrs['units'] = np.bytes_('None (normalized)')
             data['centroid_x'] = np.ones((nvisits, size))
             data['PIPELINE'] = np.array([b'eureka'] * nvisits)
         return path
@@ -166,3 +168,126 @@ def test_hdf5_invalid_not_offered(rocky_worlds_file, deconfigged_helper):
     loader = deconfigged_helper.loaders['file']
     loader.filepath = str(path)
     assert 'Light Curve' not in loader.format.choices
+
+
+@pytest.mark.parametrize('nvisits', [1, 2])
+def test_hdf5_model_conversion(rocky_worlds_file, nvisits):
+    path = rocky_worlds_file(nvisits)
+    with h5py.File(path, 'r+') as data:
+        data['astroModel'][0, -1] = np.nan
+        lc = hdf5_to_lightcurve(data, model='astroModel')
+    assert len(lc) == 4 * nvisits - 1
+    np.testing.assert_array_equal(lc.time.jd, 2459000 + np.arange(1, 4 * nvisits))
+    np.testing.assert_allclose(lc.flux.value, 0.99)
+    assert lc.flux.unit == u.dimensionless_unscaled
+    assert lc.time.scale == 'tdb'
+    assert np.all(np.isnan(lc.flux_err.value))
+    assert set(lc.colnames) == {'time', 'flux', 'flux_err', 'astroModel'}
+    assert lc.meta['FLUX_ORIGIN'] == 'astroModel'
+    assert lc.meta['EXTNAME'] == 'astroModel'
+
+
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+@pytest.mark.parametrize('nvisits', [1, 2])
+def test_hdf5_model_extensions(rocky_worlds_file, helper_name, nvisits, request):
+    helper = request.getfixturevalue(helper_name)
+    path = rocky_worlds_file(nvisits)
+    with h5py.File(path, 'r+') as data:
+        data['fullModel'] = data['astroModel'][:] * 1.01
+        data['fullModel'].attrs['units'] = np.bytes_('None (normalized)')
+        data['noiseModel'] = data['astroModel'][:] * 1.02
+        data['noiseModel'].attrs['units'] = np.bytes_('None (normalized)')
+
+    loader = helper.loaders['file']
+    loader.filepath = str(path)
+    loader.format = 'Light Curve'
+    importer = loader.importer
+    assert importer.extension.choices == ['Light curve', 'astroModel', 'fullModel', 'noiseModel']
+    assert importer.extension.selected == 'Light curve'
+    assert not importer.extension.multiselect
+    assert importer.data_label.value == 'GJ 3929 b'
+    hashes = importer._obj.data_hashes
+    assert len(hashes) == 4
+    assert len(set(hashes)) == 4
+    assert all(hashes)
+
+    importer.extension = 'astroModel'
+    assert importer.data_label.value == 'GJ 3929 b [astroModel]'
+    assert importer._obj.output.meta['FLUX_ORIGIN'] == 'astroModel'
+    importer.extension = 'fullModel'
+    assert importer._obj.output.meta['FLUX_ORIGIN'] == 'fullModel'
+    importer.extension.multiselect = True
+    importer.extension = ['Light curve', 'astroModel', 'fullModel']
+    assert importer.data_label.value == 'GJ 3929 b'
+    importer.data_label = 'Custom prefix'
+    loader.load()
+
+    collection = helper._app.data_collection
+    assert collection.labels == ['Custom prefix [Light curve]', 'Custom prefix [astroModel]',
+                                 'Custom prefix [fullModel]']
+    for data, origin in zip(collection, ['rawFlux', 'astroModel', 'fullModel']):
+        assert data.shape == (4 * nvisits,)
+        assert data.meta['FLUX_ORIGIN'] == origin
+        assert data.meta['_data_hash'] in hashes
+        assert 'centroid_x' not in {cid.label for cid in data.components}
+    np.testing.assert_allclose(collection[1]['flux'], 0.99)
+    np.testing.assert_allclose(collection[2]['flux'], 0.9999)
+    importer._obj.reset_and_check_existing_data_in_dc()
+    assert len(importer._obj.existing_data_in_dc) == 3
+    importer.extension.multiselect = False
+    assert isinstance(importer._obj.output, LightCurve)
+    importer.extension = 'noiseModel'
+    assert importer._obj.output.meta['FLUX_ORIGIN'] == 'noiseModel'
+
+
+def test_hdf5_single_model_loading(rocky_worlds_file, deconfigged_helper):
+    loader = deconfigged_helper.loaders['file']
+    loader.filepath = str(rocky_worlds_file())
+    loader.format = 'Light Curve'
+    loader.importer.extension = 'astroModel'
+    loader.load()
+    collection = deconfigged_helper._app.data_collection
+    assert collection.labels == ['GJ 3929 b [astroModel]']
+    np.testing.assert_allclose(collection[0]['flux'], 0.99)
+    assert deconfigged_helper.plugins['Flux Column'].flux_column.choices == ['astroModel']
+
+
+def test_hdf5_without_models(rocky_worlds_file, deconfigged_helper):
+    path = rocky_worlds_file()
+    with h5py.File(path, 'r+') as data:
+        del data['astroModel']
+    loader = deconfigged_helper.loaders['file']
+    loader.filepath = str(path)
+    loader.format = 'Light Curve'
+    assert not loader.importer._obj.input_has_extensions
+    assert not hasattr(loader.importer, 'extension')
+    loader.load()
+    assert deconfigged_helper._app.data_collection.labels == ['GJ 3929 b']
+
+
+def test_hdf5_model_names(rocky_worlds_file, deconfigged_helper):
+    path = rocky_worlds_file()
+    with h5py.File(path, 'r+') as data:
+        data.move('astroModel', 'fluxMODEL')
+        lc = hdf5_to_lightcurve(data)
+        assert 'fluxMODEL' not in lc.colnames
+    loader = deconfigged_helper.loaders['file']
+    loader.filepath = str(path)
+    loader.format = 'Light Curve'
+    assert loader.importer.extension.choices == ['Light curve', 'fluxMODEL']
+    loader.importer.extension = 'fluxMODEL'
+    loader.load()
+    np.testing.assert_allclose(deconfigged_helper._app.data_collection[0]['flux'], 0.99)
+
+
+@pytest.mark.parametrize('invalid', ['shape', 'empty'])
+def test_hdf5_invalid_model(rocky_worlds_file, invalid):
+    path = rocky_worlds_file()
+    with h5py.File(path, 'r+') as data:
+        if invalid == 'shape':
+            del data['astroModel']
+            data['astroModel'] = np.ones((2, 4))
+        else:
+            data['astroModel'][:] = np.nan
+        with pytest.raises(ValueError, match='Model dataset'):
+            hdf5_to_lightcurve(data, model='astroModel')

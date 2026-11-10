@@ -109,7 +109,7 @@ def _decode_hdf5_metadata(value):
     return value
 
 
-def hdf5_to_lightcurve(data):
+def hdf5_to_lightcurve(data, model=None):
     """Combine the visits in a Rocky Worlds light curve into one time series."""
     if _decode_hdf5_metadata(data.attrs.get('HLSPID', '')) != 'Rocky-Worlds':
         raise ValueError('HDF5 light curves must use the Rocky-Worlds schema.')
@@ -129,7 +129,8 @@ def hdf5_to_lightcurve(data):
     columns = {}
     shape = (visits.size, times.size)
     for name, dataset in data.items():
-        if 'flux' not in name.lower() or not isinstance(dataset, h5py.Dataset):
+        if 'flux' not in name.lower() or name.lower().endswith('model') \
+                or not isinstance(dataset, h5py.Dataset):
             continue
         if dataset.shape != shape or dataset.dtype.kind not in 'fiu':
             raise ValueError(f'Flux dataset {name!r} must be a numeric array of shape {shape}.')
@@ -140,9 +141,20 @@ def hdf5_to_lightcurve(data):
             raise ValueError(f'Duplicate flux column {column_name!r}.')
         columns[column_name] = dataset[:].reshape(-1) * unit
 
-    # NetCDF outer alignment can pad visits with rows missing every flux and uncertainty.
+    if model is not None:
+        dataset = data[model]
+        if not isinstance(dataset, h5py.Dataset) or dataset.shape != shape \
+                or dataset.dtype.kind not in 'fiu':
+            raise ValueError(f'Model dataset {model!r} must be a numeric array of shape {shape}.')
+        unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
+        unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)
+        columns = {model: dataset[:].reshape(-1) * unit}
+
+    # NetCDF outer alignment can pad visits with rows missing every selected column.
     present = np.any([np.isfinite(column.value) for column in columns.values()], axis=0)
     if not np.any(present):
+        if model is not None:
+            raise ValueError(f'Model dataset {model!r} contains no finite values.')
         raise ValueError('Rocky-Worlds light curve contains no finite fluxes or uncertainties.')
     time = np.tile(times, visits.size)[present]
     order = np.argsort(time, kind='stable')
@@ -150,9 +162,11 @@ def hdf5_to_lightcurve(data):
     meta = {name: _decode_hdf5_metadata(value) for name, value in data.attrs.items()
             if not name.startswith('_')}
     meta['OBJECT'] = meta.get('HLSPTARG') or meta.get('STAR') or 'Light curve'
-    meta['FLUX_ORIGIN'] = 'rawFlux'
+    meta['FLUX_ORIGIN'] = model or 'rawFlux'
+    if model is not None:
+        meta['EXTNAME'] = model
     return LightCurve(time=Time(time[order], format='jd', scale='tdb'),
-                      flux=columns['rawFlux'], flux_err=columns['rawFlux_err'],
+                      flux=columns[model or 'rawFlux'], flux_err=columns.get('rawFlux_err'),
                       data=columns, meta=meta)
 
 
@@ -163,8 +177,9 @@ class LightCurveImporter(BaseImporterToDataCollection):
     create_ephemeris_available = Bool(False).tag(sync=True)
     create_ephemeris = Bool(True).tag(sync=True)
 
-    # HDUList-specific options
+    # File extension options
     input_hdulist = Bool(False).tag(sync=True)
+    input_has_extensions = Bool(False).tag(sync=True)
     extension_items = List().tag(sync=True)
     extension_selected = Any().tag(sync=True)
     extension_multiselect = Bool(True).tag(sync=True)
@@ -178,6 +193,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
             return
 
         self.input_hdulist = isinstance(self.input, fits.HDUList)
+        self.input_has_extensions = self.input_hdulist
         if self.input_hdulist:
             pri_header = self.input[0].header
             # Build ext_options as a list of dicts (required by SelectFileExtensionComponent)
@@ -209,8 +225,30 @@ class LightCurveImporter(BaseImporterToDataCollection):
                                               self.extension.labels))
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
+        elif isinstance(self.input, h5py.File):
+            models = sorted(name for name in self.input if name.lower().endswith('model')
+                            and isinstance(self.input[name], h5py.Dataset))
+            self.data_label_default = self._hdf5_lightcurve.meta['OBJECT']
+            if models:
+                self.input_has_extensions = True
+                self.extension_multiselect = False
+                lightcurves = [('Light curve', self._hdf5_lightcurve)]
+                lightcurves += [(name, hdf5_to_lightcurve(self.input, model=name))
+                                for name in models]
+                ext_options = [{'label': name, 'name': name, 'index': index,
+                                'data_hash': create_data_hash(lc), 'obj': lc}
+                               for index, (name, lc) in enumerate(lightcurves)]
+                self.extension = SelectFileExtensionComponent(
+                    self, items='extension_items', selected='extension_selected',
+                    multiselect='extension_multiselect', manual_options=ext_options)
+                self.data_hashes = self.extension.data_hashes
+                self.hash_map_to_label = dict(zip(self.extension.data_hashes,
+                                                  self.extension.labels))
+                self.extension.selected = 'Light curve'
+                self._clear_cache('output')
+                self._extension_selected_changed()
         else:
-            meta = self.output.meta if isinstance(self.input, h5py.File) else self.input.meta
+            meta = self.input.meta
             if meta.get('QUARTER', None) is None:
                 self.data_label_default = meta.get('OBJECT', 'Light curve')
             else:
@@ -219,7 +257,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
     @property
     def user_api(self):
         expose = ['create_ephemeris']
-        if isinstance(self.input, fits.HDUList):
+        if self.input_has_extensions:
             expose += ['extension']
         return ImporterUserApi(self, expose)
 
@@ -229,7 +267,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
         if isinstance(self.input, LightCurve):
             return ''
         if isinstance(self.input, h5py.File):
-            self.output
+            self._hdf5_lightcurve
             return ''
         if isinstance(self.input, fits.HDUList):
             for hdu in self.input:
@@ -240,10 +278,18 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
     @observe('extension_selected')
     def _extension_selected_changed(self, event={}):
-        if not hasattr(self, 'extension') or not self.input_hdulist:
+        if not hasattr(self, 'extension'):
             return
 
         self._clear_cache('output')
+
+        if isinstance(self.input, h5py.File):
+            obj_name = self._hdf5_lightcurve.meta['OBJECT']
+            name = self.extension.selected_name
+            self.data_label_default = (
+                obj_name if self.extension_multiselect or name in ('Light curve', None)
+                else f'{obj_name} [{name}]')
+            return
 
         if self.extension_multiselect:
             self.data_label_default = self.input[0].header.get('OBJECT') or 'Light curve'
@@ -258,11 +304,16 @@ class LightCurveImporter(BaseImporterToDataCollection):
         return [{'label': 'flux-vs-time', 'reference': 'lcviz-time-viewer'}]
 
     @cached_property
+    def _hdf5_lightcurve(self):
+        return hdf5_to_lightcurve(self.input)
+
+    @cached_property
     def output(self):
         if isinstance(self.input, LightCurve):
             lc = self.input
         elif isinstance(self.input, h5py.File):
-            lc = hdf5_to_lightcurve(self.input)
+            lc = self.extension.selected_obj if hasattr(self, 'extension') \
+                else self._hdf5_lightcurve
         else:
             # HDUList case
             pri_header = self.input[0].header
@@ -287,11 +338,13 @@ class LightCurveImporter(BaseImporterToDataCollection):
     def add_to_data_collection(self, data, *args, **kwargs):
         lc_cls = data.__class__
         kwargs.setdefault('cls', lc_cls)
+        if isinstance(self.input, h5py.File):
+            kwargs.setdefault('data_hash', create_data_hash(data))
         data = _data_with_reftime(self.app, data)
         super().add_to_data_collection(data, *args, **kwargs)
 
     def __call__(self):
-        if self.input_hdulist and self.extension_multiselect:
+        if self.input_has_extensions and self.extension_multiselect:
             data_label = self.data_label_value
             lcs = self.output
             with self._app._jdaviz_helper.batch_load():

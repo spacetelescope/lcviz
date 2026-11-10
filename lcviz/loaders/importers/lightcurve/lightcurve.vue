@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div style="position: absolute; width: 32px; right: 0px; margin-right: 12px; margin-top: -32px">
+    <div v-if="input_has_extensions" style="position: absolute; width: 32px; right: 0px; margin-right: 12px; margin-top: -32px">
       <j-tooltip tooltipcontent='Toggle multiselect for extension.'>
         <v-btn
           icon
@@ -14,7 +14,7 @@
       </j-tooltip>
     </div>
     <plugin-select
-      v-if="input_hdulist"
+      v-if="input_has_extensions"
       :items="extension_items.map(i => i.label)"
       v-model:selected="extension_selected"
       :multiselect="extension_multiselect"
@@ -22,17 +22,17 @@
       label="Extension"
       api_hint="ldr.importer.extension ="
       :api_hints_enabled="api_hints_enabled"
-      hint="Extension to use from the FITS HDUList."
+      :hint="input_hdulist ? 'Extension to use from the FITS HDUList.' : 'Light curve or model to import from the HDF5 file.'"
     />
     <plugin-auto-label
       v-model:value="data_label_value"
       :default="data_label_default"
       v-model:auto="data_label_auto"
       :invalid_msg="data_label_invalid_msg"
-      :label="extension_multiselect ? 'Base Data Label' : 'Data Label'"
+      :label="input_has_extensions && extension_multiselect ? 'Base Data Label' : 'Data Label'"
       api_hint="ldr.importer.data_label ="
       :api_hints_enabled="api_hints_enabled"
-      :hint="input_hdulist && extension_multiselect ? 'Base label to assign to new data entries (will include extension as suffix).' : 'Label to assign to the new data entry.'"
+      :hint="input_has_extensions && extension_multiselect ? 'Base label to assign to new data entries (will include extension as suffix).' : 'Label to assign to the new data entry.'"
     ></plugin-auto-label>
 
     <plugin-viewer-create-new

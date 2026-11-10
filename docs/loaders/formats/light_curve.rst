@@ -28,7 +28,17 @@ All flux columns are retained, with ``rawFlux`` selected initially and
 ``cleanedFlux`` or other supplied flux columns. Uncertainty names ending in
 ``Err`` are converted to ``_err`` to associate them with their flux column;
 uncertainties are not inferred for columns without supplied errors.
-Models and diagnostic arrays are not imported. Root metadata are preserved.
+Model datasets with names ending in ``Model`` (case-insensitive), such as
+``astroModel``, ``noiseModel``, and ``fullModel``, are exposed as Extension
+options alongside ``Light curve``. By default, only the light curve is imported.
+Each selected model is imported as a separate light curve with the model values
+as its flux, combining all visits and omitting missing model values. Models are
+not stored as columns in the observed light curve, and diagnostic arrays are
+not imported. Root metadata are preserved.
+
+Enable extension multiselect to import the light curve and/or several models.
+The Data Label becomes a prefix: entries are labeled
+``<Data Label> [<Extension>]``.
 
 .. code-block:: python
 
@@ -36,6 +46,18 @@ Models and diagnostic arrays are not imported. Root metadata are preserved.
     import lcviz
 
     jd.load("hlsp_rocky-worlds_example_lc.h5", format="Light Curve")
+
+To select models programmatically:
+
+.. code-block:: python
+
+    ldr = jd.loaders["file"]
+    ldr.filepath = "hlsp_rocky-worlds_example_lc.h5"
+    ldr.format = "Light Curve"
+    ldr.importer.extension.multiselect = True
+    ldr.importer.extension = ["Light curve", "fullModel"]
+    ldr.importer.data_label = "GJ 3929 b"
+    ldr.load()
 
 UI Access
 =========
