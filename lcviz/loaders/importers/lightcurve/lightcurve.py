@@ -113,49 +113,26 @@ def hdf5_to_lightcurve(data, model=None):
     """Combine the visits in a Rocky Worlds light curve into one time series."""
     if _decode_hdf5_metadata(data.attrs.get('HLSPID', '')) != 'Rocky-Worlds':
         raise ValueError('HDF5 light curves must use the Rocky-Worlds schema.')
-    for name in ('time', 'visit', 'rawFlux', 'rawFluxErr'):
-        if name not in data or not isinstance(data[name], h5py.Dataset):
-            raise ValueError(f'Rocky-Worlds light curve is missing dataset {name!r}.')
 
     times = data['time'][:]
     visits = data['visit']
-    if times.ndim != 1 or not times.size or not np.all(np.isfinite(times)):
-        raise ValueError('Rocky-Worlds time must be a nonempty, finite 1D array.')
-    if visits.ndim != 1 or not visits.size:
-        raise ValueError('Rocky-Worlds visit must be a nonempty 1D array.')
-    if _decode_hdf5_metadata(data['time'].attrs.get('units', '')) != 'BJD_TDB':
-        raise ValueError('Rocky-Worlds time units must be BJD_TDB.')
 
     columns = {}
     shape = (visits.size, times.size)
     for name, dataset in data.items():
-        if 'flux' not in name.lower() or name.lower().endswith('model') \
-                or not isinstance(dataset, h5py.Dataset):
-            continue
-        if dataset.shape != shape or dataset.dtype.kind not in 'fiu':
-            raise ValueError(f'Flux dataset {name!r} must be a numeric array of shape {shape}.')
         unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
         unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)
         column_name = name[:-3] + '_err' if name.endswith('Err') else name
-        if column_name in columns:
-            raise ValueError(f'Duplicate flux column {column_name!r}.')
         columns[column_name] = dataset[:].reshape(-1) * unit
 
     if model is not None:
         dataset = data[model]
-        if not isinstance(dataset, h5py.Dataset) or dataset.shape != shape \
-                or dataset.dtype.kind not in 'fiu':
-            raise ValueError(f'Model dataset {model!r} must be a numeric array of shape {shape}.')
         unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
         unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)
         columns = {model: dataset[:].reshape(-1) * unit}
 
     # NetCDF outer alignment can pad visits with rows missing every selected column.
     present = np.any([np.isfinite(column.value) for column in columns.values()], axis=0)
-    if not np.any(present):
-        if model is not None:
-            raise ValueError(f'Model dataset {model!r} contains no finite values.')
-        raise ValueError('Rocky-Worlds light curve contains no finite fluxes or uncertainties.')
     time = np.tile(times, visits.size)[present]
     order = np.argsort(time, kind='stable')
     columns = {name: column[present][order] for name, column in columns.items()}

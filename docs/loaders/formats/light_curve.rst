@@ -14,10 +14,13 @@ The Light Curve importer accepts a :class:`lightkurve.LightCurve` object (or any
 FITS file readable as one) and loads it into the data collection, creating a
 time-scatter viewer automatically.
 
-Rocky Worlds HDF5
-================
+HLSPs from JWST Rocky Worlds DDT
+================================
 
-Rocky Worlds light curve products (``HLSPID=Rocky-Worlds``) are also supported.
+The `JWST Rocky Worlds Director's Discretionary Time Program <https://rockyworlds.stsci.edu>`_ publishes MIRI light curves as 
+high-level science products (HLSPs), which are also supported by 
+LCviz. For details on how to download these files and their contents,
+`see the RWDDT HLSP documentation <https://archive.stsci.edu/hlsp/rocky-worlds>`_.
 All visits are combined into a single data entry, sorted by time. Times are
 interpreted as full BJD in the TDB scale. Rows missing every flux and uncertainty
 are omitted, including padding introduced by alignment between visits; other
