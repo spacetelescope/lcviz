@@ -129,6 +129,7 @@ def hdf5_to_lightcurve(data, model=None):
         dataset = data[model]
         unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
         unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)
+        # flatten all visits to a single light curve
         columns = {model: dataset[:].reshape(-1) * unit}
 
     # NetCDF outer alignment can pad visits with rows missing every selected column.
