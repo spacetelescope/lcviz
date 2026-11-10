@@ -178,7 +178,6 @@ class LightCurveImporter(BaseImporterToDataCollection):
     create_ephemeris = Bool(True).tag(sync=True)
 
     # File extension options
-    input_hdulist = Bool(False).tag(sync=True)
     input_has_extensions = Bool(False).tag(sync=True)
     extension_items = List().tag(sync=True)
     extension_selected = Any().tag(sync=True)
@@ -192,9 +191,8 @@ class LightCurveImporter(BaseImporterToDataCollection):
         if not self.is_valid:
             return
 
-        self.input_hdulist = isinstance(self.input, fits.HDUList)
-        self.input_has_extensions = self.input_hdulist
-        if self.input_hdulist:
+        if isinstance(self.input, fits.HDUList):
+            self.input_has_extensions = True
             pri_header = self.input[0].header
             # Build ext_options as a list of dicts (required by SelectFileExtensionComponent)
             ext_options = [{'label': f"{i}: [{hdu.name},{getattr(hdu, 'ver', 1)}]",

@@ -22,7 +22,7 @@
       label="Extension"
       api_hint="ldr.importer.extension ="
       :api_hints_enabled="api_hints_enabled"
-      :hint="input_hdulist ? 'Extension to use from the FITS HDUList.' : 'Light curve or model to import from the HDF5 file.'"
+      hint="Light curve or model extension to import."
     />
     <plugin-auto-label
       v-model:value="data_label_value"
