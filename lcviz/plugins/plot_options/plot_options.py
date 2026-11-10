@@ -22,9 +22,10 @@ def _default_tpf_stretch(self, vmin_percentile=5, vmax_percentile=99,
 def _lcviz_layer_filter_factory(plugin):
     """Layer filter factory: exclude spatial subsets in scatter viewers unless CubeView active."""
     from lcviz.viewers import CubeView
+    from jdaviz.configs.imviz.plugins.viewers import ImvizImageView
 
     def _filter(lyr):
-        if np.any([isinstance(v, CubeView) for v in plugin.layer.viewer_objs]):
+        if np.any([isinstance(v, (CubeView, ImvizImageView)) for v in plugin.layer.viewer_objs]):
             return True
         return get_subset_type(lyr) != 'spatial'
 
@@ -43,8 +44,7 @@ PlotOptions.register_user_api(
         'marker_color_mode', 'marker_color', 'marker_color_col',
         'marker_colormap', 'marker_colormap_vmin', 'marker_colormap_vmax',
         'line_visible', 'line_width',
-    ],
-    remove=['apply_RGB_presets', 'line_as_steps', 'uncertainty_visible'],
+    ]
 )
 
 # Convenience method injected onto the plugin class for TPF stretch setup.
