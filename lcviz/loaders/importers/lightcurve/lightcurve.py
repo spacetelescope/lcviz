@@ -308,6 +308,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
     @cached_property
     def _hdf5_lightcurve(self):
+        # all extensions (whereas output will only include the selected one(s))
         return hdf5_to_lightcurve(self.input)
 
     @cached_property
