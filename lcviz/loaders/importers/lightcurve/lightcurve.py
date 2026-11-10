@@ -250,7 +250,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
                 if hdu_is_valid(hdu):
                     return ''
         return ('Input must be a LightCurve, a HDUList with a valid light curve extension, '
-                'or a Rocky-Worlds HDF5 light curve.')
+                'or a Rocky Worlds DDT HLSP light curve.')
 
     @observe('extension_selected')
     def _extension_selected_changed(self, event={}):

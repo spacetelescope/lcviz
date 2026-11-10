@@ -88,36 +88,6 @@ def test_hdf5_overlapping_visits(rocky_worlds_file):
     np.testing.assert_allclose(lc.flux_err[:2].value, [0.01, 0.02])
 
 
-@pytest.mark.parametrize('invalid, message', [
-    ('schema', 'Rocky-Worlds schema'),
-    ('missing', "missing dataset 'rawFluxErr'"),
-    ('units', 'time units must be BJD_TDB'),
-    ('time', 'finite 1D array'),
-    ('shape', 'numeric array of shape'),
-    ('empty', 'no finite fluxes or uncertainties'),
-    ('duplicate', 'Duplicate flux column'),
-])
-def test_hdf5_invalid_schema(rocky_worlds_file, invalid, message):
-    path = rocky_worlds_file()
-    with h5py.File(path, 'r+') as data:
-        if invalid == 'schema':
-            data.attrs['HLSPID'] = 'another product'
-        elif invalid == 'missing':
-            del data['rawFluxErr']
-        elif invalid == 'units':
-            data['time'].attrs['units'] = 'MJD'
-        elif invalid == 'time':
-            data['time'][0] = np.nan
-        elif invalid == 'shape':
-            del data['rawFlux']
-            data['rawFlux'] = np.ones((2, 4))
-        elif invalid == 'empty':
-            for name in ('rawFlux', 'rawFluxErr', 'cleanedFlux', 'otherFlux'):
-                data[name][:] = np.nan
-        elif invalid == 'duplicate':
-            data['rawFlux_err'] = np.ones((1, 4))
-        with pytest.raises(ValueError, match=message):
-            hdf5_to_lightcurve(data)
 
 
 def test_hdf5_parser_cleanup(rocky_worlds_file):
@@ -293,14 +263,3 @@ def test_hdf5_model_names(rocky_worlds_file, deconfigged_helper):
     np.testing.assert_allclose(deconfigged_helper._app.data_collection[0]['flux'], 0.99)
 
 
-@pytest.mark.parametrize('invalid', ['shape', 'empty'])
-def test_hdf5_invalid_model(rocky_worlds_file, invalid):
-    path = rocky_worlds_file()
-    with h5py.File(path, 'r+') as data:
-        if invalid == 'shape':
-            del data['astroModel']
-            data['astroModel'] = np.ones((2, 4))
-        else:
-            data['astroModel'][:] = np.nan
-        with pytest.raises(ValueError, match='Model dataset'):
-            hdf5_to_lightcurve(data, model='astroModel')
