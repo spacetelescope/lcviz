@@ -29,11 +29,25 @@
       :default="data_label_default"
       v-model:auto="data_label_auto"
       :invalid_msg="data_label_invalid_msg"
-      :label="input_has_extensions && extension_multiselect ? 'Base Data Label' : 'Data Label'"
+      :label="data_label_is_prefix ? 'Base Data Label' : 'Data Label'"
       api_hint="ldr.importer.data_label ="
       :api_hints_enabled="api_hints_enabled"
-      :hint="input_has_extensions && extension_multiselect ? 'Base label to assign to new data entries (will include extension as suffix).' : 'Label to assign to the new data entry.'"
+      :hint="data_label_is_prefix ? 'Prefix to assign to the new data entry.  Will resolve to the following data labels:' : 'Label to assign to the new data entry.'"
     ></plugin-auto-label>
+    <j-flex-row v-if="data_label_is_prefix">
+        <j-tooltip v-for="(suff, index) in data_label_suffices"
+          :key="suff"
+          :tooltipcontent="data_label_overwrite_by_index[index] ? 'Will overwrite existing entry' : 'New entry'">
+          <v-chip
+            variant="outlined"
+            label
+            style="margin: 4px"
+          >
+            <v-icon v-if="data_label_overwrite_by_index[index]" small left color="warning">mdi-file-replace</v-icon>
+            {{data_label_value}}{{suff}}
+          </v-chip>
+        </j-tooltip>
+    </j-flex-row>
 
     <plugin-viewer-create-new
       :items="viewer_items"
@@ -68,6 +82,9 @@
       :api_hints_enabled="api_hints_enabled"
       api_hint="ldr.load()"
       :data_label_overwrite="data_label_overwrite"
+      :data_label_is_prefix="data_label_is_prefix"
+      :data_label_suffices="data_label_suffices"
+      :data_label_overwrite_by_index="data_label_overwrite_by_index"
       @click="import_clicked">
     </loader-import-button>
   </v-container>

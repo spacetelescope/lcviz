@@ -283,6 +283,11 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         self._clear_cache('output')
 
+        self.data_label_is_prefix = self.extension_multiselect
+        self.data_label_suffices = (
+            [f" [{name}]" for name in self.extension.selected_name]
+            if self.data_label_is_prefix else [])
+
         if isinstance(self.input, h5py.File):
             obj_name = self._hdf5_lightcurve.meta['OBJECT']
             name = self.extension.selected_name

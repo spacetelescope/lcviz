@@ -39,6 +39,8 @@ not imported. Root metadata are preserved.
 Enable extension multiselect to import the light curve and/or several models.
 The Data Label becomes a prefix: entries are labeled
 ``<Data Label> [<Extension>]``.
+The loader previews the resolved labels and marks entries that will overwrite
+existing data.
 
 .. code-block:: python
 

@@ -205,6 +205,8 @@ def test_hdf5_model_extensions(rocky_worlds_file, helper_name, nvisits, request)
     assert importer.extension.choices == ['Light curve', 'astroModel', 'fullModel', 'noiseModel']
     assert importer.extension.selected == 'Light curve'
     assert not importer.extension.multiselect
+    assert not importer._obj.data_label_is_prefix
+    assert importer._obj.data_label_suffices == []
     assert importer.data_label.value == 'GJ 3929 b'
     hashes = importer._obj.data_hashes
     assert len(hashes) == 4
@@ -220,6 +222,9 @@ def test_hdf5_model_extensions(rocky_worlds_file, helper_name, nvisits, request)
     importer.extension = ['Light curve', 'astroModel', 'fullModel']
     assert importer.data_label.value == 'GJ 3929 b'
     importer.data_label = 'Custom prefix'
+    assert importer._obj.data_label_is_prefix
+    assert importer._obj.data_label_suffices == [' [Light curve]', ' [astroModel]', ' [fullModel]']
+    assert importer._obj.data_label_overwrite_by_index == [False, False, False]
     loader.load()
 
     collection = helper._app.data_collection
@@ -234,7 +239,15 @@ def test_hdf5_model_extensions(rocky_worlds_file, helper_name, nvisits, request)
     np.testing.assert_allclose(collection[2]['flux'], 0.9999)
     importer._obj.reset_and_check_existing_data_in_dc()
     assert len(importer._obj.existing_data_in_dc) == 3
+    importer._obj._on_label_changed()
+    assert importer._obj.data_label_overwrite_by_index == [True, True, True]
+    assert importer._obj.data_label_overwrite
+    importer.extension = ['Light curve', 'noiseModel']
+    assert importer._obj.data_label_suffices == [' [Light curve]', ' [noiseModel]']
+    assert importer._obj.data_label_overwrite_by_index == [True, False]
     importer.extension.multiselect = False
+    assert not importer._obj.data_label_is_prefix
+    assert importer._obj.data_label_suffices == []
     assert isinstance(importer._obj.output, LightCurve)
     importer.extension = 'noiseModel'
     assert importer._obj.output.meta['FLUX_ORIGIN'] == 'noiseModel'
