@@ -119,6 +119,9 @@ def hdf5_to_lightcurve(data, model=None):
 
     columns = {}
     for name, dataset in data.items():
+        if 'flux' not in name.lower() or name.lower().endswith('model') \
+                or not isinstance(dataset, h5py.Dataset):
+            continue
         unit = _decode_hdf5_metadata(dataset.attrs.get('units', ''))
         unit = u.dimensionless_unscaled if unit == 'None (normalized)' else u.Unit(unit)
         column_name = name[:-3] + '_err' if name.endswith('Err') else name
