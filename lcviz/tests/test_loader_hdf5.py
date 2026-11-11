@@ -114,7 +114,7 @@ def test_hdf5_file_loader(rocky_worlds_file, helper_name, nvisits, request):
     helper.load(str(rocky_worlds_file(nvisits)), format='Light Curve')
     assert len(helper._app.data_collection) == 1
     data = helper._app.data_collection[0]
-    assert data.label == 'GJ 3929 b'
+    assert data.label == 'GJ 3929 b [Light curve]'
     assert data.shape == (4 * nvisits,)
     assert data.meta['FLUX_ORIGIN'] == 'rawFlux'
     assert not {'astroModel', 'centroid_x', 'PIPELINE'} & {cid.label for cid in data.components}
@@ -162,16 +162,20 @@ def test_hdf5_model_extensions(rocky_worlds_file, helper_name, nvisits, request)
     loader.format = 'Light Curve'
     importer = loader.importer
     assert importer.extension.choices == ['Light curve', 'astroModel', 'fullModel', 'noiseModel']
-    assert importer.extension.selected == 'Light curve'
-    assert not importer.extension.multiselect
-    assert not importer._obj.data_label_is_prefix
-    assert importer._obj.data_label_suffices == []
+    assert importer.extension.selected == ['Light curve']
+    assert importer.extension.multiselect
+    assert importer._obj.data_label_is_prefix
+    assert importer._obj.data_label_suffices == [' [Light curve]']
     assert importer.data_label.value == 'GJ 3929 b'
+    assert [lc.meta['FLUX_ORIGIN'] for lc in importer._obj.output] == ['rawFlux']
     hashes = importer._obj.data_hashes
     assert len(hashes) == 4
     assert len(set(hashes)) == 4
     assert all(hashes)
 
+    importer.extension.multiselect = False
+    assert not importer._obj.data_label_is_prefix
+    assert importer._obj.data_label_suffices == []
     importer.extension = 'astroModel'
     assert importer.data_label.value == 'GJ 3929 b [astroModel]'
     assert importer._obj.output.meta['FLUX_ORIGIN'] == 'astroModel'
@@ -224,16 +228,27 @@ def test_hdf5_single_model_loading(rocky_worlds_file, deconfigged_helper):
     assert deconfigged_helper.plugins['Flux Column'].flux_column.choices == ['astroModel']
 
 
-def test_hdf5_load_multiple_extensions(rocky_worlds_file, deconfigged_helper):
-    deconfigged_helper.load(str(rocky_worlds_file()),
-                            format='Light Curve',
-                            extension=['Light curve', 'astroModel'])
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_hdf5_load_multiple_extensions(rocky_worlds_file, helper_name, request):
+    helper = request.getfixturevalue(helper_name)
+    helper.load(str(rocky_worlds_file()), format='Light Curve',
+                extension=['Light curve', 'astroModel'], data_label='Custom')
 
-    dc = deconfigged_helper._app.data_collection
-    assert dc.labels == ['GJ 3929 b [Light curve]', 'GJ 3929 b [astroModel]']
+    dc = helper._app.data_collection
+    assert dc.labels == ['Custom [Light curve]', 'Custom [astroModel]']
     assert [data.meta['FLUX_ORIGIN'] for data in dc] == ['rawFlux', 'astroModel']
     np.testing.assert_allclose(dc[0]['flux'], [1, np.nan, 1.02, 1.03])
     np.testing.assert_allclose(dc[1]['flux'], 0.99)
+
+
+@pytest.mark.parametrize('extension', ['astroModel', ['astroModel']])
+def test_hdf5_load_single_extension(rocky_worlds_file, deconfigged_helper, extension):
+    deconfigged_helper.load(str(rocky_worlds_file()), format='Light Curve',
+                            extension=extension)
+    dc = deconfigged_helper._app.data_collection
+    assert dc.labels == ['GJ 3929 b [astroModel]']
+    assert dc[0].meta['FLUX_ORIGIN'] == 'astroModel'
+    np.testing.assert_allclose(dc[0]['flux'], 0.99)
 
 
 def test_hdf5_without_models(rocky_worlds_file, deconfigged_helper):

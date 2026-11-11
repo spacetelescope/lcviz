@@ -38,9 +38,10 @@ options alongside ``Light curve``. By default, only the light curve is imported.
 Each selected model is imported as a separate light curve with the model values
 as its flux.
 
-Enable extension multiselect to import the light curve and/or several models simultaneously.
-The Data Label becomes a prefix: entries are labeled
-``<Data Label> [<Extension>]``.
+Extension multiselect is enabled by default, with only ``Light curve`` selected.
+Select additional extensions to import the light curve and/or several models
+simultaneously. The Data Label is a prefix: entries are labeled
+``<Data Label> [<Extension>]``, even when only one extension is selected.
 
 .. code-block:: python
 
