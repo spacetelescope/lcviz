@@ -50,6 +50,20 @@ def test_kepler_via_mast_uri(helper_name, request):
 
 @pytest.mark.remote_data
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+def test_tess_hlsp_mast_uri_data_label(helper_name, request):
+    helper = request.getfixturevalue(helper_name)
+    uri = ('mast:HLSP/tars/sec_51_cam_1_ccd_3/'
+           'hlsp_tars_tess_ffi_s0051-0000000181949561_tess_v01_lc.fits')
+
+    helper.load(uri, format='Light Curve')
+
+    assert helper._app.data_collection[-1].label == (
+        'hlsp_tars_tess_ffi_s0051-0000000181949561_tess_v01_lc [LIGHTCURVE]'
+    )
+
+
+@pytest.mark.remote_data
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_kepler_via_mast_preparsed(helper_name, request):
     helper = request.getfixturevalue(helper_name)
     url = 'https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:KEPLER/url/missions/kepler/lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'  # noqa 188 KB
@@ -104,6 +118,7 @@ def test_synthetic_lc(helper_name, request):
     helper.load(lc, format='Light Curve')
 
     data = helper._app.data_collection[0]
+    assert data.label == 'Light curve'
     flux_arr = data['flux']
     flux_unit = u.Unit(data.get_component('flux').units)
     flux = flux_arr * flux_unit
