@@ -188,7 +188,7 @@ def test_hdf5_model_extensions(rocky_worlds_file, helper_name, nvisits, request)
 
     dc = helper._app.data_collection
     assert dc.labels == ['Custom prefix [Light curve]', 'Custom prefix [astroModel]',
-                                 'Custom prefix [fullModel]']
+                         'Custom prefix [fullModel]']
     for data, origin in zip(dc, ['rawFlux', 'astroModel', 'fullModel']):
         assert data.shape == (4 * nvisits,)
         assert data.meta['FLUX_ORIGIN'] == origin
@@ -225,7 +225,9 @@ def test_hdf5_single_model_loading(rocky_worlds_file, deconfigged_helper):
 
 
 def test_hdf5_load_multiple_extensions(rocky_worlds_file, deconfigged_helper):
-    deconfigged_helper.load(str(rocky_worlds_file()), format='Light Curve', extension=['Light curve', 'astroModel'])
+    deconfigged_helper.load(str(rocky_worlds_file()),
+                            format='Light Curve',
+                            extension=['Light curve', 'astroModel'])
 
     dc = deconfigged_helper._app.data_collection
     assert dc.labels == ['GJ 3929 b [Light curve]', 'GJ 3929 b [astroModel]']
