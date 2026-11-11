@@ -209,7 +209,6 @@ class LightCurveImporter(BaseImporterToDataCollection):
             self.data_label_default = self._hdf5_lightcurve.meta['OBJECT']
             if models:
                 self.input_has_extensions = True
-                self.extension_multiselect = False
                 lightcurves = [('Light curve', self._hdf5_lightcurve)]
                 lightcurves += [(name, hdf5_to_lightcurve(self.input, model=name))
                                 for name in models]

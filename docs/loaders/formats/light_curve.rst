@@ -49,14 +49,21 @@ The Data Label becomes a prefix: entries are labeled
 
     jd.load("hlsp_rocky-worlds_example_lc.h5", format="Light Curve")
 
-To select models programmatically:
+To select multiple extensions directly, pass a list to ``jd.load``. The data
+label is used as a prefix for the selected extensions:
+
+.. code-block:: python
+
+    jd.load("hlsp_rocky-worlds_example_lc.h5", format="Light Curve",
+            extension=["Light curve", "fullModel"], data_label="GJ 3929 b")
+
+Alternatively, use the interactive loader programmatically:
 
 .. code-block:: python
 
     ldr = jd.loaders["file"]
     ldr.filepath = "hlsp_rocky-worlds_example_lc.h5"
     ldr.format = "Light Curve"
-    ldr.importer.extension.multiselect = True
     ldr.importer.extension = ["Light curve", "fullModel"]
     ldr.importer.data_label = "GJ 3929 b"
     ldr.load()
