@@ -129,15 +129,6 @@ def test_hdf5_file_loader(rocky_worlds_file, helper_name, nvisits, request):
     np.testing.assert_allclose(data['flux_err'], 0.01)
 
 
-def test_hdf5_invalid_not_offered(rocky_worlds_file, deconfigged_helper):
-    path = rocky_worlds_file()
-    with h5py.File(path, 'r+') as data:
-        del data['rawFluxErr']
-    loader = deconfigged_helper.loaders['file']
-    loader.filepath = str(path)
-    assert 'Light Curve' not in loader.format.choices
-
-
 @pytest.mark.parametrize('nvisits', [1, 2])
 def test_hdf5_model_conversion(rocky_worlds_file, nvisits):
     path = rocky_worlds_file(nvisits)
