@@ -3,6 +3,7 @@
 
 * Update jdaviz requirement to 5.1 and python to 3.12 to include upstream improvements including: upgrade to vue3, 
   focus mode. [#230]
+* Improve fallback logic for default data-labels for light curves. [#239]
 
 2.0.1 (unreleased)
 ------------------

@@ -183,7 +183,7 @@ class LightCurveImporter(BaseImporterToDataCollection):
         self._clear_cache('output')
 
         if self.extension_multiselect:
-            self.data_label_default = self.input[0].header.get('OBJECT') or self.resolver.default_label or 'Light curve'
+            self.data_label_default = self.input[0].header.get('OBJECT') or self.resolver.default_label or 'Light curve'  # noqa
             self.create_ephemeris_available = any([has_ephem(lc) for lc in self.output])
         else:
             obj_name = self.input[0].header.get('OBJECT') or 'Light curve'
