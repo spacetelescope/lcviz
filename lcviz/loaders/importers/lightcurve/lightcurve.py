@@ -148,14 +148,18 @@ class LightCurveImporter(BaseImporterToDataCollection):
             self.extension.select_all()
             # NOTE: data_label_default handled by changes to extension_selected
         else:
-            if self.input.meta.get('OBJECT', None) is not None:
-                prefix = self.input.meta.get('OBJECT')
-            else:
-                prefix = self.resolver.default_label
             if self.input.meta.get('QUARTER', None) is None:
-                self.data_label_default = prefix
+                self.data_label_default = self.base_data_label
             else:
-                self.data_label_default = f"{prefix} [Q{self.input.meta.get('QUARTER')}]"  # noqa
+                self.data_label_default = f"{self.base_data_label} [Q{self.input.meta.get('QUARTER')}]"  # noqa
+
+    @property
+    def base_data_label(self):
+        if isinstance(self.input, fits.HDUList):
+            object_name = self.input[0].header.get('OBJECT')
+        else:
+            object_name = self.input.meta.get('OBJECT')
+        return object_name or self.resolver.default_label or 'Light curve'
 
     @property
     def user_api(self):
@@ -183,11 +187,10 @@ class LightCurveImporter(BaseImporterToDataCollection):
         self._clear_cache('output')
 
         if self.extension_multiselect:
-            self.data_label_default = self.input[0].header.get('OBJECT') or self.resolver.default_label or 'Light curve'  # noqa
+            self.data_label_default = self.base_data_label
             self.create_ephemeris_available = any([has_ephem(lc) for lc in self.output])
         else:
-            obj_name = self.input[0].header.get('OBJECT') or 'Light curve'
-            self.data_label_default = f"{obj_name} [{self.extension.selected_item['name']}]"  # noqa
+            self.data_label_default = f"{self.base_data_label} [{self.extension.selected_item['name']}]"  # noqa
             self.create_ephemeris_available = has_ephem(self.output)
 
     @staticmethod
