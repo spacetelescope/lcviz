@@ -5,6 +5,8 @@
   focus mode. [#230]
 * Improve fallback logic for default data-labels for light curves. [#239]
 
+* Adds support to parse Rocky Worlds HDF5 light curve files. [#236]
+
 2.0.1 (unreleased)
 ------------------
 
