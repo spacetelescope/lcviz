@@ -115,3 +115,35 @@ def test_spectral_slice_does_not_affect_lc_indicator(
 
     # Time Selector must be unchanged
     assert time_plg.value == initial_time_value
+
+
+def test_spectral_display_unit_does_not_affect_time_indicators(
+        deconfigged_helper, light_curve_like_kepler_quarter):
+    jd = deconfigged_helper
+    _load_both(jd, light_curve_like_kepler_quarter)
+    jd.plugins['Ephemeris'].period = 3.14
+
+    time_plg = jd.plugins['Time Selector']
+    time_indicators = [v.slice_indicator for v in time_plg._obj.slice_indicator_viewers]
+    assert len(time_indicators) == 2  # time and phase viewers
+    initial_time_value = time_plg.value
+    initial_states = [(mark.xunit, list(mark.labels), mark.value, mark.x.copy())
+                      for mark in time_indicators]
+    spectral_indicators = [v.slice_indicator
+                           for v in jd.plugins['Spectral Slice']._obj.slice_indicator_viewers]
+    assert spectral_indicators
+
+    for unit in ('nm', 'Hz'):
+        jd.plugins['Unit Conversion'].spectral_unit = unit
+
+        assert time_plg.value == initial_time_value
+        for mark, (xunit, labels, value, x) in zip(time_indicators, initial_states):
+            assert mark.xunit == xunit
+            assert mark.labels == labels
+            assert mark.label.text == labels
+            assert mark.value == value
+            np.testing.assert_array_equal(mark.x, x)
+        for mark in spectral_indicators:
+            assert mark.xunit == unit
+            assert unit in mark.labels[0]
+            assert mark.label.text == mark.labels
