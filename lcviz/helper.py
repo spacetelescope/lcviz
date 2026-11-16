@@ -9,23 +9,34 @@ import os
 from lightkurve import LightCurve
 
 from glue.config import settings as glue_settings
+from glue.core import Subset
 from glue.core.link_helpers import LinkSame
 from glue.core.units import unit_converter
+from jdaviz.app import UnitConverterWithSpectral
 from jdaviz.configs.default.plugins.viewers import JdavizViewerWindow
 from jdaviz.core.helpers import ConfigHelper
 
 from lcviz import __version__
+from lcviz.utils import PaddedTimeWCS, TimeCoordinates
 from lcviz.viewers import TimeScatterView, PhaseScatterView
 
 __all__ = ['LCviz']
 
 
 @unit_converter('custom-lcviz')
-class UnitConverter:
+class UnitConverter(UnitConverterWithSpectral):
+    """Preserve jdaviz conversions while handling temporal data without spectral equivalencies."""
+
     def equivalent_units(self, data, cid, units):
+        data = data.data if isinstance(data, Subset) else data
+        if not isinstance(data.coords, (TimeCoordinates, PaddedTimeWCS)):
+            return super().equivalent_units(data, cid, units)
         return set(list(map(str, u.Unit(units).find_equivalent_units(include_prefix_units=True))))
 
     def to_unit(self, data, cid, values, original_units, target_units):
+        data = data.data if isinstance(data, Subset) else data
+        if not isinstance(data.coords, (TimeCoordinates, PaddedTimeWCS)):
+            return super().to_unit(data, cid, values, original_units, target_units)
         # for some reason, glue is trying to request a change for cid='flux' from d to electron / s
         if target_units not in self.equivalent_units(data, cid, original_units):
             return values
@@ -85,19 +96,20 @@ def _link_new_data(app, reference_data=None, data_to_be_linked=None):
 
 
 def _get_display_unit(app, axis):
+    """Return display-unit strings, including when falling back to native units."""
     if app._jdaviz_helper is None or app._jdaviz_helper.plugins.get('Unit Conversion') is None:  # noqa
         # fallback on native units (unit conversion is not enabled)
         if axis == 'time':
-            return u.d
+            return u.d.to_string()
         elif axis == 'flux':
             try:
                 time_viewers = [v for v in app._viewer_store.values()
                                 if isinstance(v, TimeScatterView)]
                 if time_viewers and len(time_viewers[0].data()) > 0:
-                    return time_viewers[0].data()[0].flux.unit
-                return u.electron / u.s
+                    return time_viewers[0].data()[0].flux.unit.to_string()
+                return (u.electron / u.s).to_string()
             except (ValueError, IndexError):
-                return u.electron / u.s
+                return (u.electron / u.s).to_string()
         else:
             raise ValueError(f"could not find units for axis='{axis}'")
     try:
@@ -119,8 +131,6 @@ def _apply_lcviz_patches(jdaviz_application):
     """
     if getattr(jdaviz_application, '_lcviz_patched', False):
         return
-
-    from lcviz.utils import PaddedTimeWCS, TimeCoordinates
 
     _original_get_range_subset_bounds = type(jdaviz_application)._get_range_subset_bounds
     _original_get_display_unit = type(jdaviz_application)._get_display_unit
