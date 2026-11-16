@@ -10,7 +10,7 @@
     v-model:keep_active="keep_active"
     :popout_button="popout_button">
 
-    <v-row>
+    <v-row style="margin-bottom: 16px">
       <v-expansion-panels popout>
         <v-expansion-panel>
           <v-expansion-panel-title>
