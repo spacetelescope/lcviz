@@ -18,6 +18,8 @@
 * Patch access to _get_display_unit to fix a mouseover units related bug in jdaviz when lcviz is imported
   in the same session. [#232]
 
+* Fix flux column choices to be case-insensitive. [#243]
+
 2.0.0 (06-25-2026)
 ------------------
 
