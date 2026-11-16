@@ -15,7 +15,7 @@ choose whether to bin in time or phase using **Ephemeris** (only available if at
 one ephemeris has been created).
 
 Time binning: No ephemeris
--------------------------
+--------------------------
 
 With **Ephemeris** set to **No ephemeris** (the default), samples are grouped by
 their observation times. **N Bins** sets the bin width by dividing the full input
@@ -25,7 +25,7 @@ The live preview shows the time-binned light curve in the time viewer and its
 phase-folded appearance in existing phase viewers.
 
 Phase binning: Selecting an ephemeris
-------------------------------------
+-------------------------------------
 
 Select an ephemeris defined in the :ref:`Ephemeris plugin <lcviz-ephemeris>` to
 fold the input light curve before binning. This is useful for
