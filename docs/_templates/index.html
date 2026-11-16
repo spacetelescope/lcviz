@@ -568,20 +568,26 @@
             </div>
         </div>
 
-        <!-- Announcement Banner -->
-        <div class="announcement-banner">
-            <h2 class="announcement-header">Introducing lcviz 2.0 + jdaviz 5.0</h2>
-            <p class="announcement-text">
-                lcviz 2.0, powered by jdaviz 5.0, injects lcviz loaders and plugins directly
-                into the generalized jdaviz at runtime. You no longer need a separate
-                <code>LCviz</code> configuration — just <code>import jdaviz as jd</code>
-                and then inject lightcurve capabilities with <code>import lcviz</code>. From there, simply
-                load your light curve or TPF data, and all lcviz capabilities are available
-                alongside the full suite of jdaviz tools.
-            </p>
-            <a href="{{ pathto('configs_deprecated') }}" class="announcement-button">
-                View Deprecated LCViz-Config Documentation
-            </a>
+        <!-- Install Button -->
+        <div class="install-section">
+            <a href="{{ pathto('installation') }}" class="full-width-button">Install lcviz</a>
+        </div>
+
+        <!-- Jupyter Cell -->
+        <div class="jupyter-cell-container">
+            <div class="jupyter-cell-header">
+                <span class="jupyter-cell-prompt">In [1]:</span>
+            </div>
+            <div class="jupyter-cell-code">
+                import jdaviz as jd
+                import lcviz
+
+                from lightkurve import search_lightcurve
+                lc = search_lightcurve("HAT-P-11", mission="Kepler", cadence="long", quarter=10).download()
+
+                jd.load(lc, format='Light Curve')
+                jd.show()
+            </div>
         </div>
 
         <!-- Wireframe Section (powered by guidestar + jdaviz.ext.wireframe) -->
@@ -610,28 +616,6 @@
                  {"action": "show-sidebar", "value": "save", "delay": 5000, "caption": "Save or export your work"}
                ]
              }'>
-        </div>
-
-        <!-- Jupyter Cell -->
-        <div class="jupyter-cell-container">
-            <div class="jupyter-cell-header">
-                <span class="jupyter-cell-prompt">In [1]:</span>
-            </div>
-            <div class="jupyter-cell-code">
-                import jdaviz as jd
-                import lcviz
-
-                from lightkurve import search_lightcurve
-                lc = search_lightcurve("HAT-P-11", mission="Kepler", cadence="long", quarter=10).download()
-
-                jd.load(lc, format='Light Curve')
-                jd.show()
-            </div>
-        </div>
-
-        <!-- Install Button -->
-        <div class="install-section">
-            <a href="{{ pathto('installation') }}" class="full-width-button">Install lcviz</a>
         </div>
 
         <!-- Grid Section -->
@@ -674,6 +658,19 @@
                 {% endif %}
             </div>
             {% endfor %}
+        </div>
+
+        <!-- Legacy Configuration Notice -->
+        <div class="announcement-banner">
+            <h2 class="announcement-header">Legacy LCviz Configuration</h2>
+            <p class="announcement-text">
+                Since lcviz 2.0, lcviz loaders and plugins are available in the generalized
+                jdaviz application. The earlier standalone <code>LCviz</code> configuration
+                is deprecated, but its documentation remains available for existing workflows.
+            </p>
+            <a href="{{ pathto('configs_deprecated') }}" class="announcement-button">
+                View Deprecated LCviz Configuration Documentation
+            </a>
         </div>
 
         <!-- GitHub Button -->
