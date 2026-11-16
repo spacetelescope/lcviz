@@ -28,8 +28,6 @@ class LightkurveResolver(BaseConeSearchResolver):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.search_input.add_filter(lambda item: item['label'] != 'Catalog')
-
         self.mission = SelectPluginComponent(
             self, items="mission_items", selected="mission_selected",
             manual_options=['Kepler', 'K2', 'TESS']
@@ -50,6 +48,8 @@ class LightkurveResolver(BaseConeSearchResolver):
             expose=[
                 "search_input", "viewer", "coordframe", "radius", "radius_unit",
                 "source",
+                "catalog", "catalog_subset", "catalog_col_type", "catalog_name_col",
+                "query_progress",
                 "mission", "data_type",
                 "max_results",
                 "query_archive"
