@@ -3,9 +3,12 @@
 
 * Update jdaviz requirement to 5.1 and python to 3.12 to include upstream improvements including: upgrade to vue3, 
   focus mode. [#230]
+
 * Improve fallback logic for default data-labels for light curves. [#239]
 
 * Preserve jdaviz spectral and image unit conversions when lcviz is imported alongside jdaviz. [#240]
+
+* Prevent spectral display unit changes from adding spectral units to time and phase indicators. [#242]
 
 * Adds support to parse Rocky Worlds HDF5 light curve files. [#236]
 
@@ -19,9 +22,11 @@
 ------------------
 
 * Photometric Extraction plugin to extract light curves from TPF cubes. [#115]
+
 * Update jdaviz requirement to 5.0.  Importing lcviz now injects light curve plugins, viewers, and tools
   into the generalized jdaviz rather than being an independent application [#215] and supports popping out
   and showing viewers inline. [#210]
+
 * Adds a lightkurve loader source for querying and loading light curves from Kepler/K2/TESS. [#220]
 
 

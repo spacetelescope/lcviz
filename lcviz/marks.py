@@ -2,7 +2,7 @@ from astropy import units as u
 import numpy as np
 
 from jdaviz.core.marks import PluginLine, PluginScatter, SliceIndicatorMarks
-from lcviz.viewers import PhaseScatterView
+from lcviz.viewers import PhaseScatterView, TimeScatterView
 
 __all__ = ['LivePreviewTrend', 'LivePreviewFlattened', 'LivePreviewBinning']
 
@@ -25,8 +25,21 @@ def _slice_indicator_set_visibility(self):
     self.label.visible = False
 
 
+_orig_slice_indicator_on_global_display_unit_changed = (
+    SliceIndicatorMarks._on_global_display_unit_changed
+)
+
+
+def _slice_indicator_on_global_display_unit_changed(self, msg):
+    if isinstance(self.viewer, TimeScatterView):
+        # TODO: listen to time display units once supported (also for phase viewers).
+        return
+    return _orig_slice_indicator_on_global_display_unit_changed(self, msg)
+
+
 SliceIndicatorMarks._get_slice_axis = _slice_indicator_get_slice_axis
 SliceIndicatorMarks._set_visibility = _slice_indicator_set_visibility
+SliceIndicatorMarks._on_global_display_unit_changed = _slice_indicator_on_global_display_unit_changed  # noqa
 
 
 class WithoutPhaseSupport:
