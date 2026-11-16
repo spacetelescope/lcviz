@@ -228,7 +228,7 @@ class FluxColumnSelect(SelectPluginComponent):
         lk_obj = self.dataset.selected_obj
         if lk_obj is None:
             return
-        self.choices = [col for col in lk_obj.columns if _include_col(lk_obj, col)]
+        self.choices = [col for col in lk_obj.columns if _include_col(lk_obj, col.lower())]
         flux_column = lk_obj.meta.get('FLUX_ORIGIN')
         if flux_column in self.choices:
             self.selected = flux_column
