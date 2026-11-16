@@ -203,24 +203,25 @@ class FluxColumnSelect(SelectPluginComponent):
 
     def _on_change_dataset(self, *args):
         def _include_col(lk_obj, col):
-            if col == 'flux' and lk_obj.meta.get('FLUX_ORIGIN') != 'flux':
+            col_lower = col.lower()
+            if col_lower == 'flux' and lk_obj.meta.get('FLUX_ORIGIN') != 'flux':
                 # this is the currently active column (and should be copied elsewhere unless)
                 return False
-            if col in ('time', 'cadn', 'cadenceno', 'quality'):
+            if col_lower in ('time', 'cadn', 'cadenceno', 'quality'):
                 return False
-            if col.startswith('phase:'):
+            if col_lower.startswith('phase:'):
                 # internal jdaviz ephemeris phase columns
                 return False
-            if col.startswith('time'):
+            if col_lower.startswith('time'):
                 return False
-            if col.startswith('centroid'):
+            if col_lower.startswith('centroid'):
                 return False
-            if col.startswith('cbv'):
+            if col_lower.startswith('cbv'):
                 # cotrending basis vector
                 return False
-            if col.endswith('_err'):
+            if col_lower.endswith('_err'):
                 return False
-            if col.endswith('quality'):
+            if col_lower.endswith('quality'):
                 return False
             # TODO: need to think about flatten losing units in the flux column
             return lk_obj[col].unit != u.pix
