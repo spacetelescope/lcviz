@@ -57,7 +57,7 @@ def test_lightkurve_source_input_without_viewers(deconfigged_helper):
 ])
 @pytest.mark.parametrize('input_mode', ['sky_coords', 'subset', 'source_name'])
 def test_lightkurve_catalog_input(catalog_lightkurve_resolver, monkeypatch,
-                                 data_type, search_function, input_mode):
+                                  data_type, search_function, input_mode):
     resolver = catalog_lightkurve_resolver
     resolver.data_type = data_type
     resolver.mission = 'TESS'
