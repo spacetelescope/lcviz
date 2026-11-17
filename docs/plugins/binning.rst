@@ -9,7 +9,7 @@ Bin a light curve in time or phase-space.
 Overview
 ========
 
-This plugin combines light-curve samples into bins to reduce the number of points
+This plugin combines light curve samples into bins to reduce the number of points
 and make trends easier to see. Select the input light curve with **Data**, then
 choose whether to bin in time or phase using **Ephemeris** (only available if at least
 one ephemeris has been created).
