@@ -6,6 +6,8 @@
 
 * Fix flux column choices to be case-insensitive. [#243]
 
+* Fixes binning in phase-space (which previously randomly failed to show previews or bin). [#246]
+
 2.0.0 (06-25-2026)
 ------------------
 
