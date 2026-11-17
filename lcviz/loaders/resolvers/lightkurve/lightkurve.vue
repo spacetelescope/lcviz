@@ -101,6 +101,82 @@
         ></plugin-select>
       </div>
 
+      <div v-if="search_input_selected === 'Catalog'">
+        <plugin-dataset-select
+          :items="catalog_items"
+          v-model:selected="catalog_selected"
+          label="Catalog"
+          :show_if_single_entry="true"
+          api_hint="ldr.catalog ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Select a loaded catalog. The archive is queried once per catalog row."
+        />
+
+        <plugin-select
+          :items="catalog_subset_items.map(i => i.label)"
+          v-model:selected="catalog_subset_selected"
+          label="Subset"
+          api_hint="ldr.catalog_subset ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Optionally restrict the query to a subset of catalog rows."
+        ></plugin-select>
+
+        <j-flex-row>
+          <v-radio-group
+            v-model="catalog_col_type"
+            row
+            label="Coordinates from"
+            style="margin-top: 15px"
+          >
+            <v-radio
+              label="RA/Dec Columns"
+              value="sky_coords"
+              style="margin-top: -8px"
+            ></v-radio>
+            <v-radio
+              label="Source Names"
+              value="source_name"
+              :disabled="catalog_name_col_items.length === 0"
+              style="margin-top: -8px"
+            ></v-radio>
+          </v-radio-group>
+        </j-flex-row>
+        <v-alert
+          v-if="catalog_name_col_items.length === 0"
+          type="info"
+          dense
+          style="margin-top: -20px; margin-bottom: 8px"
+        >
+          No source name columns found.
+        </v-alert>
+
+        <plugin-select
+          v-if="catalog_col_type === 'source_name'"
+          :items="catalog_name_col_items.map(i => i.label)"
+          v-model:selected="catalog_name_col_selected"
+          label="Source Name Column"
+          api_hint="ldr.catalog_name_col ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Column of source names to resolve into coordinates."
+        ></plugin-select>
+
+        <j-flex-row v-if="catalog_col_type === 'source_name'">
+          <v-alert type="warning" dense>
+            Source-name resolution issues one request per catalog row (Sesame/CDS).
+            Large catalogs may take significant time.
+          </v-alert>
+        </j-flex-row>
+
+        <plugin-select
+          :items="coordframe_choices.map(i => i.label)"
+          v-model:selected="coordframe_selected"
+          label="Coordinate Frame"
+          api_hint="ldr.coordframe ="
+          :api_hints_enabled="api_hints_enabled"
+          hint="Astronomical Coordinate Frame of the catalog coordinates."
+        ></plugin-select>
+      </div>
+
       <j-flex-row justify="space-between">
         <div :style="{ width: '55%' }">
           <v-text-field
@@ -159,7 +235,7 @@
           :label="api_hints_enabled ? 'ldr.max_results =' : 'Max Results'"
           :class="api_hints_enabled ? 'api-hint' : null"
           persistent-hint
-          hint="Maximum number of results to return from the query"
+          hint="Maximum total number of results to return across all queried sources"
         ></v-text-field>
       </v-row>
     </v-form>
@@ -167,6 +243,9 @@
 
 
     <v-row class="row-no-outside-padding" justify="end" style="margin-top: 32px">
+      <span v-if="query_progress" style="align-self: center; margin-right: 8px; font-size: 0.85em; color: gray;">
+        {{ query_progress }}
+      </span>
       <plugin-action-button
         :spinner="results_loading"
         :disabled="!all_fields_filled"
@@ -180,6 +259,8 @@
           }}
       </plugin-action-button>
     </v-row>
+
+    <j-loader-banner-messages :items="loader_message_items"></j-loader-banner-messages>
 
     <v-row v-if="returned_max_results">
       <v-alert type="warning">

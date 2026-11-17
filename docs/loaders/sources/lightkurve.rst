@@ -14,8 +14,18 @@ using :func:`lightkurve.search_lightcurve` or :func:`lightkurve.search_targetpix
 Results are presented as a table; selected entries are downloaded and loaded as
 Light Curve or Target Pixel File data.
 
+Like the jdaviz :doc:`Astroquery <jdaviz:loaders/sources/astroquery>` and
+:doc:`Virtual Observatory <jdaviz:loaders/sources/virtual_observatory>`
+resolvers, this resolver also accepts a loaded source catalog or a subset of its
+rows. Lightkurve searches one target at a time, so catalog queries run once per
+selected row and combine the results into a single table.
+
 Parameters
 ==========
+
+**Input**
+    ``Source``, ``Viewer`` (when available), or ``Catalog`` (when a source catalog
+    has been loaded).
 
 **Source/Coordinates**
     A source name (resolved via SIMBAD) or sky coordinates in degrees.
@@ -24,8 +34,18 @@ Parameters
 **Coordinate Frame**
     Astronomical coordinate frame for the provided coordinates (e.g. ``icrs``).
 
+**Catalog / Subset**
+    The loaded source catalog to query, optionally restricted to a selected
+    subset. The default subset is ``Entire Catalog``.
+
+**Coordinates from / Source Name Column**
+    Use the catalog's assigned RA/Dec columns (``catalog_col_type = "sky_coords"``),
+    or resolve entries in a source-name column
+    (``catalog_col_type = "source_name"`` and ``catalog_name_col``).
+    Source-name resolution uses Sesame/CDS and adds one request per selected row.
+
 **Radius**
-    Angular search radius around the target (default: 10 arcsec).
+    Angular search radius around the target.
 
 **Radius Unit**
     Unit for the search radius. Supported values include ``arcsec``, ``arcmin``, and ``deg``.
@@ -37,7 +57,13 @@ Parameters
     Whether to search for ``Light Curve`` or ``Target Pixel File`` products.
 
 **Max Results**
-    Maximum number of archive results to return (default: 100).
+    Maximum total number of archive results to return, across all
+    selected sources. Catalog querying stops once this limit is reached.
+
+**Query Progress**
+    ``query_progress`` reports the current catalog source while querying and is
+    cleared when the query finishes. Individual search failures are reported
+    without discarding successful results from other sources.
 
 UI Access
 =========
@@ -71,6 +97,21 @@ Usage
     # Load a result from the returned table
     ldr.load()
     viz.show()
+
+To query an already loaded source catalog:
+
+.. code-block:: python
+
+    ldr.search_input = "Catalog"
+    ldr.catalog = "my catalog"  # label in the data collection
+    ldr.catalog_subset = "Entire Catalog"  # or a subset label
+    ldr.catalog_col_type = "sky_coords"
+    ldr.query_archive()
+
+    # Alternatively, resolve a column of source names:
+    ldr.catalog_col_type = "source_name"
+    ldr.catalog_name_col = "source_id"
+    ldr.query_archive()
 
 .. seealso::
 
