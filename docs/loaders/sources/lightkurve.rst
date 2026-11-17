@@ -14,10 +14,11 @@ using :func:`lightkurve.search_lightcurve` or :func:`lightkurve.search_targetpix
 Results are presented as a table; selected entries are downloaded and loaded as
 Light Curve or Target Pixel File data.
 
-Like the jdaviz Astroquery and Virtual Observatory resolvers, this resolver also
-accepts a loaded source catalog or a subset of its rows. Lightkurve searches one
-target at a time, so catalog queries run once per selected row and combine the
-results into a single table.
+Like the jdaviz :doc:`Astroquery <jdaviz:loaders/sources/astroquery>` and
+:doc:`Virtual Observatory <jdaviz:loaders/sources/virtual_observatory>`
+resolvers, this resolver also accepts a loaded source catalog or a subset of its
+rows. Lightkurve searches one target at a time, so catalog queries run once per
+selected row and combine the results into a single table.
 
 Parameters
 ==========
@@ -44,7 +45,7 @@ Parameters
     Source-name resolution uses Sesame/CDS and adds one request per selected row.
 
 **Radius**
-    Angular search radius around the target (default: 10 arcsec).
+    Angular search radius around the target.
 
 **Radius Unit**
     Unit for the search radius. Supported values include ``arcsec``, ``arcmin``, and ``deg``.
@@ -56,7 +57,7 @@ Parameters
     Whether to search for ``Light Curve`` or ``Target Pixel File`` products.
 
 **Max Results**
-    Maximum total number of archive results to return (default: 100), across all
+    Maximum total number of archive results to return, across all
     selected sources. Catalog querying stops once this limit is reached.
 
 **Query Progress**
