@@ -173,7 +173,8 @@ class PaddedTimeWCS(BaseWCSWrapper, HighLevelWCSMixin):
         return False
 
 
-@data_translator(LightCurve)
+# Prefer temporal-data handling over Glue's generic Astropy table translators.
+@data_translator(LightCurve, priority=1)
 class LightCurveHandler:
 
     def to_data(self, obj, reference_time=None):
@@ -487,13 +488,13 @@ def enable_hot_reloading(watch_jdaviz=True):
             ' Please install with `pip install watchdog`'))
 
 
-@data_translator(KeplerLightCurve)
+@data_translator(KeplerLightCurve, priority=1)
 class KeplerLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
     pass
 
 
-@data_translator(TessLightCurve)
+@data_translator(TessLightCurve, priority=1)
 class TessLightCurveHandler(LightCurveHandler):
     # Works the same as LightCurve
     pass
