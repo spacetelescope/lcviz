@@ -85,6 +85,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
     template_file = __file__, "ephemeris.vue"
 
     reference_time = None
+    default_touched = False
 
     # EPHEMERIS
     component_mode = Unicode().tag(sync=True)
@@ -150,6 +151,7 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
 
         # force the original entry in ephemerides with defaults
         self._change_component()
+        self.default_touched = False
 
         self.method = SelectPluginComponent(self,
                                             items='method_items',
@@ -352,6 +354,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         """
         if ephem_component is None:
             ephem_component = self.component_selected
+        if ephem_component == 'default' and not self.default_touched:
+            self.default_touched = True
         _phase_comp_lbl = self._phase_comp_lbl(ephem_component)
         dc = self._app.data_collection
 
@@ -514,6 +518,8 @@ class Ephemeris(PluginTemplateMixin, DatasetSelectMixin):
         """
         if ephem_component is None:
             ephem_component = self.component_selected
+        if ephem_component == 'default' and not self.default_touched:
+            self.default_touched = True
 
         if ephem_component not in self.component.choices:  # pragma: no cover
             raise ValueError(f"component must be one of {self.component.choices}")

@@ -345,10 +345,15 @@ class LightCurveImporter(BaseImporterToDataCollection):
 
         if self.create_ephemeris_available and self.create_ephemeris \
                 and 'Ephemeris' in self._app._jdaviz_helper.plugins:
+            ephem = self._app._jdaviz_helper.plugins['Ephemeris']
+            # delete the existing default component if it is the only
+            # ephemeris component (before adding new ones) AND
+            # has not had values changed or a phase viewer linked to it
+            delete_default = (ephem.component.choices == ['default']
+                              and not ephem._obj.default_touched)
             for lc, ext in zip(lcs, self.extension.selected_name):
                 if not has_ephem(lc):
                     continue
-                ephem = self._app._jdaviz_helper.plugins['Ephemeris']
                 ephem_component = self._app.return_unique_name(ext, ephem.component.choices)
 
                 time_offset = int(lc.meta.get('TUNIT1').split('- ')[1].split(',')[0])
@@ -358,3 +363,5 @@ class LightCurveImporter(BaseImporterToDataCollection):
                 ephem.add_component(ephem_component, set_as_selected=False)
                 ephem.update_ephemeris(ephem_component, t0=t0, period=period, wrap_at=0.5)
                 ephem.create_phase_viewer(ephem_component)
+            if delete_default:
+                ephem.remove_component('default')
