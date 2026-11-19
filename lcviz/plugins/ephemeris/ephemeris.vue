@@ -23,10 +23,9 @@
     </plugin-editable-select>
 
     <j-flex-row justify="end">
-      <v-btn
-        color="primary" 
-        variant="text"
-        :class="api_hints_enabled ? 'api-hint' : null"
+      <plugin-action-button
+        :results_isolated_to_plugin="false"
+        :api_hints_enabled="api_hints_enabled"
         @click="create_phase_viewer"
         :disabled="phase_viewer_exists || component_selected.length == 0"
       >
@@ -35,7 +34,7 @@
           :
           'Show Phase Viewer'
         }}
-      </v-btn>
+      </plugin-action-button>
     </j-flex-row>
 
     <div v-if="component_items.length > 0">
@@ -139,12 +138,11 @@
           <j-flex-row v-if="method_err.length > 0">
             <v-alert color="warning">{{ method_err }}</v-alert>
           </j-flex-row>
-          <j-flex-row v-else>
+          <j-flex-row v-else justify="end">
             <j-tooltip :tooltipcontent="'adopt period into '+component_selected+' ephemeris.'">
-              <v-btn
-                variant="text"
-                color='primary'
-                :class="api_hints_enabled ? 'api-hint' : null"
+              <plugin-action-button
+                :results_isolated_to_plugin="false"
+                :api_hints_enabled="api_hints_enabled"
                 @click='adopt_period_at_max_power'
                 style="padding: 0px"
               >
@@ -154,7 +152,7 @@
                   'period: '+period_at_max_power
                 }}
                 
-              </v-btn>
+              </plugin-action-button>
             </j-tooltip>
           </j-flex-row>
 
@@ -244,7 +242,7 @@
         <j-tooltip tooltipcontent="Query for this object.">
           <plugin-action-button
             :spinner="query_spinner"
-            :results_isolated_to_plugin="false"
+            :results_isolated_to_plugin="true"
             :api_hints_enabled="api_hints_enabled"
             @click="query_for_ephemeris">
               {{ api_hints_enabled ? 
@@ -305,7 +303,6 @@
           </span>
           <j-tooltip :tooltipcontent="'Adopt period and epoch into '+component_selected+' ephemeris.'">
             <j-flex-row justify="end">
-            <v-col>
               <plugin-action-button
                 @click="create_ephemeris_from_query"
                 :class="api_hints_enabled ? 'api-hint' : null"
@@ -316,7 +313,6 @@
                     'Create new component'
                    }}  
               </plugin-action-button>
-            </v-col>
             </j-flex-row>
           </j-tooltip>
         </j-flex-row>
