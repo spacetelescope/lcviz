@@ -15,10 +15,7 @@ from lcviz.utils import TimeCoordinates
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_kepler_via_mast_local_file(helper_name, request):
     helper = request.getfixturevalue(helper_name)
-    url = (
-        'https://archive.stsci.edu/pub/kepler/'
-        'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
-    )  # 188 KB
+    url = 'https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:KEPLER/url/missions/kepler/lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits' # noqa 188 KB
 
     path = download_file(url, cache=True, timeout=100)
     helper.load(path, format='Light Curve')
@@ -37,10 +34,7 @@ def test_kepler_via_mast_local_file(helper_name, request):
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_kepler_via_mast_preparsed(helper_name, request):
     helper = request.getfixturevalue(helper_name)
-    url = (
-     'https://archive.stsci.edu/pub/kepler/'
-     'lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'
-    )  # 188 KB
+    url = 'https://mast.stsci.edu/api/v0.1/Download/file?uri=mast:KEPLER/url/missions/kepler/lightcurves/0014/001429092/kplr001429092-2009166043257_llc.fits'  # noqa 188 KB
 
     light_curve = kepler.read_kepler_lightcurve(url)
     helper.load(light_curve, format='Light Curve')
