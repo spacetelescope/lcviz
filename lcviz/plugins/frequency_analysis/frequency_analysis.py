@@ -7,7 +7,8 @@ from lightkurve import periodogram
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
-                                        DatasetSelectMixin, SelectPluginComponent, PlotMixin)
+                                        DatasetSelectMixin, SelectPluginComponent, PlotMixin,
+                                        skip_if_no_updates_since_last_active)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.utils import data_not_folded, is_lc
@@ -134,7 +135,8 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.spinner = False
         return per
 
-    @observe('xunit_selected')
+    @observe('is_active', 'xunit_selected')
+    @skip_if_no_updates_since_last_active()
     def _update_xunit(self, *args):
         per = self.periodogram
         if per is not None:
@@ -175,7 +177,11 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
 
         # TODO: avoid clearing cache if change was to min/max but auto_range is True?
         self._clear_cache('periodogram')
+        self._update_periodogram_active(*args)
 
+    @observe('is_active')
+    @skip_if_no_updates_since_last_active()
+    def _update_periodogram_active(self, *args):
         per = self.periodogram
         if per is not None:
             self.plot._update_data('periodogram',
