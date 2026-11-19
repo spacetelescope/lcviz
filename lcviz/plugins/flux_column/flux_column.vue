@@ -4,7 +4,7 @@
     plugin_key="Flux Column"
     v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Choose which column to use as flux for light curves.'"
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flux-column'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/flux_column.html'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     v-model:keep_active="keep_active"
