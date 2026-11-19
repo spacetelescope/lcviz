@@ -139,6 +139,10 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         # self.viewer.choices includes scatter viewers (to have slice indicator)
         self.cube_viewer_exists = len(self.slice_selection_viewers) > 0
 
+    def _is_cube_data(self, data):
+        return (super()._is_cube_data(data) and
+                data.meta.get('_importer') == 'TPFImporter')
+
     def _on_ephemeris_changed(self, msg):
         for viewer in self.slice_indicator_viewers:
             if not isinstance(viewer, PhaseScatterView):
