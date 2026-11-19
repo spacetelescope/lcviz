@@ -22,6 +22,8 @@
 
 * Fixes binning in phase-space (which previously randomly failed to show previews or bin). [#246]
 
+* Fixes links to docs from the plugin UIs. [#252]
+
 2.0.0 (06-25-2026)
 ------------------
 
