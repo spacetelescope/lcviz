@@ -79,7 +79,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.plot.viewer.axis_y.num_ticks = 5
         self.plot.viewer.axis_y.tick_format = '0.2e'
         self.plot.viewer.axis_y.label_offset = '55px'
-        self._update_xunit()
+        self.plot.figure.axes[0].label = self.xunit_selected
 
         self._set_relevant()
 
@@ -136,8 +136,14 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         return per
 
     @observe('is_active', 'xunit_selected')
-    @skip_if_no_updates_since_last_active()
-    def _update_xunit(self, *args):
+    def _update_xunit(self, event):
+        if not self.is_active:
+            return
+
+        axis_xunit = self.plot.figure.axes[0].label.split(' ', 1)[0]
+        if event.get('name') == 'is_active' and axis_xunit == self.xunit_selected:
+            return
+
         per = self.periodogram
         if per is not None:
             x = getattr(per, self.xunit_selected).value
