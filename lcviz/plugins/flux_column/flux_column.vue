@@ -3,7 +3,7 @@
     :config="config"
     plugin_key="Flux Column"
     v-model:api_hints_enabled="api_hints_enabled"
-    :description="docs_description || 'Choose which column to use as flux for all light curves.'"
+    :description="docs_description || 'Choose which column to use as flux for light curves.'"
     :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flux-column'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
