@@ -1,7 +1,7 @@
 <template>
   <j-tray-plugin
     description='Extract light curve from TPF data.'
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#photometric-extraction'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/photometric-extraction.html'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     v-model:keep_active="keep_active"

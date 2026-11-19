@@ -4,7 +4,7 @@
     plugin_key="Binning"
     v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Bin input light curve in time or phase-space.'"
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#binning'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/binning.html'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     v-model:keep_active="keep_active"

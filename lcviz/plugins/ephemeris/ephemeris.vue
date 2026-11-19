@@ -4,7 +4,7 @@
     plugin_key="Ephemeris"
     v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Find and refine ephemerides for phase-folding.'"
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#ephemeris'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/ephemeris.html'"
     :popout_button="popout_button">
 
     <plugin-editable-select
