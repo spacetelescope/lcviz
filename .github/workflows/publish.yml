@@ -43,7 +43,7 @@ jobs:
       run: |
         cd ..
         python -m venv testenv
-        testenv/bin/pip install pytest pytest-astropy pytest-tornasync lcviz/dist/*.whl
+        testenv/bin/pip install "pytest>=9.1.1,<9.2" pytest-astropy pytest-tornasync lcviz/dist/*.whl
         testenv/bin/pytest -p no:warnings --astropy-header --remote-data --pyargs lcviz
 
     # NOTE: Do not run this part for PR testing.
