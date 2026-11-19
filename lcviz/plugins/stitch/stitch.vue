@@ -1,7 +1,7 @@
 <template>
   <j-tray-plugin
     description='Stitch light curves together.'
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#stitch'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/stitch.html'"
     :popout_button="popout_button">
 
     <plugin-dataset-select

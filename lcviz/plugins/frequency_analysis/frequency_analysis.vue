@@ -4,7 +4,7 @@
     plugin_key="Frequency Analysis"
     :api_hints_enabled.sync="api_hints_enabled"
     :description="docs_description"
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/frequency_analysis.html'"
     :popout_button="popout_button">
 
     <plugin-dataset-select
