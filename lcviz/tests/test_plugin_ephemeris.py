@@ -151,6 +151,39 @@ def test_create_phase_viewer(helper, light_curve_like_kepler_quarter):
     assert len(vc.viewer_types) == 3
 
 
+@pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
+@pytest.mark.parametrize('action', ['untouched', 'viewer', 'period'])
+def test_import_ephemeris_default_cleanup(
+        helper_name, action, light_curve_like_kepler_quarter, tmp_path, request):
+    helper = request.getfixturevalue(helper_name)
+    path = tmp_path / 'with_ephemeris.fits'
+    hdul = light_curve_like_kepler_quarter.to_fits()
+    hdul[0].header['OBJECT'] = light_curve_like_kepler_quarter.meta['OBJECT']
+    hdul[1].name = 'imported'
+    hdul[1].columns['TIME'].unit = 'BJD - 0, days'
+    hdul[1].header.update({
+        'TPERIOD': 4.9,
+        'TEPOCH': light_curve_like_kepler_quarter.time.jd[0],
+    })
+    hdul.writeto(path)
+
+    helper.load(str(path), format='Light Curve', create_ephemeris=False)
+    ephem = helper.plugins['Ephemeris']
+    assert ephem.component.choices == ['default']
+
+    if action == 'viewer':
+        ephem.create_phase_viewer('default')
+    elif action == 'period':
+        ephem.period = 2.0
+
+    helper.load(str(path), format='Light Curve', create_ephemeris=True)
+
+    expected_components = {hdul[1].name}
+    if action != 'untouched':
+        expected_components.add('default')
+    assert set(ephem.component.choices) == expected_components
+
+
 @pytest.mark.remote_data
 @pytest.mark.parametrize('helper_name', ['helper', 'deconfigged_helper'])
 def test_ephemeris_adopt_period_with_tpf(helper_name, request):

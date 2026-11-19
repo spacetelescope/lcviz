@@ -12,6 +12,9 @@
 
 * Adds support to parse Rocky Worlds HDF5 light curve files. [#236]
 
+* When creating ephemerides while loading a light curve, if the "default" ephemeris has not been
+  used, remove it from the list of ephemeris components. [#250]
+
 2.0.1 (unreleased)
 ------------------
 
