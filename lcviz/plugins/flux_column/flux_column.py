@@ -23,7 +23,7 @@ class FluxColumn(PluginTemplateMixin, FluxColumnSelectMixin, DatasetSelectMixin)
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.open_in_tray`
     * :meth:`~jdaviz.core.template_mixin.PluginTemplateMixin.close_in_tray`
     * ``dataset`` (:class:`~jdaviz.core.template_mixin.DatasetSelect`):
-      Dataset to bin.
+      Dataset to modify selected flux column.
     * ``flux_column`` (:class:`~lcviz.components.FluxColumnSelect`)
     """
     template_file = __file__, "flux_column.vue"
