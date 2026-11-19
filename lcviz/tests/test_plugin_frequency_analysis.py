@@ -28,6 +28,7 @@ def test_plugin_frequency_analysis(helper_name, light_curve_like_kepler_quarter,
 
     freq = helper.plugins['Frequency Analysis']
     freq.open_in_tray()
+    freq._obj.plugin_opened = True
 
     assert freq.method == 'Lomb-Scargle'
     assert freq._obj.err == ''
@@ -58,3 +59,24 @@ def test_plugin_frequency_analysis(helper_name, light_curve_like_kepler_quarter,
         pass
     line_x = freq._obj.plot.layers['periodogram'].layer['x']
     assert_allclose((line_x.min(), line_x.max()), (0.0999859, 1))
+
+
+def test_inactive_updates_are_deferred(helper, light_curve_like_kepler_quarter):
+    helper.load(light_curve_like_kepler_quarter, format='Light Curve')
+
+    freq = helper.plugins['Frequency Analysis']
+    freq_obj = freq._obj
+    assert freq_obj.is_active is False
+
+    freq.method = 'Box Least Squares'
+    assert 'periodogram' not in freq_obj.__dict__
+
+    # API access still computes from the latest inputs while the UI is closed.
+    assert isinstance(freq.periodogram, BoxLeastSquaresPeriodogram)
+    assert 'periodogram' in freq_obj.__dict__
+
+    freq.method = 'Lomb-Scargle'
+    assert 'periodogram' not in freq_obj.__dict__
+
+    freq_obj.plugin_opened = True
+    assert isinstance(freq.periodogram, LombScarglePeriodogram)
