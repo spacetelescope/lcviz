@@ -8,7 +8,8 @@
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     v-model:keep_active="keep_active"
-    :popout_button="popout_button">
+    :popout_button="popout_button"
+    v-model:scroll_to="scroll_to">
 
     <plugin-dataset-select
       :items="dataset_items"
