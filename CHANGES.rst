@@ -27,6 +27,8 @@
 
 * Fixes links to docs from the plugin UIs. [#252]
 
+* Fixes scrolling to plugins when open_in_tray called. [#258]
+
 2.0.0 (06-25-2026)
 ------------------
 
