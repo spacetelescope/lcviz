@@ -1,4 +1,4 @@
-2.1.0 (unreleased)
+2.1.0 (2026-11-20)
 ------------------
 
 * Update jdaviz requirement to 5.1 and python to 3.12 to include upstream improvements including: upgrade to vue3, 
