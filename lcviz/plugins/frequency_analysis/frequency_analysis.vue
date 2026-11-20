@@ -4,7 +4,11 @@
     plugin_key="Frequency Analysis"
     v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description"
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#frequency_analysis'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/frequency_analysis.html'"
+    :uses_active_status="uses_active_status"
+    @plugin-ping="plugin_ping($event)"
+    v-model:keep_active="keep_active"
+    v-model:scroll_to="scroll_to"
     :popout_button="popout_button">
 
     <plugin-dataset-select

@@ -55,6 +55,7 @@ class TimeSelector(BaseSlicePlugin, ViewerSelectMixin):
         self.viewer.remove_filter('is_slice_selection_viewer')
         self.viewer.add_filter(lambda viewer: isinstance(viewer, (TimeScatterView, PhaseScatterView, CubeView)))  # noqa
         self._set_relevant()
+        self._update_docs_link()
 
     @observe('vdocs')
     def _update_docs_link(self, *args):

@@ -4,11 +4,13 @@
     plugin_key="Flatten"
     v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description || 'Flatten input light curve to remove long-term trends.'"
-    :link="'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins.html#flatten'"
+    :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/flatten.html'"
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     v-model:keep_active="keep_active"
-    :popout_button="popout_button">
+    v-model:scroll_to="scroll_to"
+    :popout_button="popout_button"
+  >
 
     <v-row style="margin-bottom: 16px">
       <v-expansion-panels popout>

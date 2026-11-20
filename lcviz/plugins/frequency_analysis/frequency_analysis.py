@@ -7,7 +7,8 @@ from lightkurve import periodogram
 from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
-                                        DatasetSelectMixin, SelectPluginComponent, PlotMixin)
+                                        DatasetSelectMixin, SelectPluginComponent, PlotMixin,
+                                        skip_if_no_updates_since_last_active, with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.utils import data_not_folded, is_lc
@@ -39,6 +40,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     * :meth:``periodogram``
     """
     template_file = __file__, "frequency_analysis.vue"
+    uses_active_status = Bool(True).tag(sync=True)
 
     method_items = List().tag(sync=True)
     method_selected = Unicode().tag(sync=True)
@@ -78,7 +80,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         self.plot.viewer.axis_y.num_ticks = 5
         self.plot.viewer.axis_y.tick_format = '0.2e'
         self.plot.viewer.axis_y.label_offset = '55px'
-        self._update_xunit()
+        self.plot.figure.axes[0].label = self.xunit_selected
 
         self._set_relevant()
 
@@ -95,10 +97,10 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
         return PluginUserApi(self, expose=expose)
 
     @cached_property
+    @with_spinner()
     def periodogram(self):
         # TODO: support multiselect on self.dataset and combine light curves (or would that be a
         # dedicated plugin of its own)?
-        self.spinner = True
         self.err = ''
         if self.auto_range:
             min_period, max_period = None, None
@@ -112,7 +114,6 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
                                                                              minimum_period=min_period,  # noqa
                                                                              maximum_period=max_period)  # noqa
             except Exception as err:
-                self.spinner = False
                 self.err = str(err)
                 self.plot.update_style('periodogram', visible=False)
                 return None
@@ -122,20 +123,24 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
                                                                          minimum_period=min_period,
                                                                          maximum_period=max_period)
             except Exception as err:
-                self.spinner = False
                 self.err = str(err)
                 self.plot.update_style('periodogram', visible=False)
                 return None
         else:
-            self.spinner = False
             raise NotImplementedError(f"periodogram not implemented for {self.method}")
 
         self._update_periodogram_labels(per)
-        self.spinner = False
         return per
 
-    @observe('xunit_selected')
-    def _update_xunit(self, *args):
+    @observe('is_active', 'xunit_selected')
+    def _update_xunit(self, event):
+        if not self.is_active:
+            return
+
+        axis_xunit = self.plot.figure.axes[0].label.split(' ', 1)[0]
+        if event.get('name') == 'is_active' and axis_xunit == self.xunit_selected:
+            return
+
         per = self.periodogram
         if per is not None:
             x = getattr(per, self.xunit_selected).value
@@ -175,7 +180,11 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
 
         # TODO: avoid clearing cache if change was to min/max but auto_range is True?
         self._clear_cache('periodogram')
+        self._update_periodogram_active(*args)
 
+    @observe('is_active')
+    @skip_if_no_updates_since_last_active()
+    def _update_periodogram_active(self, *args):
         per = self.periodogram
         if per is not None:
             self.plot._update_data('periodogram',

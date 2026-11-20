@@ -12,7 +12,10 @@
 
 * Adds support to parse Rocky Worlds HDF5 light curve files. [#236]
 
-2.0.1 (unreleased)
+* When creating ephemerides while loading a light curve, if the "default" ephemeris has not been
+  used, remove it from the list of ephemeris components. [#250]
+
+2.0.1 (2026-11-20)
 ------------------
 
 * Patch access to _get_display_unit to fix a mouseover units related bug in jdaviz when lcviz is imported
@@ -21,6 +24,13 @@
 * Fix flux column choices to be case-insensitive. [#243]
 
 * Fixes binning in phase-space (which previously randomly failed to show previews or bin). [#246]
+
+* Fixes links to docs from the plugin UIs. [#252]
+
+* Fixes periodogram in frequency analysis plugin to not compute until plugin is opened
+  or requested via API. [#255]
+
+* Fixes scrolling to plugins when open_in_tray called. [#258]
 
 2.0.0 (06-25-2026)
 ------------------
