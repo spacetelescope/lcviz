@@ -27,6 +27,9 @@
 
 * Fixes links to docs from the plugin UIs. [#252]
 
+* Fixes periodogram in frequency analysis plugin to not compute until plugin is opened
+  or requested via API. [#255]
+
 2.0.0 (06-25-2026)
 ------------------
 
