@@ -5,7 +5,9 @@
     :api_hints_enabled.sync="api_hints_enabled"
     :description="docs_description || 'Find and refine ephemerides for phase-folding.'"
     :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/ephemeris.html'"
-    :popout_button="popout_button">
+    :scroll_to.sync="scroll_to"
+    :popout_button="popout_button"
+  >
 
     <plugin-editable-select
       :mode.sync="component_mode"
