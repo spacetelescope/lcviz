@@ -8,8 +8,9 @@
     :uses_active_status="uses_active_status"
     @plugin-ping="plugin_ping($event)"
     v-model:keep_active="keep_active"
+    v-model:scroll_to="scroll_to"
     :popout_button="popout_button"
-    v-model:scroll_to="scroll_to">
+  >
 
     <v-row style="margin-bottom: 16px">
       <v-expansion-panels popout>
