@@ -8,7 +8,7 @@ from jdaviz.core.custom_traitlets import FloatHandleEmpty
 from jdaviz.core.registries import tray_registry
 from jdaviz.core.template_mixin import (PluginTemplateMixin,
                                         DatasetSelectMixin, SelectPluginComponent, PlotMixin,
-                                        with_spinner)
+                                        skip_if_no_updates_since_last_active, with_spinner)
 from jdaviz.core.user_api import PluginUserApi
 
 from lcviz.utils import data_not_folded, is_lc

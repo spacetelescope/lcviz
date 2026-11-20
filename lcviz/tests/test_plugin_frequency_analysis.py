@@ -67,7 +67,17 @@ def test_inactive_updates_are_deferred(helper, light_curve_like_kepler_quarter):
     freq = helper.plugins['Frequency Analysis']
     freq_obj = freq._obj
     assert freq_obj.is_active is False
+    assert 'periodogram' not in freq_obj.__dict__
+    assert 'periodogram' not in freq_obj.plot.layers
 
+    freq_obj.plugin_opened = True
+    line = freq_obj.plot.layers['periodogram'].layer
+    assert len(line['x']) > 0
+    assert len(line['x']) == len(line['y'])
+    assert any(len(mark.x) > 0 and len(mark.y) > 0
+               for mark in freq_obj.plot.figure.marks)
+
+    freq_obj.plugin_opened = False
     freq.method = 'Box Least Squares'
     assert 'periodogram' not in freq_obj.__dict__
 
@@ -80,3 +90,7 @@ def test_inactive_updates_are_deferred(helper, light_curve_like_kepler_quarter):
 
     freq_obj.plugin_opened = True
     assert isinstance(freq.periodogram, LombScarglePeriodogram)
+    assert freq_obj.spinner is False
+    line = freq_obj.plot.layers['periodogram'].layer
+    assert len(line['x']) > 0
+    assert len(line['x']) == len(line['y'])
