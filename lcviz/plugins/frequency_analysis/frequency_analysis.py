@@ -40,6 +40,7 @@ class FrequencyAnalysis(PluginTemplateMixin, DatasetSelectMixin, PlotMixin):
     * :meth:``periodogram``
     """
     template_file = __file__, "frequency_analysis.vue"
+    uses_active_status = Bool(True).tag(sync=True)
 
     method_items = List().tag(sync=True)
     method_selected = Unicode().tag(sync=True)
