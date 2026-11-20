@@ -2,7 +2,9 @@
   <j-tray-plugin
     description='Stitch light curves together.'
     :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/stitch.html'"
-    :popout_button="popout_button">
+    :popout_button="popout_button"
+    :scroll_to.sync="scroll_to"
+  >
 
     <plugin-dataset-select
       :items="dataset_items"
