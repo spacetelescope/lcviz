@@ -1,4 +1,4 @@
-2.0.1 (unreleased)
+2.0.1 (2026-11-20)
 ------------------
 
 * Patch access to _get_display_unit to fix a mouseover units related bug in jdaviz when lcviz is imported
