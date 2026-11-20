@@ -5,6 +5,7 @@
     v-model:api_hints_enabled="api_hints_enabled"
     :description="docs_description"
     :link="docs_link || 'https://lcviz.readthedocs.io/en/'+vdocs+'/plugins/frequency_analysis.html'"
+    v-model:scroll_to="scroll_to"
     :popout_button="popout_button">
 
     <plugin-dataset-select
