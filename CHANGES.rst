@@ -30,6 +30,8 @@
 * Fixes periodogram in frequency analysis plugin to not compute until plugin is opened
   or requested via API. [#255]
 
+* Fixes scrolling to plugins when open_in_tray called. [#258]
+
 2.0.0 (06-25-2026)
 ------------------
 
